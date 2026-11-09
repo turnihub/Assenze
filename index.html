@@ -9,8 +9,15 @@
           --accent:#2d3a8c; --accent-soft:#dbe0fa; --pending:#f59e0b; }
   * { box-sizing:border-box; }
   body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); }
-  header { background:var(--accent); color:#fff; padding:12px 18px; font-size:18px; font-weight:600; display:flex; align-items:center; gap:14px; }
-  header img { height:38px; width:auto; background:#fff; padding:2px; border-radius:4px; }
+  header { background:var(--accent); color:#fff; padding:14px 18px; font-size:20px; font-weight:600;
+           display:flex; align-items:center; gap:18px; }
+  header .logo { background:#fff; border-radius:10px; padding:6px 12px; display:flex; align-items:center; flex:0 0 auto; max-width:100%; }
+  header img { height:72px; width:auto; max-width:100%; object-fit:contain; display:block; }
+  @media (max-width:600px){
+    header { flex-direction:column; text-align:center; gap:10px; padding:14px 12px 16px; }
+    header .logo { width:100%; justify-content:center; padding:8px 12px; }
+    header img { height:104px; }
+  }
   main { max-width:980px; margin:0 auto; padding:16px; display:grid; gap:16px; grid-template-columns:1fr; }
   @media (min-width:800px){ main { grid-template-columns:1fr 1fr; } }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
@@ -44,7 +51,7 @@
 </head>
 <body>
 <header>
-  <img src="logo faisa cisal.png" alt="Logo Faisa Cisal">
+  <span class="logo"><img src="logo faisa cisal.png" alt="Logo Faisa Cisal"></span>
   <span>Richiesta ferie</span>
 </header>
 <main>
@@ -102,19 +109,22 @@ const DOW = ['L','M','M','G','V','S','D'];
 const LAYOUT = {
   // La linea spessa in alto viene coperta e sostituita dal mese della richiesta.
   testata:  { x0: 259.4, x1: 528.8, baseTop: 93.5, coverTop: 90.5, coverBottom: 103 },
-  dataPres: { x: 225,   top: 194.0, maxW: 160, riga: { y: 199.2, x0: 219.2, x1: 386.4 } },
-  nome:     { x: 195,   top: 230.0, maxW: 195, riga: { y: 235.2, x0: 190.1, x1: 393.0 } },
-  cid:      { x: 466,   top: 230.0, maxW: 54,  riga: { y: 235.2, x0: 461.4, x1: 521.1 } },
-  note:     { x: 446,   top: 518.2, maxW: 318, riga: { y: 523.5, x0: 444.6, x1: 767.6 } },
+  dataPres: { x: 224,   top: 196.8, maxW: 160, riga: { y: 199.2, x0: 219.2, x1: 386.4 } },
+  nome:     { x: 194,   top: 232.8, maxW: 195, riga: { y: 235.2, x0: 190.1, x1: 393.0 } },
+  cid:      { x: 465,   top: 232.8, maxW: 54,  riga: { y: 235.2, x0: 461.4, x1: 521.1 } },
+  note:     { x: 449,   top: 521.0, maxW: 318, riga: { y: 523.5, x0: 444.6, x1: 767.6 } },
   periodi: [
-    { top: 338.0, riga: 343.5,
+    { top: 341.0, riga: 343.5,
       dal: { g:[107.0,142.9],  m:[147.8,285.1], a:[289.9,331.7] },
       al:  { g:[391.0,426.8],  m:[431.7,569.0], a:[573.9,615.6] } },
-    { top: 374.0, riga: 379.5,
+    { top: 377.0, riga: 379.5,
       dal: { g:[103.6,139.4],  m:[144.3,281.6], a:[286.5,328.3] },
       al:  { g:[391.0,426.8],  m:[431.7,569.0], a:[573.9,615.6] } }
   ]
 };
+const CANCELLA_RIGHE = false;  // false = le righe del modulo restano e la scritta ci poggia sopra
+const OFFSET_X = 0;            // ritocchi fini: sposta TUTTE le scritte (punti; X positivo = a destra)
+const OFFSET_Y = 0;            //                                         (Y positivo = verso il basso)
 const TXT_MAX = 14;   // corpo massimo delle scritte nelle celle
 const HEAD_MAX = 46;  // corpo massimo del mese in testata
 
@@ -141,11 +151,11 @@ async function fillSheet(tplBytes, data, periodi, outDoc) {
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const page = doc.getPages()[0];
   const mb = page.getMediaBox();
-  const Y = top => mb.y + mb.height - top;
+  const Y = top => mb.y + mb.height - (top + OFFSET_Y);
   const color = rgb(0.05, 0.1, 0.45);
 
   // Cancella la sottolineatura del modulo (striscia bianca sottile) prima di scrivere.
-  const erase = (x0, x1, y) => page.drawRectangle({ x: x0 - 0.5, y: Y(y + 2.6), width: (x1 - x0) + 1, height: 4.2, color: rgb(1, 1, 1) });
+  const erase = (x0, x1, y) => CANCELLA_RIGHE && page.drawRectangle({ x: x0 - 0.5, y: Y(y + 2.6), width: (x1 - x0) + 1, height: 4.2, color: rgb(1, 1, 1) });
 
   // Corpo più grande possibile, ma entro la larghezza disponibile.
   const fit = (f, txt, maxW, maxSize) => {
@@ -158,7 +168,7 @@ async function fillSheet(tplBytes, data, periodi, outDoc) {
     txt = String(txt);
     if (riga) erase(riga.x0, riga.x1, riga.y);
     const size = fit(font, txt, maxW, TXT_MAX);
-    page.drawText(txt, { x, y: Y(top), size, font, color });
+    page.drawText(txt, { x: x + OFFSET_X, y: Y(top), size, font, color });
   };
   const center = (txt, seg, top, rigaY) => {
     txt = String(txt);
@@ -166,7 +176,7 @@ async function fillSheet(tplBytes, data, periodi, outDoc) {
     const maxW = (seg[1] - seg[0]) - 3;
     const size = fit(font, txt, maxW, TXT_MAX);
     const w = font.widthOfTextAtSize(txt, size);
-    page.drawText(txt, { x: seg[0] + ((seg[1] - seg[0]) - w) / 2, y: Y(top), size, font, color });
+    page.drawText(txt, { x: seg[0] + ((seg[1] - seg[0]) - w) / 2 + OFFSET_X, y: Y(top), size, font, color });
   };
 
   // Testata: copro la linea spessa e scrive il mese in maiuscolo e grassetto.
