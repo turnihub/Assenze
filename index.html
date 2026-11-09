@@ -9,25 +9,8 @@
           --accent:#2d3a8c; --accent-soft:#dbe0fa; --pending:#f59e0b; }
   * { box-sizing:border-box; }
   body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--ink); }
-  
-  header { 
-    background:var(--accent); 
-    color:#fff; 
-    padding:12px 18px; 
-    font-size:18px; 
-    font-weight:600; 
-    display: flex; 
-    align-items: center; 
-    gap: 14px; 
-  }
-  header img { 
-    height: 38px; 
-    width: auto; 
-    background: #fff; 
-    padding: 2px; 
-    border-radius: 4px; 
-  }
-
+  header { background:var(--accent); color:#fff; padding:12px 18px; font-size:18px; font-weight:600; display:flex; align-items:center; gap:14px; }
+  header img { height:38px; width:auto; background:#fff; padding:2px; border-radius:4px; }
   main { max-width:980px; margin:0 auto; padding:16px; display:grid; gap:16px; grid-template-columns:1fr; }
   @media (min-width:800px){ main { grid-template-columns:1fr 1fr; } }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
@@ -60,13 +43,10 @@
 </style>
 </head>
 <body>
-
 <header>
-  <!-- Inserimento del logo di fianco al titolo -->
   <img src="logo faisa cisal.png" alt="Logo Faisa Cisal">
   <span>Richiesta ferie</span>
 </header>
-
 <main>
   <section class="card">
     <h2>1 · Scegli i giorni</h2>
@@ -117,24 +97,28 @@
 const MONTHS = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
 const DOW = ['L','M','M','G','V','S','D'];
 
+//<fill>
+// Posizioni misurate sul modello (punti PDF, misurate dall'alto della pagina).
 const LAYOUT = {
+  // La linea spessa in alto viene coperta e sostituita dal mese della richiesta.
   testata:  { x0: 259.4, x1: 528.8, baseTop: 93.5, coverTop: 90.5, coverBottom: 103 },
-  dataPres: { x: 225,   top: 194.0, maxW: 160 },
-  nome:     { x: 195,   top: 230.0, maxW: 195 },
-  cid:      { x: 466,   top: 230.0, maxW: 54 },
-  note:     { x: 446,   top: 518.2, maxW: 318 },
+  dataPres: { x: 225,   top: 194.0, maxW: 160, riga: { y: 199.2, x0: 219.2, x1: 386.4 } },
+  nome:     { x: 195,   top: 230.0, maxW: 195, riga: { y: 235.2, x0: 190.1, x1: 393.0 } },
+  cid:      { x: 466,   top: 230.0, maxW: 54,  riga: { y: 235.2, x0: 461.4, x1: 521.1 } },
+  note:     { x: 446,   top: 518.2, maxW: 318, riga: { y: 523.5, x0: 444.6, x1: 767.6 } },
   periodi: [
-    { top: 338.0,
+    { top: 338.0, riga: 343.5,
       dal: { g:[107.0,142.9],  m:[147.8,285.1], a:[289.9,331.7] },
       al:  { g:[391.0,426.8],  m:[431.7,569.0], a:[573.9,615.6] } },
-    { top: 374.0,
+    { top: 374.0, riga: 379.5,
       dal: { g:[103.6,139.4],  m:[144.3,281.6], a:[286.5,328.3] },
       al:  { g:[391.0,426.8],  m:[431.7,569.0], a:[573.9,615.6] } }
   ]
 };
-const TXT_MAX = 14;   
-const HEAD_MAX = 46;  
+const TXT_MAX = 14;   // corpo massimo delle scritte nelle celle
+const HEAD_MAX = 46;  // corpo massimo del mese in testata
 
+// Un foglio per ogni mese; al massimo 2 periodi per foglio (le righe del modulo).
 function raggruppaFogli(periodi) {
   const mesi = new Map();
   periodi.forEach(p => {
@@ -160,25 +144,32 @@ async function fillSheet(tplBytes, data, periodi, outDoc) {
   const Y = top => mb.y + mb.height - top;
   const color = rgb(0.05, 0.1, 0.45);
 
+  // Cancella la sottolineatura del modulo (striscia bianca sottile) prima di scrivere.
+  const erase = (x0, x1, y) => page.drawRectangle({ x: x0 - 0.5, y: Y(y + 2.6), width: (x1 - x0) + 1, height: 4.2, color: rgb(1, 1, 1) });
+
+  // Corpo più grande possibile, ma entro la larghezza disponibile.
   const fit = (f, txt, maxW, maxSize) => {
     let s = maxSize;
     while (s > 6 && f.widthOfTextAtSize(txt, s) > maxW) s -= 0.5;
     return s;
   };
-  const put = (txt, x, top, maxW) => {
+  const put = (txt, x, top, maxW, riga) => {
     if (!txt) return;
     txt = String(txt);
+    if (riga) erase(riga.x0, riga.x1, riga.y);
     const size = fit(font, txt, maxW, TXT_MAX);
     page.drawText(txt, { x, y: Y(top), size, font, color });
   };
-  const center = (txt, seg, top) => {
+  const center = (txt, seg, top, rigaY) => {
     txt = String(txt);
+    erase(seg[0], seg[1], rigaY);
     const maxW = (seg[1] - seg[0]) - 3;
     const size = fit(font, txt, maxW, TXT_MAX);
     const w = font.widthOfTextAtSize(txt, size);
     page.drawText(txt, { x: seg[0] + ((seg[1] - seg[0]) - w) / 2, y: Y(top), size, font, color });
   };
 
+  // Testata: copro la linea spessa e scrive il mese in maiuscolo e grassetto.
   if (periodi.length) {
     const T = LAYOUT.testata;
     page.drawRectangle({ x: T.x0 - 10, y: Y(T.coverBottom), width: (T.x1 - T.x0) + 20, height: T.coverBottom - T.coverTop, color: rgb(1, 1, 1) });
@@ -189,19 +180,19 @@ async function fillSheet(tplBytes, data, periodi, outDoc) {
     page.drawText(mese, { x: T.x0 + ((T.x1 - T.x0) - w) / 2, y: Y(T.baseTop), size, font: bold, color });
   }
 
-  put(data.dataPres, LAYOUT.dataPres.x, LAYOUT.dataPres.top, LAYOUT.dataPres.maxW);
-  put(data.nome,     LAYOUT.nome.x,     LAYOUT.nome.top,     LAYOUT.nome.maxW);
-  put(data.cid,      LAYOUT.cid.x,      LAYOUT.cid.top,      LAYOUT.cid.maxW);
-  put(data.note,     LAYOUT.note.x,     LAYOUT.note.top,     LAYOUT.note.maxW);
+  put(data.dataPres, LAYOUT.dataPres.x, LAYOUT.dataPres.top, LAYOUT.dataPres.maxW, LAYOUT.dataPres.riga);
+  put(data.nome,     LAYOUT.nome.x,     LAYOUT.nome.top,     LAYOUT.nome.maxW, LAYOUT.nome.riga);
+  put(data.cid,      LAYOUT.cid.x,      LAYOUT.cid.top,      LAYOUT.cid.maxW, LAYOUT.cid.riga);
+  put(data.note,     LAYOUT.note.x,     LAYOUT.note.top,     LAYOUT.note.maxW, LAYOUT.note.riga);
 
   periodi.slice(0, 2).forEach((p, i) => {
     const L = LAYOUT.periodi[i];
-    center(String(p.d1).padStart(2, '0'), L.dal.g, L.top);
-    center(MONTHS[p.m1 - 1].toUpperCase(), L.dal.m, L.top);
-    center(p.y1,                         L.dal.a, L.top);
-    center(String(p.d2).padStart(2, '0'), L.al.g,  L.top);
-    center(MONTHS[p.m2 - 1].toUpperCase(), L.al.m,  L.top);
-    center(p.y2,                         L.al.a,  L.top);
+    center(String(p.d1).padStart(2, '0'), L.dal.g, L.top, L.riga);
+    center(MONTHS[p.m1 - 1].toUpperCase(), L.dal.m, L.top, L.riga);
+    center(p.y1,                          L.dal.a, L.top, L.riga);
+    center(String(p.d2).padStart(2, '0'), L.al.g,  L.top, L.riga);
+    center(MONTHS[p.m2 - 1].toUpperCase(), L.al.m,  L.top, L.riga);
+    center(p.y2,                          L.al.a,  L.top, L.riga);
   });
 
   const [copied] = await outDoc.copyPages(doc, [0]);
@@ -210,53 +201,69 @@ async function fillSheet(tplBytes, data, periodi, outDoc) {
 
 async function buildPdf(tplBytes, data, periodi) {
   const outDoc = await PDFLib.PDFDocument.create();
-  for (const foglio of raggruppaFogli(periodi)) {
-    await fillSheet(tplBytes, data, foglio, outDoc);
-  }
+  for (const foglio of raggruppaFogli(periodi)) await fillSheet(tplBytes, data, foglio, outDoc);
   return await outDoc.save();
 }
+//</fill>
 
-const st = { tpl: null, days: new Set(), anchor: null, vy: 0, vm: 0, url: null, bytes: null };
+// ---------- stato ----------
+const st = { tpl: null, days: new Set(), anchor: null, vy: 0, vm: 0, url: null };
 const key = (y, m, d) => y * 10000 + m * 100 + d;
 const unkey = k => ({ y: Math.floor(k / 10000), m: Math.floor(k / 100) % 100, d: k % 100 });
 const $ = id => document.getElementById(id);
+
+// Nomi possibili del modulo nella stessa cartella dell'app su GitHub.
+const MODULO_FILES = ['MODULO RICHIESTA FERIE.pdf', 'MODULO_RICHIESTA_FERIE.pdf', 'Copia_di_MODULO_RICHIESTA_FERIE.pdf', 'modulo.pdf'];
+
+function setTpl(buf, msg, cls) {
+  st.tpl = buf;
+  $('tplMsg').textContent = msg; $('tplMsg').className = 'msg ' + cls;
+}
+function salvaTpl(buf) {
+  try { let s = ''; for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]); localStorage.setItem('fe_tpl', btoa(s)); } catch (e) {}
+}
+async function caricaModuloDaGithub() {
+  const provati = [];
+  for (const nome of MODULO_FILES) {
+    try {
+      const url = new URL(encodeURIComponent(nome), location.href).href;
+      const res = await fetch(url, { cache: 'no-cache' });
+      if (!res.ok) { provati.push(nome + ' (' + res.status + ')'); continue; }
+      const buf = new Uint8Array(await res.arrayBuffer());
+      // deve essere davvero un PDF (e non una pagina di errore)
+      if (String.fromCharCode(buf[0], buf[1], buf[2], buf[3]) !== '%PDF') { provati.push(nome + ' (non è un PDF)'); continue; }
+      return { buf, nome };
+    } catch (e) { provati.push(nome + ' (non raggiungibile)'); }
+  }
+  return { errore: provati.join(', ') };
+}
 
 (async function init() {
   const t = new Date();
   st.vy = t.getFullYear(); st.vm = t.getMonth() + 1;
   $('dows').innerHTML = DOW.map(d => '<div class="dow">' + d + '</div>').join('');
   $('dataPres').value = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
-  
   try {
     $('nome').value = localStorage.getItem('fe_nome') || '';
     $('cid').value  = localStorage.getItem('fe_cid') || '';
-    const b64 = localStorage.getItem('fe_tpl');
-    if (b64) { 
-      st.tpl = Uint8Array.from(atob(b64), c => c.charCodeAt(0)); 
-      $('tplMsg').textContent = 'Modello caricato dalla memoria.'; 
-      $('tplMsg').className = 'msg ok'; 
-    }
   } catch (e) {}
-
-  // Caricamento automatico del modulo PDF esatto da GitHub (stessa cartella)
-  if (!st.tpl) {
-    try {
-      const res = await fetch('MODULO RICHIESTA FERIE.pdf');
-      if (res.ok) {
-        const buf = new Uint8Array(await res.arrayBuffer());
-        st.tpl = buf;
-        let s = ''; for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]);
-        localStorage.setItem('fe_tpl', btoa(s));
-        $('tplMsg').textContent = 'Modello predefinito caricato automaticamente.';
-        $('tplMsg').className = 'msg ok';
-      }
-    } catch (err) {}
-  }
-
-  render();
   if (navigator.canShare) $('share').style.display = '';
+  render();   // il calendario compare subito, senza aspettare il modulo
+
+  const r = await caricaModuloDaGithub();
+  if (r.buf) {
+    setTpl(r.buf, 'Modulo caricato automaticamente.', 'ok');
+    salvaTpl(r.buf);
+  } else {
+    let cache = null;
+    try { const b64 = localStorage.getItem('fe_tpl'); if (b64) cache = Uint8Array.from(atob(b64), c => c.charCodeAt(0)); } catch (e) {}
+    if (cache) setTpl(cache, 'Modulo preso dalla memoria del dispositivo (quello online non è raggiungibile).', 'ok');
+    else setTpl(null, 'Modulo non trovato online (provati: ' + r.errore + '). Controlla il nome del file su GitHub oppure sceglilo da qui sotto.', 'err');
+  }
+  renderPeriods();
 })();
 
+// ---------- calendario ----------
 function render() {
   $('title').textContent = MONTHS[st.vm - 1] + ' ' + st.vy;
   const first = new Date(st.vy, st.vm - 1, 1);
@@ -296,6 +303,7 @@ $('prev').onclick = () => { st.vm--; if (st.vm < 1) { st.vm = 12; st.vy--; } ren
 $('next').onclick = () => { st.vm++; if (st.vm > 12) { st.vm = 1; st.vy++; } render(); };
 $('clear').onclick = () => { st.days.clear(); st.anchor = null; render(); };
 
+// Raggruppa i giorni scelti in periodi (giorni consecutivi, stesso mese).
 function periodi() {
   const ks = [...st.days].sort((a, b) => a - b);
   const out = [];
@@ -339,6 +347,7 @@ $('chips').addEventListener('click', e => {
   render();
 });
 
+// ---------- modello ----------
 $('tplFile').addEventListener('change', async e => {
   const f = e.target.files[0];
   if (!f) return;
@@ -351,20 +360,19 @@ $('tplFile').addEventListener('change', async e => {
     $('tplMsg').className = 'msg err';
     return;
   }
-  st.tpl = buf;
-  $('tplMsg').textContent = 'Modello caricato.'; $('tplMsg').className = 'msg ok';
-  try { let s = ''; for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]); localStorage.setItem('fe_tpl', btoa(s)); } catch (err) {}
+  setTpl(buf, 'Modello caricato.', 'ok');
+  salvaTpl(buf);
   renderPeriods();
 });
 
+// ---------- generazione ----------
 function isoToIt(v) { const [y, m, d] = v.split('-'); return d + '/' + m + '/' + y; }
 
 $('gen').onclick = async () => {
-  $('genMsg').textContent = 'Sto compilando…'; $('genMsg'].className = 'msg';
+  $('genMsg').textContent = 'Sto compilando…'; $('genMsg').className = 'msg';
   try {
-    const data = { nome: $('nome').value.trim(), cid: $('cid').value.trim(), dataPres: ('dataPres').value?isoToIt(('dataPres').value) : '', note: $('note').value.trim() };
+    const data = { nome: $('nome').value.trim(), cid: $('cid').value.trim(), dataPres: $('dataPres').value ? isoToIt($('dataPres').value) : '', note: $('note').value.trim() };
     try { localStorage.setItem('fe_nome', data.nome); localStorage.setItem('fe_cid', data.cid); } catch (e) {}
-    
     const bytes = await buildPdf(st.tpl, data, periodi());
     if (st.url) URL.revokeObjectURL(st.url);
     st.bytes = bytes;
@@ -385,5 +393,3 @@ $('share').onclick = async () => {
 </script>
 </body>
 </html>
-
-
