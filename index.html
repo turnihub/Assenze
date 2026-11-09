@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Richiesta ferie</title>
+<title>Richiesta assenze</title>
 <style>
   :root { --bg:#f5f6f8; --card:#fff; --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
           --accent:#2d3a8c; --accent-soft:#dbe0fa; --pending:#f59e0b; }
@@ -47,14 +47,24 @@
   .msg.ok { color:#047857; }
   #preview { width:100%; height:420px; border:1px solid var(--line); border-radius:8px; margin-top:12px; display:none; }
   @media (min-width:800px){ #preview.on { display:block; } }
+  .chk { display:flex; gap:10px; align-items:flex-start; font-size:15px; color:var(--ink); margin:14px 0 4px; cursor:pointer; }
+  .chk input { width:20px; height:20px; margin-top:2px; flex:0 0 auto; }
+  .tipi-card { grid-column:1 / -1; }
+  .tipi { display:flex; gap:8px; flex-wrap:wrap; }
+  .tipo { flex:1 1 140px; padding:12px 10px; font-size:16px; border:1px solid var(--accent); background:#fff; color:var(--accent); border-radius:10px; cursor:pointer; }
+  .tipo.on { background:var(--accent); color:#fff; }
 </style>
 </head>
 <body>
 <header>
   <span class="logo"><img src="logo faisa cisal.png" alt="Logo Faisa Cisal"></span>
-  <span>Richiesta ferie</span>
+  <span>Richiesta assenze</span>
 </header>
 <main>
+  <section class="card tipi-card">
+    <h2>Tipo di richiesta</h2>
+    <div class="tipi" id="tipi"></div>
+  </section>
   <section class="card">
     <h2>1 · Scegli i giorni</h2>
     <div class="cal-head">
@@ -73,9 +83,8 @@
 
   <section class="card">
     <h2>2 · Dati del modulo</h2>
-    <label for="tplFile">Modello PDF (caricato automaticamente o selezionabile)</label>
-    <input type="file" id="tplFile" accept="application/pdf">
     <div class="msg" id="tplMsg"></div>
+    <div class="row" style="margin-top:6px"><button class="ghost" id="retry" style="display:none">Riprova a caricare il modulo</button></div>
 
     <label for="nome">Nome e cognome</label>
     <input type="text" id="nome" autocomplete="name">
@@ -85,6 +94,9 @@
     <input type="date" id="dataPres">
     <label for="note">Note (facoltative)</label>
     <input type="text" id="note">
+
+    <label class="chk" for="firma"><input type="checkbox" id="firma"> <span>Aggiungi la firma (nome scritto a mano in stile firma)</span></label>
+    <div class="hint" style="margin-top:0">È solo una grafica generata dal nome: non è una firma autografa né una firma digitale valida. Controlla che l'ufficio la accetti, altrimenti lascia la casella vuota e firma a penna dopo la stampa.</div>
 
     <div class="row">
       <button class="primary" id="gen" disabled>Compila il modulo</button>
@@ -100,6 +112,7 @@
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
 <script>
 const MONTHS = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
 const DOW = ['L','M','M','G','V','S','D'];
@@ -113,6 +126,11 @@ const LAYOUT = {
   nome:     { x: 194,   top: 232.8, maxW: 195, riga: { y: 235.2, x0: 190.1, x1: 393.0 } },
   cid:      { x: 465,   top: 232.8, maxW: 54,  riga: { y: 235.2, x0: 461.4, x1: 521.1 } },
   note:     { x: 449,   top: 521.0, maxW: 318, riga: { y: 523.5, x0: 444.6, x1: 767.6 } },
+  // Posizioni misurate sul modulo originale: origine del testo (x, linea di base) e corpo.
+  titolo: { cover: [179.2, 222.5, 128.6, 146.8], x: 180.59, baseTop: 143.46, size: 16.956 },
+  frase:  { cover: [72.0, 486.0, 294.2, 310.4],  x: 73.85,  baseTop: 306.28, size: 13.325 },
+  // Riga "Il Dipendente" (y = 469.6, da x = 73.8 a 240.8): la firma sta sopra la riga, sotto l'etichetta.
+  firma:  { x: 79, baseTop: 465.5, maxW: 158, maxSize: 19, rot: 2 },
   periodi: [
     { top: 341.0, riga: 343.5,
       dal: { g:[107.0,142.9],  m:[147.8,285.1], a:[289.9,331.7] },
@@ -122,6 +140,46 @@ const LAYOUT = {
       al:  { g:[391.0,426.8],  m:[431.7,569.0], a:[573.9,615.6] } }
   ]
 };
+// Tipi di richiesta: stesso PDF per tutti. Per i tipi diversi dalle ferie, la parola "ferie" nel titolo
+// e la frase "Chiede di poter usufruire..." vengono sostituite (stesso carattere, corpo e posizione).
+const MODULI = {
+  ferie:   { etichetta: 'Ferie', titolo: null, frase: null, file: 'Domanda_ferie.pdf' },
+  sangue:  { etichetta: 'Donazione sangue', titolo: 'donazione sangue',
+             frase: 'Chiede di poter usufruire del permesso per donazione di sangue nei seguenti periodi:',
+             file: 'Domanda_donazione_sangue.pdf' },
+  cariche: { etichetta: 'Cariche elettive', titolo: 'cariche elettive',
+             frase: 'Chiede di poter usufruire dei permessi per cariche elettive nei seguenti periodi:',
+             file: 'Domanda_cariche_elettive.pdf' }
+};
+
+// Carattere del modulo (Open Sans), caricato solo quando serve.
+const FONT_URL = w => 'https://cdn.jsdelivr.net/npm/@fontsource/open-sans@5.3.0/files/open-sans-latin-' + w + '-normal.woff';
+let _fontPromise = null;
+let fontFallback = false;
+function caricaFontOpenSans() {
+  if (!_fontPromise) {
+    _fontPromise = Promise.all([fetch(FONT_URL(400)), fetch(FONT_URL(700))]).then(async r => {
+      if (!r[0].ok || !r[1].ok) throw new Error('font');
+      return { regular: await r[0].arrayBuffer(), bold: await r[1].arrayBuffer() };
+    }).catch(e => { _fontPromise = null; throw e; });
+  }
+  return _fontPromise;
+}
+
+// Firma stilizzata: il nome scritto con un carattere "a mano" sulla riga del dipendente.
+const FIRMA_FONT_URL = 'https://cdn.jsdelivr.net/npm/@fontsource/mr-dafoe@5.3.0/files/mr-dafoe-latin-400-normal.woff';
+let _firmaPromise = null;
+let firmaNonCaricata = false;
+function caricaFontFirma() {
+  if (!_firmaPromise) {
+    _firmaPromise = fetch(FIRMA_FONT_URL).then(async r => {
+      if (!r.ok) throw new Error('font');
+      return r.arrayBuffer();
+    }).catch(e => { _firmaPromise = null; throw e; });
+  }
+  return _firmaPromise;
+}
+
 const CANCELLA_RIGHE = false;  // false = le righe del modulo restano e la scritta ci poggia sopra
 const OFFSET_X = 0;            // ritocchi fini: sposta TUTTE le scritte (punti; X positivo = a destra)
 const OFFSET_Y = 0;            //                                         (Y positivo = verso il basso)
@@ -151,11 +209,12 @@ async function fillSheet(tplBytes, data, periodi, outDoc) {
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const page = doc.getPages()[0];
   const mb = page.getMediaBox();
-  const Y = top => mb.y + mb.height - (top + OFFSET_Y);
+  const Yraw = top => mb.y + mb.height - top;        // per ciò che sta sul modulo originale
+  const Y = top => Yraw(top + OFFSET_Y);              // per le scritte compilate (con ritocco)
   const color = rgb(0.05, 0.1, 0.45);
 
   // Cancella la sottolineatura del modulo (striscia bianca sottile) prima di scrivere.
-  const erase = (x0, x1, y) => CANCELLA_RIGHE && page.drawRectangle({ x: x0 - 0.5, y: Y(y + 2.6), width: (x1 - x0) + 1, height: 4.2, color: rgb(1, 1, 1) });
+  const erase = (x0, x1, y) => CANCELLA_RIGHE && page.drawRectangle({ x: x0 - 0.5, y: Yraw(y + 2.6), width: (x1 - x0) + 1, height: 4.2, color: rgb(1, 1, 1) });
 
   // Corpo più grande possibile, ma entro la larghezza disponibile.
   const fit = (f, txt, maxW, maxSize) => {
@@ -182,12 +241,44 @@ async function fillSheet(tplBytes, data, periodi, outDoc) {
   // Testata: copro la linea spessa e scrive il mese in maiuscolo e grassetto.
   if (periodi.length) {
     const T = LAYOUT.testata;
-    page.drawRectangle({ x: T.x0 - 10, y: Y(T.coverBottom), width: (T.x1 - T.x0) + 20, height: T.coverBottom - T.coverTop, color: rgb(1, 1, 1) });
+    page.drawRectangle({ x: T.x0 - 10, y: Yraw(T.coverBottom), width: (T.x1 - T.x0) + 20, height: T.coverBottom - T.coverTop, color: rgb(1, 1, 1) });
     const mese = MONTHS[periodi[0].m1 - 1].toUpperCase();
     const maxW = (T.x1 - T.x0) - 6;
     const size = fit(bold, mese, maxW, HEAD_MAX);
     const w = bold.widthOfTextAtSize(mese, size);
-    page.drawText(mese, { x: T.x0 + ((T.x1 - T.x0) - w) / 2, y: Y(T.baseTop), size, font: bold, color });
+    page.drawText(mese, { x: T.x0 + ((T.x1 - T.x0) - w) / 2, y: Yraw(T.baseTop), size, font: bold, color });
+  }
+
+  // Altri tipi di richiesta: sostituisco "ferie" nel titolo e la frase, con lo stesso carattere dell'originale.
+  const tipo = MODULI[data.tipo] || MODULI.ferie;
+  if (tipo.titolo) {
+    let osR = font, osB = bold;
+    try {
+      if (typeof fontkit === 'undefined') throw new Error('fontkit');
+      doc.registerFontkit(fontkit);
+      const fb = await caricaFontOpenSans();
+      osR = await doc.embedFont(fb.regular, { subset: true });
+      osB = await doc.embedFont(fb.bold, { subset: true });
+    } catch (e) { fontFallback = true; }
+    const nero = rgb(0, 0, 0), bianco = rgb(1, 1, 1);
+    const cover = c => page.drawRectangle({ x: c[0], y: Yraw(c[3]), width: c[1] - c[0], height: c[3] - c[2], color: bianco });
+    cover(LAYOUT.titolo.cover);
+    page.drawText(tipo.titolo, { x: LAYOUT.titolo.x, y: Yraw(LAYOUT.titolo.baseTop), size: LAYOUT.titolo.size, font: osB, color: nero });
+    cover(LAYOUT.frase.cover);
+    page.drawText(tipo.frase, { x: LAYOUT.frase.x, y: Yraw(LAYOUT.frase.baseTop), size: LAYOUT.frase.size, font: osR, color: nero });
+  }
+
+  if (data.firma && data.nome) {
+    try {
+      if (typeof fontkit === 'undefined') throw new Error('fontkit');
+      doc.registerFontkit(fontkit);
+      const bytes = await caricaFontFirma();
+      const fF = await doc.embedFont(bytes, { subset: true });
+      const F = LAYOUT.firma;
+      let sz = F.maxSize;
+      while (sz > 8 && fF.widthOfTextAtSize(data.nome, sz) > F.maxW) sz -= 0.5;
+      page.drawText(data.nome, { x: F.x, y: Yraw(F.baseTop), size: sz, font: fF, color, rotate: PDFLib.degrees(F.rot) });
+    } catch (e) { firmaNonCaricata = true; }
   }
 
   put(data.dataPres, LAYOUT.dataPres.x, LAYOUT.dataPres.top, LAYOUT.dataPres.maxW, LAYOUT.dataPres.riga);
@@ -217,7 +308,7 @@ async function buildPdf(tplBytes, data, periodi) {
 //</fill>
 
 // ---------- stato ----------
-const st = { tpl: null, days: new Set(), anchor: null, vy: 0, vm: 0, url: null };
+const st = { tipo: 'ferie', fileName: 'Domanda_ferie.pdf', shareTitle: 'Domanda di ferie', tpl: null, days: new Set(), anchor: null, vy: 0, vm: 0, url: null };
 const key = (y, m, d) => y * 10000 + m * 100 + d;
 const unkey = k => ({ y: Math.floor(k / 10000), m: Math.floor(k / 100) % 100, d: k % 100 });
 const $ = id => document.getElementById(id);
@@ -252,6 +343,37 @@ async function caricaModuloDaGithub() {
   return { errore: provati.join(', ') };
 }
 
+function buildTipi() {
+  try { const t = localStorage.getItem('fe_tipo'); if (t && MODULI[t]) st.tipo = t; } catch (e) {}
+  $('tipi').innerHTML = Object.keys(MODULI).map(k =>
+    '<button class="tipo' + (k === st.tipo ? ' on' : '') + '" data-t="' + k + '">' + MODULI[k].etichetta + '</button>').join('');
+}
+$('tipi').addEventListener('click', e => {
+  const t = e.target.dataset && e.target.dataset.t;
+  if (!t) return;
+  st.tipo = t;
+  try { localStorage.setItem('fe_tipo', t); } catch (err) {}
+  buildTipi();
+});
+
+async function avviaModulo() {
+  $('retry').style.display = 'none';
+  setTpl(null, 'Carico il modulo…', '');
+  renderPeriods();
+  const r = await caricaModuloDaGithub();
+  if (r.buf) {
+    setTpl(r.buf, '', 'ok');
+    salvaTpl(r.buf);
+  } else {
+    let cache = null;
+    try { const b64 = localStorage.getItem('fe_tpl'); if (b64) cache = Uint8Array.from(atob(b64), c => c.charCodeAt(0)); } catch (e) {}
+    if (cache) setTpl(cache, 'Uso la copia del modulo salvata su questo dispositivo (quello online non è raggiungibile).', 'ok');
+    else { setTpl(null, 'Modulo non trovato online (provati: ' + r.errore + '). Controlla il nome del file su GitHub.', 'err'); $('retry').style.display = ''; }
+  }
+  renderPeriods();
+}
+$('retry').onclick = avviaModulo;
+
 (async function init() {
   const t = new Date();
   st.vy = t.getFullYear(); st.vm = t.getMonth() + 1;
@@ -260,21 +382,13 @@ async function caricaModuloDaGithub() {
   try {
     $('nome').value = localStorage.getItem('fe_nome') || '';
     $('cid').value  = localStorage.getItem('fe_cid') || '';
+    $('firma').checked = localStorage.getItem('fe_firma') === '1';
   } catch (e) {}
   if (navigator.canShare) $('share').style.display = '';
   render();   // il calendario compare subito, senza aspettare il modulo
 
-  const r = await caricaModuloDaGithub();
-  if (r.buf) {
-    setTpl(r.buf, 'Modulo caricato automaticamente.', 'ok');
-    salvaTpl(r.buf);
-  } else {
-    let cache = null;
-    try { const b64 = localStorage.getItem('fe_tpl'); if (b64) cache = Uint8Array.from(atob(b64), c => c.charCodeAt(0)); } catch (e) {}
-    if (cache) setTpl(cache, 'Modulo preso dalla memoria del dispositivo (quello online non è raggiungibile).', 'ok');
-    else setTpl(null, 'Modulo non trovato online (provati: ' + r.errore + '). Controlla il nome del file su GitHub oppure sceglilo da qui sotto.', 'err');
-  }
-  renderPeriods();
+  buildTipi();
+  avviaModulo();
 })();
 
 // ---------- calendario ----------
@@ -361,48 +475,34 @@ $('chips').addEventListener('click', e => {
   render();
 });
 
-// ---------- modello ----------
-$('tplFile').addEventListener('change', async e => {
-  const f = e.target.files[0];
-  if (!f) return;
-  const buf = new Uint8Array(await f.arrayBuffer());
-  try {
-    const d = await PDFLib.PDFDocument.load(buf);
-    if (d.getPageCount() !== 1) throw new Error('pagine');
-  } catch (err) {
-    $('tplMsg').textContent = 'Il file non sembra il modulo (deve essere un PDF di una pagina).';
-    $('tplMsg').className = 'msg err';
-    return;
-  }
-  setTpl(buf, 'Modello caricato.', 'ok');
-  salvaTpl(buf);
-  renderPeriods();
-});
-
 // ---------- generazione ----------
 function isoToIt(v) { const [y, m, d] = v.split('-'); return d + '/' + m + '/' + y; }
 
 $('gen').onclick = async () => {
   $('genMsg').textContent = 'Sto compilando…'; $('genMsg').className = 'msg';
   try {
-    const data = { nome: $('nome').value.trim(), cid: $('cid').value.trim(), dataPres: $('dataPres').value ? isoToIt($('dataPres').value) : '', note: $('note').value.trim() };
+    const data = { nome: $('nome').value.trim(), cid: $('cid').value.trim(), dataPres: $('dataPres').value ? isoToIt($('dataPres').value) : '', note: $('note').value.trim(), tipo: st.tipo, firma: $('firma').checked };
     try { localStorage.setItem('fe_nome', data.nome); localStorage.setItem('fe_cid', data.cid); } catch (e) {}
+    fontFallback = false; firmaNonCaricata = false;
+    try { localStorage.setItem('fe_firma', $('firma').checked ? '1' : '0'); } catch (e) {}
     const bytes = await buildPdf(st.tpl, data, periodi());
+    st.fileName = MODULI[st.tipo].file;
+    st.shareTitle = 'Domanda di ' + (MODULI[st.tipo].titolo || 'ferie');
     if (st.url) URL.revokeObjectURL(st.url);
     st.bytes = bytes;
     st.url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
     $('preview').src = st.url; $('preview').classList.add('on');
     $('outBtns').style.display = 'flex';
-    $('genMsg').textContent = 'Fatto. Controlla il modulo prima di stamparlo.'; $('genMsg').className = 'msg ok';
+    $('genMsg').textContent = 'Fatto. Controlla il modulo prima di stamparlo.' + (fontFallback ? ' Attenzione: il carattere originale del modulo non si è caricato e ne ho usato uno simile.' : '') + (firmaNonCaricata ? ' La firma non è stata inserita: il carattere non si è caricato.' : '') + (($('firma').checked && !data.nome) ? ' Per la firma scrivi prima nome e cognome.' : ''); $('genMsg').className = 'msg ' + ((fontFallback || firmaNonCaricata) ? 'err' : 'ok');
   } catch (err) {
     $('genMsg').textContent = 'Errore: ' + err.message; $('genMsg').className = 'msg err';
   }
 };
 $('open').onclick = () => window.open(st.url, '_blank');
-$('dl').onclick = () => { const a = document.createElement('a'); a.href = st.url; a.download = 'Domanda_ferie.pdf'; document.body.appendChild(a); a.click(); a.remove(); };
+$('dl').onclick = () => { const a = document.createElement('a'); a.href = st.url; a.download = st.fileName; document.body.appendChild(a); a.click(); a.remove(); };
 $('share').onclick = async () => {
-  const f = new File([st.bytes], 'Domanda_ferie.pdf', { type: 'application/pdf' });
-  try { await navigator.share({ files: [f], title: 'Domanda di ferie' }); } catch (e) {}
+  const f = new File([st.bytes], st.fileName, { type: 'application/pdf' });
+  try { await navigator.share({ files: [f], title: st.shareTitle }); } catch (e) {}
 };
 </script>
 </body>
