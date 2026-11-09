@@ -222,18 +222,22 @@ function setTpl(buf, msg, cls) {
 function salvaTpl(buf) {
   try { let s = ''; for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]); localStorage.setItem('fe_tpl', btoa(s)); } catch (e) {}
 }
+// Link diretto al modulo nel repository (accetta richieste da qualsiasi sito): serve come seconda strada.
+const MODULO_URL_DIRETTO = 'https://raw.githubusercontent.com/turnihub/Assenze/main/MODULO%20RICHIESTA%20FERIE.pdf';
+
 async function caricaModuloDaGithub() {
   const provati = [];
-  for (const nome of MODULO_FILES) {
+  const candidati = MODULO_FILES.map(n => ({ nome: n, url: new URL(encodeURIComponent(n), location.href).href }))
+    .concat([{ nome: 'link diretto', url: MODULO_URL_DIRETTO }]);
+  for (const c of candidati) {
     try {
-      const url = new URL(encodeURIComponent(nome), location.href).href;
-      const res = await fetch(url, { cache: 'no-cache' });
-      if (!res.ok) { provati.push(nome + ' (' + res.status + ')'); continue; }
+      const res = await fetch(c.url, { cache: 'no-cache' });
+      if (!res.ok) { provati.push(c.nome + ' (' + res.status + ')'); continue; }
       const buf = new Uint8Array(await res.arrayBuffer());
       // deve essere davvero un PDF (e non una pagina di errore)
-      if (String.fromCharCode(buf[0], buf[1], buf[2], buf[3]) !== '%PDF') { provati.push(nome + ' (non è un PDF)'); continue; }
-      return { buf, nome };
-    } catch (e) { provati.push(nome + ' (non raggiungibile)'); }
+      if (String.fromCharCode(buf[0], buf[1], buf[2], buf[3]) !== '%PDF') { provati.push(c.nome + ' (non è un PDF)'); continue; }
+      return { buf, nome: c.nome };
+    } catch (e) { provati.push(c.nome + ' (non raggiungibile)'); }
   }
   return { errore: provati.join(', ') };
 }
