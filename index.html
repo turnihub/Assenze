@@ -107,6 +107,7 @@
       <button class="ghost" id="dl">Scarica</button>
       <button class="ghost" id="share" style="display:none">Condividi</button>
     </div>
+    <div class="hint" id="shareHint" style="display:none">Su smartphone puoi anche usare "Condividi" per inviare il PDF con WhatsApp, posta o altre app.</div>
     <iframe id="preview" title="Anteprima"></iframe>
   </section>
 </main>
@@ -374,6 +375,16 @@ async function avviaModulo() {
 }
 $('retry').onclick = avviaModulo;
 
+// "Condividi" apre il menu di condivisione del telefono (WhatsApp, posta, Drive...) con il PDF allegato.
+// Non tutti i browser lo permettono per i file: lo mostro solo dove funziona davvero.
+function puoCondividere() {
+  try {
+    if (!navigator.share || !navigator.canShare) return false;
+    const prova = new File([new Uint8Array([37, 80, 68, 70])], 'prova.pdf', { type: 'application/pdf' });
+    return navigator.canShare({ files: [prova] });
+  } catch (e) { return false; }
+}
+
 (async function init() {
   const t = new Date();
   st.vy = t.getFullYear(); st.vm = t.getMonth() + 1;
@@ -384,7 +395,7 @@ $('retry').onclick = avviaModulo;
     $('cid').value  = localStorage.getItem('fe_cid') || '';
     $('firma').checked = localStorage.getItem('fe_firma') === '1';
   } catch (e) {}
-  if (navigator.canShare) $('share').style.display = '';
+  if (puoCondividere()) { $('share').style.display = ''; $('shareHint').style.display = ''; }
   render();   // il calendario compare subito, senza aspettare il modulo
 
   buildTipi();
@@ -502,7 +513,14 @@ $('open').onclick = () => window.open(st.url, '_blank');
 $('dl').onclick = () => { const a = document.createElement('a'); a.href = st.url; a.download = st.fileName; document.body.appendChild(a); a.click(); a.remove(); };
 $('share').onclick = async () => {
   const f = new File([st.bytes], st.fileName, { type: 'application/pdf' });
-  try { await navigator.share({ files: [f], title: st.shareTitle }); } catch (e) {}
+  try {
+    if (!navigator.canShare || !navigator.canShare({ files: [f] })) throw new Error('non supportato');
+    await navigator.share({ files: [f], title: st.shareTitle });
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;   // hai chiuso tu il menu di condivisione
+    $('genMsg').textContent = 'Questo dispositivo non permette di condividere il file da qui. Usa "Scarica" o "Apri PDF" e invialo da lì.';
+    $('genMsg').className = 'msg err';
+  }
 };
 </script>
 </body>
