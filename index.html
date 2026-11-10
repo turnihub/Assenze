@@ -101,7 +101,7 @@ footer{padding:16px;text-align:center;font-size:12px;color:var(--muted)}
 <h2><i class="fas fa-shield-halved"></i> Informativa privacy e condizioni</h2>
 <p style="margin:0;font-size:14px;color:#3c4654">Benvenuto su <b>TurniHub</b>. Prima di procedere, ecco come vengono gestite le tue informazioni:</p>
 <ul>
-<li><b>Nessun server esterno:</b> i tuoi turni, le tue note e i dati delle richieste di assenza non vengono inviati ad alcun server o cloud di terze parti. L'app scarica soltanto il modulo vuoto e i caratteri necessari a compilarlo.</li>
+<li><b>Nessun dato inviato a server:</b> i tuoi turni, le tue note e i dati delle richieste di assenza non vengono inviati ad alcun server o cloud di terze parti. Per funzionare, l'app scarica da servizi esterni (cdnjs, jsDelivr, GitHub, Google) alcune librerie, i caratteri e il modulo vuoto: questi servizi possono vedere il tuo indirizzo IP e il tipo di browser, ma non i tuoi dati.</li>
 <li><b>Memoria locale (LocalStorage):</b> tutti i dati risiedono esclusivamente sul dispositivo (smartphone o computer) che stai utilizzando.</li>
 <li><b>Responsabilità dei dati:</b> poiché i dati sono salvati solo sul tuo dispositivo, la loro conservazione e protezione è affidata al tuo terminale. Usa regolarmente la funzione di backup integrata per evitare perdite in caso di cambio dispositivo o pulizia del browser.</li>
 </ul>
@@ -183,7 +183,7 @@ footer{padding:16px;text-align:center;font-size:12px;color:var(--muted)}
 </div></section>
 <section id="sec-privacy" class="sezione"><div class="panel">
 <h2><i class="fas fa-shield-halved"></i> Privacy e gestione dati (backup)</h2>
-<p><strong>Come sono protetti i tuoi dati:</strong> TurniHub non utilizza alcun server esterno. I tuoi turni, le note giornaliere e i dati delle richieste di assenza sono salvati solo nella memoria del tuo browser (<i>LocalStorage</i>).</p>
+<p><strong>Come sono protetti i tuoi dati:<p><strong>Come sono protetti i tuoi dati:</strong> TurniHub non invia i tuoi dati a nessun server. I tuoi turni, le note giornaliere e i dati delle richieste di assenza sono salvati solo nella memoria del tuo browser (<i>LocalStorage</i>). Il file di backup è in chiaro: conservalo con attenzione.</p>
 <p><strong>Come evitare di perderli se cambi telefono o browser:</strong> esporta un file di backup sul tuo dispositivo e ricaricalo quando vuoi.</p>
 <div class="azioni"><button class="btn" onclick="esportaBackup()"><i class="fas fa-download"></i> Esporta backup dati</button>
 <label class="btn chiaro" style="cursor:pointer"><i class="fas fa-upload"></i> Importa backup <input type="file" id="fileBackupInput" accept=".json" style="display:none" onchange="importaBackup(event)"></label></div>
@@ -329,8 +329,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
       div.innerHTML = `
         <div class="turno-info-top">
-          <span><i>${nomeGiorno}</i> <b>${g.dataFormattata}</b></span>
-          <span>${g.codiceTurno} <small>(${g.inizio}-${g.fine})</small></span>
+          <span><i>${nomeGiorno}</i> <b>${esc(g.dataFormattata)}</b></span>
+<span>${esc(g.codiceTurno)} <small>(${esc(g.inizio)}-${esc(g.fine)})</small></span>
         </div>
         <div class="nota-giorno-box">
           <input type="text" id="nota-${g.dataIso}" value="${esc(notaSalvata)}" placeholder="Aggiungi nota per questo giorno...">
@@ -361,6 +361,19 @@ function esportaBackup() {
   a.download = `backup_turnihub_${new Date().toISOString().split('T')[0]}.json`;
   a.click();
 }
+
+const RE_DATA = /^\d{4}-\d{2}-\d{2}$/;
+const RE_ORA  = /^\d{2}:\d{2}$/;
+const RE_COD  = /^[A-Z]{1,4}\d{0,4}[A-Z]?$/;
+const RE_DATA_FORM = /^\d{1,2} [A-Za-zàèéìòù]+ \d{4}$/;
+
+function turnoValido(t) {
+  return t && typeof t === 'object'
+    && RE_DATA.test(t.dataIso) && RE_COD.test(t.codiceTurno)
+    && RE_ORA.test(t.inizio) && RE_ORA.test(t.fine)
+    && RE_DATA_FORM.test(t.dataFormattata);
+}
+
 function importaBackup(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -368,11 +381,39 @@ function importaBackup(event) {
   reader.onload = e => {
     try {
       const b = JSON.parse(e.target.result);
-      if (b.turniSalvati) turniSalvati = b.turniSalvati;
-      if (b.noteGiornaliere) noteGiornaliere = b.noteGiornaliere;
+
+      // Turni: tengo solo quelli con formato valido
+      if (Array.isArray(b.turniSalvati)) {
+        turniSalvati = b.turniSalvati.filter(turnoValido).map(t => ({
+          dataIso: t.dataIso, dataFormattata: t.dataFormattata,
+          codiceTurno: t.codiceTurno, inizio: t.inizio, fine: t.fine
+        }));
+      }
+
+      // Note: solo chiavi data valide e valori testuali
+      if (b.noteGiornaliere && typeof b.noteGiornaliere === 'object') {
+        const puliteNote = {};
+        for (const [k, v] of Object.entries(b.noteGiornaliere)) {
+          if (RE_DATA.test(k) && typeof v === 'string') puliteNote[k] = v.slice(0, 500);
+        }
+        noteGiornaliere = puliteNote;
+      }
+
       localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati));
       localStorage.setItem('turnihub_note_giornaliere', JSON.stringify(noteGiornaliere));
-      if (b.assenze) { for (const [k, ls] of Object.entries(CHIAVI_ASSENZE)) if (b.assenze[k] !== undefined) localStorage.setItem(ls, b.assenze[k]); Assenze.ricarica(); }
+
+      // Dati assenze: solo testo, con tipo limitato ai valori ammessi
+      if (b.assenze && typeof b.assenze === 'object') {
+        for (const [k, ls] of Object.entries(CHIAVI_ASSENZE)) {
+          let v = b.assenze[k];
+          if (typeof v !== 'string') continue;
+          if (k === 'tipo' && !['ferie', 'sangue', 'cariche'].includes(v)) continue;
+          if (k === 'firma' && !['0', '1'].includes(v)) continue;
+          localStorage.setItem(ls, v.slice(0, 200));
+        }
+        Assenze.ricarica();
+      }
+
       disegnaCalendario(turniSalvati);
       toast('Backup ripristinato');
     } catch (err) { toast('Errore durante il ripristino del backup'); }
