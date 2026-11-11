@@ -316,7 +316,8 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
               <button type="button" class="ghost" id="h-dl" disabled>Scarica</button>
             </div>
             <div class="msg" id="h-msg" aria-live="polite"></div>
-            <div class="hint">Su smartphone "Invia per email" apre l'elenco delle app: scegli Aruba Mail (o la tua app di posta) e il PDF è già allegato. Su computer il PDF viene scaricato e si apre una nuova email con destinatario, oggetto e testo già pronti: devi solo allegare il file scaricato. Se usi la posta dal sito, <a href="https://webmail.aruba.it" target="_blank" rel="noopener">apri Aruba Webmail</a> e allega il PDF.</div>
+            <div class="row"><a class="btn verde" id="h-mailto" href="#" hidden><i class="fas fa-envelope-open-text"></i> Apri la posta</a></div>
+            <div class="hint">Se il telefono lo permette, "Invia per email" apre l'elenco delle app: scegli Aruba Mail (o la tua app di posta) e il PDF è già allegato. Altrimenti il PDF viene scaricato e compare il pulsante "Apri la posta": si apre una nuova email con destinatario, oggetto e testo già pronti e devi solo allegare il file scaricato. Se usi la posta dal sito, <a href="https://webmail.aruba.it" target="_blank" rel="noopener">apri Aruba Webmail</a> e allega il PDF.</div>
           </section>
         </div>
       </section>
@@ -1068,9 +1069,17 @@ const Hand = (() => {
     if (!g('sede') && !g('servizio')) out.push('Sede territoriale o Servizio');
     return out;
   }
+  const relayout = () => { LAY = [page1(groupsSel()), page2()]; };
+  let tPdf = 0;
+  function schedulePdf() {
+    clearTimeout(tPdf);
+    if (!S.sel.size || !S.fonts) return;
+    tPdf = setTimeout(() => { preparaPdf().catch(() => {}); }, 500);
+  }
   function doRefresh() {
     S.bytes = null;
-    LAY = [page1(groupsSel()), page2()];
+    $('h-mailto').hidden = true;
+    relayout();
     $('h-sheets').innerHTML =
       '<figure><figcaption>Foglio 1 · Richiesta</figcaption><div class="h-sheet" role="img" aria-label="Foglio 1: richiesta di permessi compilata">' + sheetHTML(LAY[0]) + '</div></figure>' +
       '<figure><figcaption>Foglio 2 · Autocertificazione</figcaption><div class="h-sheet" role="img" aria-label="Foglio 2: autocertificazione compilata">' + sheetHTML(LAY[1]) + '</div></figure>';
@@ -1083,6 +1092,7 @@ const Hand = (() => {
     });
     const ok = S.sel.size > 0 && !!S.fonts;
     ['h-mail', 'h-open', 'h-dl'].forEach(id => { $(id).disabled = !ok; });
+    schedulePdf();
   }
   let q = 0;
   const refresh = () => { if (q) return; q = requestAnimationFrame(() => { q = 0; doRefresh(); }); };
@@ -1218,7 +1228,7 @@ const Hand = (() => {
 
   /* ---------- PDF ---------- */
   async function costruisciPdf() {
-    doRefresh();
+    relayout();
     const { PDFDocument, StandardFonts, rgb } = PDFLib;
     const doc = await PDFDocument.create();
     doc.setTitle('Programmazione HAND');
@@ -1260,9 +1270,9 @@ const Hand = (() => {
   }
   async function invia() {
     try {
-      await preparaPdf();
       const dest = $('h-dest').value.trim();
       try { localStorage.setItem(KEYDEST, dest); } catch (e) {}
+      if (!S.bytes) await preparaPdf();
       const f = new File([S.bytes], S.fname, { type: 'application/pdf' });
       if (puoCondividere(f)) {
         try {
@@ -1274,8 +1284,10 @@ const Hand = (() => {
         }
       }
       scarica();
-      hmsg('PDF scaricato (' + S.fname + '). Si apre una nuova email: allega il file scaricato e invia.', 'ok');
-      setTimeout(() => { location.href = 'mailto:' + encodeURIComponent(dest).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(oggettoMail()) + '&body=' + encodeURIComponent(corpoMail()); }, 600);
+      const a = $('h-mailto');
+      a.href = 'mailto:' + encodeURIComponent(dest).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(oggettoMail()) + '&body=' + encodeURIComponent(corpoMail());
+      a.hidden = false;
+      hmsg('PDF scaricato (' + S.fname + '). Ora tocca "Apri la posta" e allega il file dalla cartella Download.', 'ok');
     } catch (e) { hmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
   }
 
