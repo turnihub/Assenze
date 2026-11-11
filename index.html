@@ -104,6 +104,30 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
   .tabs{padding:10px 14px}.content{padding:16px 14px}.panel{padding:18px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Sezione Programmazione HAND */
+.h-seg{display:inline-flex;border:1px solid var(--primary);border-radius:10px;overflow:hidden;margin:14px 0 8px}
+.h-segopt{display:flex!important;align-items:center;margin:0!important;padding:10px 16px;cursor:pointer;font-size:15px!important;color:var(--primary)!important;background:#fff}
+.h-segopt input{position:absolute;opacity:0;pointer-events:none}
+.h-segopt:has(input:checked){background:var(--primary);color:#fff!important;font-weight:600}
+.h-segopt:has(input:focus-visible){outline:3px solid var(--amber);outline-offset:-3px}
+.h-grp{border-top:1px solid var(--line);padding:8px 0}
+.h-grp summary{cursor:pointer;font-weight:600;display:flex;justify-content:space-between;gap:12px;padding:4px 0}
+.h-cnt{color:var(--muted);font-weight:400;font-size:13px}
+.h-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 12px}
+.h-fields .h-wide{grid-column:1/-1}
+.h-mon{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px}
+.h-mon b{text-transform:capitalize}
+.h-due{font-size:13px;color:var(--muted);margin:2px 0 6px}
+.h-due.late,.h-warn{color:#b45309}
+.h-warn{font-size:13px;margin-top:6px}
+.h-sheets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin:12px 0 6px;align-items:start}
+.h-sheets figure{margin:0;min-width:0}
+.h-sheets figcaption{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.h-sheet{position:relative;width:100%;aspect-ratio:210/297;background:#fff;color:#111;container-type:inline-size;border:1px solid var(--line);box-shadow:0 2px 10px rgba(20,30,50,.12);overflow:hidden}
+.h-sheet .w{position:absolute;white-space:pre;line-height:1;font-family:"Times New Roman",Times,"Liberation Serif",serif;color:#111}
+.h-sheet .b{font-weight:700}
+.h-sheet .ln{position:absolute;background:#111}
 </style>
 </head>
 <body>
@@ -243,6 +267,60 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
         </div>
       </section>
 
+      <!-- SEZIONE: PROGRAMMAZIONE HAND -->
+      <section id="sec-hand" class="sezione">
+        <div class="assenze-grid">
+          <section class="card">
+            <h2>1 · Carica i tuoi dati</h2>
+            <div class="hint" style="margin-top:0">Scegli un PDF, un Word (.docx) o un .txt con i tuoi dati, per esempio il modulo compilato il mese scorso. I campi si riempiono da soli e restano modificabili.</div>
+            <input type="file" id="h-file" accept=".pdf,.docx,.txt,application/pdf" style="display:none">
+            <div class="row"><button type="button" class="btn verde" id="h-btn-file"><i class="fas fa-upload"></i> Scegli il file</button></div>
+            <div class="msg" id="h-up-msg"></div>
+            <div class="h-seg" role="radiogroup" aria-label="Chi assisti">
+              <label class="h-segopt"><input type="radio" name="h-modo" id="h-modo-fam" value="familiare"> Un familiare</label>
+              <label class="h-segopt"><input type="radio" name="h-modo" id="h-modo-se" value="se"> Me stesso</label>
+            </div>
+            <div id="h-groups"></div>
+            <div class="hint">I dati restano su questo dispositivo e sono inclusi nel backup di Privacy e backup.</div>
+            <div class="row"><button type="button" class="ghost" id="h-clear">Svuota i dati</button></div>
+          </section>
+
+          <section class="card">
+            <h2>2 · Scegli i giorni</h2>
+            <div class="cal-head">
+              <button type="button" id="h-prev" aria-label="Mese precedente">‹</button>
+              <div class="cal-title" id="h-title"></div>
+              <button type="button" id="h-next" aria-label="Mese successivo">›</button>
+            </div>
+            <div class="grid" id="h-dows"></div>
+            <div class="grid" id="h-days"></div>
+            <div class="hint">Tocca i giorni uno a uno, anche di mesi diversi. Tocca di nuovo per toglierli.</div>
+            <label>Giorni scelti</label>
+            <div id="h-sel"></div>
+            <label for="h-luogo">Luogo</label>
+            <input type="text" id="h-luogo" autocomplete="off">
+            <label for="h-data">Data</label>
+            <input type="date" id="h-data">
+            <div class="row"><button type="button" class="ghost" id="h-none">Azzera giorni</button></div>
+          </section>
+
+          <section class="card" style="grid-column:1/-1">
+            <h2>3 · Controlla e invia</h2>
+            <div class="msg" id="h-miss"></div>
+            <div class="h-sheets" id="h-sheets"></div>
+            <label for="h-dest">Indirizzo a cui inviare (facoltativo, resta salvato)</label>
+            <input type="text" id="h-dest" inputmode="email" autocomplete="email" placeholder="es. ufficio@azienda.it">
+            <div class="row">
+              <button type="button" class="primary" id="h-mail" disabled><i class="fas fa-envelope"></i> Invia per email</button>
+              <button type="button" class="ghost" id="h-open" disabled>Apri PDF</button>
+              <button type="button" class="ghost" id="h-dl" disabled>Scarica</button>
+            </div>
+            <div class="msg" id="h-msg" aria-live="polite"></div>
+            <div class="hint">Su smartphone "Invia per email" apre l'elenco delle app: scegli Aruba Mail (o la tua app di posta) e il PDF è già allegato. Su computer il PDF viene scaricato e si apre una nuova email con destinatario, oggetto e testo già pronti: devi solo allegare il file scaricato. Se usi la posta dal sito, <a href="https://webmail.aruba.it" target="_blank" rel="noopener">apri Aruba Webmail</a> e allega il PDF.</div>
+          </section>
+        </div>
+      </section>
+
       <!-- SEZIONE 4: PRIVACY E BACKUP -->
       <section id="sec-privacy" class="sezione">
         <div class="panel">
@@ -278,6 +356,7 @@ const SEZIONI = [
   { id: 'sec-carica',  etichetta: 'Carica turni',     icona: 'fa-file-pdf' },
   { id: 'sec-cambio',  etichetta: 'Cambio turno',     icona: 'fa-right-left',      apri: () => CambioTurno.avvia() },
   { id: 'sec-assenze', etichetta: 'Assenze',          icona: 'fa-calendar-check',  apri: () => Assenze.avvia() },
+  { id: 'sec-hand',    etichetta: 'Programmazione HAND', icona: 'fa-file-signature', apri: () => Hand.avvia() },
   { id: 'sec-privacy', etichetta: 'Privacy e backup', icona: 'fa-shield-halved' }
 ];
 
@@ -756,6 +835,502 @@ const CambioTurno = (() => {
   };
 })();
 
+
+// --- PROGRAMMAZIONE HAND ---
+const Hand = (() => {
+  const MESI = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  const WD = ['dom','lun','mar','mer','gio','ven','sab'];
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const isoD = (y, m, d) => y + '-' + pad(m + 1) + '-' + pad(d);
+  const fmtIT = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; };
+  const $ = id => document.getElementById(id);
+
+  const FIELDS = [
+    { k: 'nome', g: 'dip', lab: 'Nome e cognome', w: 1, al: ['cognome e nome', 'dipendente', 'agente', 'sottoscritto', 'nome'] },
+    { k: 'cid', g: 'dip', lab: 'CID', al: ['matricola'] },
+    { k: 'sede', g: 'dip', lab: 'Sede territoriale', al: ['sede'] },
+    { k: 'servizio', g: 'dip', lab: 'Servizio (se non in sede)', alab: 'Servizio', al: ['servizio'] },
+    { k: 'natoA', g: 'ana', lab: 'Nato a', al: ['luogo di nascita'] },
+    { k: 'natoIl', g: 'ana', lab: 'Nato il', type: 'date', al: ['data di nascita'] },
+    { k: 'resComune', g: 'ana', lab: 'Residente in', al: ['residenza', 'comune di residenza', 'comune residenza'] },
+    { k: 'resVia', g: 'ana', lab: 'Via/piazza residenza', al: ['indirizzo residenza', 'indirizzo', 'via residenza', 'via'] },
+    { k: 'resN', g: 'ana', lab: 'N. civico residenza', al: ['numero civico residenza', 'civico residenza', 'numero civico', 'civico'] },
+    { k: 'ass_nome', g: 'ass', lab: 'Assistito', w: 1, al: ['nome assistito', 'nome e cognome assistito', 'familiare assistito', 'familiare'] },
+    { k: 'ass_cf', g: 'ass', lab: 'Codice fiscale assistito', al: ['cf assistito', 'codice fiscale'] },
+    { k: 'ass_parentela', g: 'ass', lab: 'Grado di parentela', al: ['parentela'] },
+    { k: 'ass_via', g: 'ass', lab: 'Via/piazza assistito', al: ['indirizzo assistito', 'via assistito'] },
+    { k: 'ass_nr', g: 'ass', lab: 'N. civico assistito', al: ['numero civico assistito', 'civico assistito', 'nr assistito'] },
+    { k: 'ass_comune', g: 'ass', lab: 'Comune assistito', al: ['comune'] },
+    { k: 'ass_data', g: 'ass', lab: 'Data giudizio gravità', type: 'date', al: ['data gravita', 'data giudizio', 'data riconoscimento gravita'] },
+    { k: 'inps_sede', g: 'inps', lab: 'Sede INPS', al: ['inps'] },
+    { k: 'inps_data', g: 'inps', lab: 'Data domanda INPS', type: 'date', al: ['data domanda', 'data presentazione domanda inps'] }
+  ];
+  const GROUPS = [['dip', 'Dipendente'], ['ana', 'Dati anagrafici (autocertificazione)'], ['ass', 'Persona assistita'], ['inps', 'Domanda di sostegno al reddito']];
+
+  const KEY = 'hand_dati', KEYDEST = 'hand_dest';
+  const blank = () => { const d = { modo: 'familiare', luogo: '' }; FIELDS.forEach(f => d[f.k] = ''); return d; };
+  function load() {
+    const d = blank();
+    try { const r = JSON.parse(localStorage.getItem(KEY)); if (r && typeof r === 'object') for (const k of Object.keys(d)) if (typeof r[k] === 'string') d[k] = r[k].slice(0, 200); } catch (e) {}
+    if (!d.nome) { try { d.nome = localStorage.getItem('fe_nome') || nomeUtente || ''; } catch (e) {} }
+    if (!d.cid) { try { d.cid = localStorage.getItem('fe_cid') || ''; } catch (e) {} }
+    return d;
+  }
+  const now = new Date();
+  const todayIso = isoD(now.getFullYear(), now.getMonth(), now.getDate());
+  const nm = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const S = { data: blank(), sel: new Set(), view: { y: nm.getFullYear(), m: nm.getMonth() }, dataFirma: todayIso, bytes: null, url: null, fname: 'Programmazione_HAND.pdf', fonts: null };
+  const g = k => String(S.data[k] || '').trim();
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(S.data)); } catch (e) {} };
+
+  /* ---------- misura testo (metriche Times del PDF) ---------- */
+  function mw(t, b, sz) {
+    if (S.fonts) return (b ? S.fonts.b : S.fonts.n).widthOfTextAtSize(t, sz) * 25.4 / 72;
+    return t.length * sz * 0.2 * 25.4 / 72;
+  }
+  function safe(s) {
+    // il PDF usa la codifica WinAnsi: accenti, apostrofi e virgolette tipografiche, trattini lunghi
+    return String(s).replace(/[^\x20-\x7E\xA0-\xFF\u2018\u2019\u201C\u201D\u2013\u2014\u2022\u2026\u20AC]/g, c => {
+      const b = c.normalize('NFD').replace(/[\u0300-\u036F]/g, '');
+      return /^[\x20-\x7E]$/.test(b) ? b : '?';
+    });
+  }
+
+  /* ---------- impaginazione (mm, A4) ---------- */
+  const newPage = () => ({ items: [], lines: [], rects: [] });
+  const put = (pg, x, y, t, o) => { o = o || {}; pg.items.push({ x, y, t: safe(t), b: !!o.b, sz: o.sz || 12 }); };
+  const line = (pg, x1, y1, x2, y2, w) => pg.lines.push({ x1, y1, x2, y2, w: w || 0.25 });
+  function para(pg, segs, o) {
+    const sz = o.sz || 12, lead = o.lead || 6.2, W = o.w, X = o.x, toks = [];
+    segs.forEach(s => {
+      safe(s.t).split(' ').filter(Boolean).forEach((w, i) => {
+        const b = !!(s.b || o.b);
+        toks.push({ t: w, v: s.v, s: s.s, b, glue: i === 0 && !!s.glue, wd: mw(w, b, sz) });
+      });
+    });
+    const sp = mw(' ', !!o.b, sz), rows = [];
+    let cur = null;
+    toks.forEach(k => {
+      if (cur) { const gp = k.glue ? 0 : sp; if (cur.w + gp + k.wd <= W + 0.01) { k.dx = cur.w + gp; cur.w += gp + k.wd; cur.it.push(k); return; } }
+      cur = { it: [k], w: k.wd }; k.dx = 0; rows.push(cur);
+    });
+    let y = o.y;
+    rows.forEach(r => {
+      const off = o.align === 'center' ? (W - r.w) / 2 : 0;
+      r.it.forEach(k => put(pg, X + off + k.dx, y, k.t, { b: k.b, sz }));
+      ['v', 's'].forEach(f => {
+        let st = null;
+        r.it.forEach((k, i) => {
+          if (!k[f]) { st = null; return; }
+          if (st === null) st = k.dx;
+          const nx = r.it[i + 1];
+          if (!(nx && nx[f])) { const yy = f === 'v' ? y + 0.8 : y - sz * 0.3528 * 0.3; line(pg, X + off + st, yy, X + off + k.dx + k.wd, yy, 0.2); st = null; }
+        });
+      });
+      y += lead;
+    });
+    return { y, n: rows.length };
+  }
+  function wrapWords(text, w, sz) {
+    const words = safe(text).split(' ').filter(Boolean), rows = [];
+    let cur = '';
+    words.forEach(x => { const t = cur ? cur + ' ' + x : x; if (cur && mw(t, false, sz) > w) { rows.push(cur); cur = x; } else cur = t; });
+    if (cur) rows.push(cur);
+    return rows;
+  }
+  const V = (v, n) => v ? { t: v, v: true } : { t: '_'.repeat(n) };
+  const D = i => i ? { t: fmtIT(i), v: true } : { t: '____/____/________' };
+  const BL = (n, s) => ({ t: '_'.repeat(n), s });
+
+  function groupsSel() {
+    const by = {};
+    Array.from(S.sel).sort().forEach(id => {
+      const p = id.split('-').map(Number), k = p[0] + '-' + p[1];
+      (by[k] = by[k] || { y: p[0], m: p[1] - 1, days: [] }).days.push(p[2]);
+    });
+    return Object.keys(by).map(k => by[k]);
+  }
+  function footer(pg, y, txt) {
+    put(pg, 18.7, y, 'Luogo e data');
+    const x = 18.7 + mw('Luogo e data ', false, 12);
+    if (txt) { put(pg, x, y, txt); const w = Math.max(mw(safe(txt), false, 12), 38); line(pg, x, y + 0.8, x + w, y + 0.8, 0.2); }
+    else line(pg, x, y + 0.8, x + 38, y + 0.8, 0.2);
+    put(pg, 158, y, 'In fede');
+    line(pg, 138, y + 14, 190, y + 14, 0.2);
+  }
+  const G = 5.3;
+
+  function page1(grp) {
+    const pg = newPage(), X = 18.7, W = 175, fam = g('modo') !== 'se';
+    let y;
+    put(pg, 20, 29, '(Mod Programmazione HAND)');
+    put(pg, 133, 29, 'Al Responsabile');
+    put(pg, 133, 36.5, 'Servizi Aziendali e Sedi Territoriali');
+    para(pg, [{ t: 'Permessi ex articolo 33 della legge n. 104/1992 – Programma di assistenza mensile (da presentare almeno 10 giorni prima dell’inizio del mese di riferimento).' }], { x: X, w: W, y: 61, sz: 11, lead: 4.3, b: true });
+
+    const hasSede = !!g('sede'), hasServ = !!g('servizio'), stSede = !hasSede && hasServ, stServ = hasSede && !hasServ;
+    const s1 = [{ t: 'Il sottoscritto' }, V(g('nome'), 26), { t: 'cid' }, V(g('cid'), 7), { t: 'agente in servizio presso' }];
+    if (stSede) s1.push({ t: 'la Sede Territoriale di', s: true }, BL(26, true), { t: 'ovvero presso', s: true }, { t: 'il Servizio' }, V(g('servizio'), 24));
+    else { s1.push({ t: 'la Sede Territoriale di' }, V(g('sede'), 26), { t: 'ovvero presso il Servizio', s: stServ }); s1.push(stServ ? BL(24, true) : V(g('servizio'), 24)); }
+    y = para(pg, s1, { x: X, w: W, y: 79.5 }).y + G;
+
+    y = para(pg, [{ t: 'Chiede', b: true }], { x: X, w: W, y, align: 'center' }).y + G;
+    y = para(pg, [{ t: 'di usufruire dei benefici previsti dalla normativa in oggetto per assistere:' }], { x: X, w: W, y }).y + G;
+
+    const st1 = !fam, st2 = fam;
+    const b1 = [{ t: 'il/la sig./sig.ra', s: st1 }, st1 ? BL(29, true) : V(g('ass_nome'), 29), { t: 'Codice Fiscale', s: st1 }, st1 ? BL(22, true) : V(g('ass_cf'), 22),
+      { t: 'presso via/piazza', s: st1 }, st1 ? BL(30, true) : V(g('ass_via'), 30), { t: 'Nr.', s: st1 }, st1 ? BL(6, true) : V(g('ass_nr'), 6),
+      { t: 'nel Comune di', s: st1 }, st1 ? BL(23, true) : V(g('ass_comune'), 23), { t: '- Grado di parentela', s: st1 }, st1 ? BL(26, true) : V(g('ass_parentela'), 26),
+      { t: ', giudicata disabile con connotazione di gravità in data', s: st1, glue: true }, st1 ? { t: '____/____/________', s: true } : D(g('ass_data')), { t: ';', glue: true, s: st1 }];
+    put(pg, 13, y, '-');
+    y = para(pg, b1, { x: 23.7, w: X + W - 23.7, y }).y + G;
+    const b2 = [{ t: 'ovvero per sé stesso giudicato disabile con connotazione di gravità in data', s: st2 }, st2 ? { t: '____/____/________', s: true } : D(g('ass_data')), { t: '.', glue: true, s: st2 }];
+    put(pg, 13, y, '-');
+    y = para(pg, b2, { x: 23.7, w: X + W - 23.7, y }).y + G;
+
+    y = para(pg, [{ t: 'Il sottoscritto dichiara di avere presentato presso la sede INPS di' }, V(g('inps_sede'), 28), { t: 'in data' }, D(g('inps_data')), { t: 'la domanda di sostegno al reddito per il periodo in questione.' }], { x: X, w: W, y }).y + G;
+
+    let pr;
+    if (fam) pr = [{ t: 'Il Programma di assistenza a favore del/della sig. / sig.ra' }, V(g('ass_nome'), 30), { t: 'ovvero a favore di sé stesso', s: true }, { t: 'è articolato in base al seguente prospetto:' }];
+    else pr = [{ t: 'Il Programma di assistenza' }, { t: 'a favore del/della sig. / sig.ra', s: true }, BL(30, true), { t: 'ovvero', s: true }, { t: 'a favore di sé stesso è articolato in base al seguente prospetto:' }];
+    y = para(pg, pr, { x: X, w: W, y }).y;
+
+    const ty = y + 9.1, x0 = 18.5, cw = 173 / 7, rows = [];
+    rows.push({ h: 6.6, cells: ['Mese', 'Giorno', 'Giorno', 'Giorno', 'Giorno', 'Giorno', 'Giorno'], b: true });
+    if (!grp.length) rows.push({ h: 7.2, cells: ['', '', '', '', '', '', ''] });
+    grp.forEach(gr => {
+      for (let i = 0; i < gr.days.length; i += 6) {
+        const chunk = gr.days.slice(i, i + 6).map(String), lab = i === 0 ? cap(MESI[gr.m]) + ' ' + gr.y : '';
+        const ll = lab ? wrapWords(lab, cw - 3, 11) : [];
+        while (chunk.length < 6) chunk.push('');
+        rows.push({ h: Math.max(7.2, Math.max(ll.length, 1) * 4.7 + 2.6), cells: [lab].concat(chunk), lab: ll });
+      }
+    });
+    let yy = ty;
+    const total = rows.reduce((a, r) => a + r.h, 0);
+    line(pg, x0, ty, x0 + 173, ty);
+    rows.forEach(r => {
+      if (r.b) r.cells.forEach((c, ci) => { const w = mw(c, true, 12); put(pg, x0 + ci * cw + (cw - w) / 2, yy + 4.6, c, { b: true }); });
+      else r.cells.forEach((c, ci) => {
+        if (!c) return;
+        if (ci === 0) { const n = (r.lab || []).length || 1, top = yy + (r.h - n * 4.7) / 2 + 3.4; (r.lab || [c]).forEach((t, li) => { const w = mw(t, false, 11); put(pg, x0 + (cw - w) / 2, top + li * 4.7, t, { sz: 11 }); }); }
+        else { const w2 = mw(c, false, 12); put(pg, x0 + ci * cw + (cw - w2) / 2, yy + r.h / 2 + 1.6, c); }
+      });
+      yy += r.h; line(pg, x0, yy, x0 + 173, yy);
+    });
+    for (let c = 0; c <= 7; c++) line(pg, x0 + c * cw, ty, x0 + c * cw, ty + total);
+
+    const lt = [g('luogo'), fmtIT(S.dataFirma)].filter(Boolean).join(', ');
+    footer(pg, yy + 14.5, lt);
+    return pg;
+  }
+
+  function page2() {
+    const pg = newPage(), X = 18.7, W = 175;
+    let y = 32;
+    y = para(pg, [{ t: 'Autocertificazione', b: true }], { x: X, w: W, y, sz: 13, align: 'center' }).y + G;
+    y = para(pg, [{ t: 'Il sottoscritto' }, V(g('nome'), 28), { t: ',', glue: true }, { t: 'nato a' }, V(g('natoA'), 24), { t: 'il' }, D(g('natoIl')), { t: 'e residente in' }, V(g('resComune'), 22), { t: 'via /piazza' }, V(g('resVia'), 26), { t: 'n.' }, V(g('resN'), 6)], { x: X, w: W, y }).y + G;
+    y = para(pg, [{ t: 'Consapevole della responsabilità penale che si configura in caso di dichiarazioni false e mendaci e delle relative sanzioni penali di cui all’art. 76 del DPR n. 445 del 2000.' }], { x: X, w: W, y }).y + G;
+    y = para(pg, [{ t: 'DICHIARA', b: true }], { x: X, w: W, y, align: 'center' }).y + G;
+    y = para(pg, [{ t: 'La veridicità delle seguenti affermazioni:' }], { x: X, w: W, y }).y + G * 0.6;
+    const bullet = t => { pg.rects.push({ x: X + 3, y: y - 2.1, w: 1.7, h: 1.7 }); y = para(pg, [{ t }], { x: X + 9, w: W - 9, y }).y + G * 0.6; };
+    bullet('l’assistenza al proprio congiunto, riconosciuto “disabile grave” dai competenti organi sanitari, nelle giornate accordate sarà effettuata concretamente dal sottoscritto;');
+    y += G * 0.4;
+    y = para(pg, [{ t: 'Inoltre, con la presente dichiarazione, si assume l’impegno di:' }], { x: X, w: W, y }).y + G * 0.6;
+    bullet('notificare eventuali variazioni che possono incidere sul beneficio normativo in questione (p.es. decesso dell’assistito, revisione del giudizio di gravità, possibile assistenza prestata da altri familiari);');
+    bullet('autorizzare l’azienda a trattenere le prestazioni non dovute in caso di utilizzazione indebita dei permessi accordati.');
+    y += G * 0.4;
+    y = para(pg, [{ t: 'Dichiara, altresì, di essere a conoscenza di tutte le condizioni previste dalla legge per la regolarità dei permessi richiesti e delle possibili conseguenze in caso di utilizzo improprio degli stessi.' }], { x: X, w: W, y }).y + G * 1.6;
+    footer(pg, y, [g('luogo'), fmtIT(S.dataFirma)].filter(Boolean).join(', '));
+    return pg;
+  }
+
+  /* ---------- anteprima ---------- */
+  let LAY = [];
+  const pc = (v, t) => (v / t * 100).toFixed(3) + '%';
+  function sheetHTML(pg) {
+    let h = '';
+    pg.lines.forEach(l => {
+      const vert = l.x1 === l.x2, left = vert ? l.x1 - l.w / 2 : l.x1, top = vert ? l.y1 : l.y1 - l.w / 2, w = vert ? l.w : l.x2 - l.x1, hh = vert ? l.y2 - l.y1 : l.w;
+      h += '<i class="ln" style="left:' + pc(left, 210) + ';top:' + pc(top, 297) + ';width:' + pc(w, 210) + ';height:' + pc(hh, 297) + '"></i>';
+    });
+    pg.rects.forEach(r => { h += '<i class="ln" style="left:' + pc(r.x, 210) + ';top:' + pc(r.y, 297) + ';width:' + pc(r.w, 210) + ';height:' + pc(r.h, 297) + '"></i>'; });
+    pg.items.forEach(i => {
+      h += '<span class="w' + (i.b ? ' b' : '') + '" style="left:' + pc(i.x, 210) + ';top:' + pc(i.y - i.sz * 0.3528 * 0.84, 297) + ';font-size:' + (i.sz * 0.3528 / 210 * 100).toFixed(4) + 'cqw">' + esc(i.t) + '</span>';
+    });
+    return h;
+  }
+  function missingList() {
+    const fam = g('modo') !== 'se', out = [];
+    let need = ['nome', 'cid', 'natoA', 'natoIl', 'resComune', 'resVia', 'resN', 'ass_data', 'inps_sede', 'inps_data'];
+    if (fam) need = need.concat(['ass_nome', 'ass_cf', 'ass_parentela', 'ass_via', 'ass_nr', 'ass_comune']);
+    need.forEach(k => { if (!g(k)) out.push(FIELDS.find(x => x.k === k).lab); });
+    if (!g('sede') && !g('servizio')) out.push('Sede territoriale o Servizio');
+    return out;
+  }
+  function doRefresh() {
+    S.bytes = null;
+    LAY = [page1(groupsSel()), page2()];
+    $('h-sheets').innerHTML =
+      '<figure><figcaption>Foglio 1 · Richiesta</figcaption><div class="h-sheet" role="img" aria-label="Foglio 1: richiesta di permessi compilata">' + sheetHTML(LAY[0]) + '</div></figure>' +
+      '<figure><figcaption>Foglio 2 · Autocertificazione</figcaption><div class="h-sheet" role="img" aria-label="Foglio 2: autocertificazione compilata">' + sheetHTML(LAY[1]) + '</div></figure>';
+    const miss = missingList(), el = $('h-miss');
+    if (miss.length) { el.textContent = 'Mancano ' + miss.length + ' dati (' + miss.join(', ') + '). Nel PDF restano le righe vuote da completare a penna.'; el.className = 'msg err'; }
+    else { el.textContent = 'Tutti i dati necessari sono compilati.'; el.className = 'msg ok'; }
+    GROUPS.forEach(gp => {
+      const fs = FIELDS.filter(f => f.g === gp[0] && !$('h-w-' + f.k).hidden);
+      $('h-c-' + gp[0]).textContent = fs.filter(f => g(f.k)).length + '/' + fs.length;
+    });
+    const ok = S.sel.size > 0 && !!S.fonts;
+    ['h-mail', 'h-open', 'h-dl'].forEach(id => { $(id).disabled = !ok; });
+  }
+  let q = 0;
+  const refresh = () => { if (q) return; q = requestAnimationFrame(() => { q = 0; doRefresh(); }); };
+
+  /* ---------- campi ---------- */
+  function buildFields() {
+    $('h-groups').innerHTML = GROUPS.map(gp =>
+      '<details class="h-grp" id="h-g-' + gp[0] + '"' + (gp[0] === 'dip' ? ' open' : '') + '><summary><span id="h-t-' + gp[0] + '">' + gp[1] + '</span><span class="h-cnt" id="h-c-' + gp[0] + '"></span></summary><div class="h-fields">' +
+      FIELDS.filter(f => f.g === gp[0]).map(f =>
+        '<div class="' + (f.w ? 'h-wide' : '') + '" id="h-w-' + f.k + '"><label for="h-f-' + f.k + '">' + f.lab + '</label><input id="h-f-' + f.k + '" type="' + (f.type || 'text') + '" autocomplete="off"></div>'
+      ).join('') + '</div></details>').join('');
+    FIELDS.forEach(f => $('h-f-' + f.k).addEventListener('input', e => { S.data[f.k] = e.target.value; persist(); refresh(); }));
+  }
+  function applyMode() {
+    const se = g('modo') === 'se';
+    FIELDS.forEach(f => { if (f.g === 'ass' && f.k !== 'ass_data') $('h-w-' + f.k).hidden = se; });
+    $('h-t-ass').textContent = se ? 'Giudizio di gravità' : 'Persona assistita';
+  }
+  function syncInputs() {
+    FIELDS.forEach(f => { $('h-f-' + f.k).value = S.data[f.k] || ''; });
+    $('h-luogo').value = S.data.luogo || '';
+    $('h-data').value = S.dataFirma || '';
+    $('h-modo-fam').checked = S.data.modo !== 'se';
+    $('h-modo-se').checked = S.data.modo === 'se';
+    applyMode();
+  }
+
+  /* ---------- calendario ---------- */
+  function renderCal() {
+    const y = S.view.y, m = S.view.m, grid = $('h-days');
+    const act = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.d : null;
+    $('h-title').textContent = MESI[m] + ' ' + y;
+    const lead = (new Date(y, m, 1).getDay() + 6) % 7, n = new Date(y, m + 1, 0).getDate();
+    let h = '';
+    for (let i = 0; i < lead; i++) h += '<button type="button" class="day empty" tabindex="-1" aria-hidden="true"></button>';
+    for (let d = 1; d <= n; d++) {
+      const id = isoD(y, m, d), on = S.sel.has(id);
+      h += '<button type="button" class="day' + (on ? ' sel' : '') + (id === todayIso ? ' today' : '') + '" data-d="' + id + '" aria-pressed="' + on + '" aria-label="' + WD[new Date(y, m, d).getDay()] + ' ' + d + ' ' + MESI[m] + ' ' + y + '">' + d + '</button>';
+    }
+    grid.innerHTML = h;
+    if (act) { const b = grid.querySelector('[data-d="' + act + '"]'); if (b) b.focus(); }
+  }
+  function renderSel() {
+    const gs = groupsSel(), el = $('h-sel');
+    if (!gs.length) { el.innerHTML = '<div class="hint" style="margin-top:0">Nessun giorno scelto.</div>'; return; }
+    const oggi = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    el.innerHTML = gs.map(gr => {
+      const dl = new Date(gr.y, gr.m, 1 - 10), late = dl < oggi;
+      const dls = pad(dl.getDate()) + '/' + pad(dl.getMonth() + 1) + '/' + dl.getFullYear();
+      return '<div class="h-mon"><b>' + MESI[gr.m] + ' ' + gr.y + '</b> · ' + gr.days.length + (gr.days.length === 1 ? ' giorno' : ' giorni') +
+        '<div class="h-due' + (late ? ' late' : '') + '">' + (late ? 'Termine di consegna scaduto il ' + dls + ' (10 giorni prima del mese).' : 'Da consegnare entro il ' + dls + '.') + '</div>' +
+        '<div class="chips" style="margin-top:0">' + gr.days.map(d => '<span class="chip">' + WD[new Date(gr.y, gr.m, d).getDay()] + ' ' + d + '<button type="button" data-d="' + isoD(gr.y, gr.m, d) + '" aria-label="Togli il giorno ' + d + '">×</button></span>').join('') + '</div>' +
+        (gr.days.length > 3 ? '<div class="h-warn">Sono più di 3 giorni: la legge 104 ne prevede 3 al mese.</div>' : '') + '</div>';
+    }).join('');
+  }
+  const changed = () => { renderCal(); renderSel(); refresh(); };
+
+  /* ---------- lettura file ---------- */
+  const nl = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\/ ]/g, ' ').replace(/\s+/g, ' ').trim();
+  function toIso(s) {
+    s = String(s || '').trim();
+    let m = /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/.exec(s);
+    if (m) { let y = +m[3]; if (y < 100) y += y > 50 ? 1900 : 2000; if (+m[2] < 1 || +m[2] > 12 || +m[1] < 1 || +m[1] > 31) return ''; return isoD(y, +m[2] - 1, +m[1]); }
+    m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    return m ? s : '';
+  }
+  function parseText(raw) {
+    const out = {};
+    function set(k, v, date) {
+      v = String(v || '').replace(/_{2,}/g, ' ').replace(/\s+/g, ' ').trim().replace(/^[,;:\-\s]+|[,;:\s]+$/g, '');
+      if (!v || /^[_\s\/.\-]*$/.test(v)) return;
+      if (date) { v = toIso(v); if (!v) return; }
+      if (out[k] === undefined) out[k] = v.slice(0, 200);
+    }
+    const map = {};
+    FIELDS.forEach(f => { map[nl(f.alab || f.lab)] = f; map[nl(f.lab)] = f; f.al.forEach(a => { if (!map[nl(a)]) map[nl(a)] = f; }); });
+    map[nl('Luogo')] = { k: 'luogo' };
+    String(raw).split(/\r?\n/).forEach(ln => {
+      const m = /^\s*([^:]{2,45}):\s*(.*)$/.exec(ln);
+      if (!m) return;
+      const key = nl(m[1]);
+      if (['assistenza', 'tipo assistenza', 'permesso per', 'modalita'].indexOf(key) >= 0) { const v = nl(m[2]); if (v) out.modo = /stess|^me$|^io$|^se$/.test(v) ? 'se' : 'familiare'; return; }
+      const f = map[key];
+      if (f) set(f.k, m[2], f.type === 'date');
+    });
+    const t = String(raw).replace(/\s+/g, ' ');
+    const D8 = '(\\d{1,2}[\\/.\\-]\\d{1,2}[\\/.\\-]\\d{2,4})';
+    let r;
+    if ((r = /Il sottoscritto\s+(.+?)\s+cid\s+(\S+)\s+agente/i.exec(t))) { set('nome', r[1]); set('cid', r[2]); }
+    if ((r = /Sede\s+Territoriale\s+di\s+(.+?)\s+ovvero\s+presso/i.exec(t))) set('sede', r[1]);
+    if ((r = /ovvero\s+presso\s+il\s+Servizio\s+(.+?)\s+Chiede/i.exec(t))) set('servizio', r[1]);
+    if ((r = /il\/la\s+sig\.\/sig\.ra\s+(.+?)\s+Codice\s+Fiscale\s+(\S+)/i.exec(t))) { set('ass_nome', r[1]); set('ass_cf', r[2]); }
+    if ((r = /presso\s+via\/piazza\s+(.+?)\s+Nr\.\s*(\S+)\s+nel\s+Comune\s+di\s+(.+?)\s*-\s*Grado\s+di\s+parentela\s+(.+?)\s*,\s*giudicata/i.exec(t))) { set('ass_via', r[1]); set('ass_nr', r[2]); set('ass_comune', r[3]); set('ass_parentela', r[4]); }
+    if ((r = new RegExp('giudicata\\s+disabile\\s+con\\s+connotazione\\s+di\\s*gravit\\S*\\s+in\\s+data\\s+' + D8, 'i').exec(t))) set('ass_data', r[1], true);
+    if (!out.ass_data && (r = new RegExp('per\\s+s\\S*\\s+stesso\\s+giudicato\\s+disabile\\s+con\\s+connotazione\\s+di\\s*gravit\\S*\\s+in\\s+data\\s+' + D8, 'i').exec(t))) { set('ass_data', r[1], true); if (!out.ass_nome && out.modo === undefined) out.modo = 'se'; }
+    if ((r = new RegExp('sede\\s+INPS\\s+di\\s+(.+?)\\s+in\\s+data\\s+' + D8, 'i').exec(t))) { set('inps_sede', r[1]); set('inps_data', r[2], true); }
+    if ((r = new RegExp('Il sottoscritto\\s+([^,]+?)\\s*,\\s*nato\\s+a\\s+(.+?)\\s+il\\s+' + D8 + '\\s+e\\s+residente\\s+in\\s+(.+?)\\s+via\\s*\\/?\\s*piazza\\s+(.+?)\\s+n\\.\\s*(\\S+)', 'i').exec(t))) { set('nome', r[1]); set('natoA', r[2]); set('natoIl', r[3], true); set('resComune', r[4]); set('resVia', r[5]); set('resN', r[6]); }
+    return out;
+  }
+  function caricaScript(src) {
+    return new Promise((ok, ko) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => ko(new Error('Non riesco a caricare il lettore dei file Word. Controlla la connessione.')); document.head.appendChild(s); });
+  }
+  async function readText(file) {
+    const name = file.name.toLowerCase();
+    if (name.endsWith('.pdf')) {
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+      let out = '';
+      for (let p = 1; p <= pdf.numPages; p++) { const tc = await (await pdf.getPage(p)).getTextContent(); out += tc.items.map(i => i.str + (i.hasEOL ? '\n' : ' ')).join('') + '\n'; }
+      return out;
+    }
+    if (name.endsWith('.docx')) {
+      if (!window.mammoth) await caricaScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+      return (await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value;
+    }
+    if (name.endsWith('.doc')) throw new Error('Il formato .doc non si può leggere. Salva il file come .docx o PDF.');
+    return await file.text();
+  }
+  function setUp(t, c) { $('h-up-msg').textContent = t; $('h-up-msg').className = 'msg ' + (c || ''); }
+  async function handleFile(file) {
+    if (!file) return;
+    setUp('Lettura di ' + file.name + '…', '');
+    try {
+      const found = parseText(await readText(file)), keys = Object.keys(found);
+      if (!keys.length) { setUp('Nessun dato riconosciuto in ' + file.name + '. Controlla che il file contenga testo e non sia una scansione.', 'err'); return; }
+      const modo = found.modo; delete found.modo;
+      Object.assign(S.data, found);
+      if (modo) S.data.modo = modo;
+      syncInputs(); persist(); refresh();
+      const n = keys.filter(k => k !== 'modo' && k !== 'luogo').length, mm = missingList();
+      setUp('Letti ' + n + ' campi da ' + file.name + (mm.length ? '. Da completare: ' + mm.join(', ') + '.' : '.'), 'ok');
+    } catch (e) { setUp(e && e.message ? e.message : 'Non riesco a leggere questo file.', 'err'); }
+  }
+
+  /* ---------- PDF ---------- */
+  async function costruisciPdf() {
+    doRefresh();
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const doc = await PDFDocument.create();
+    doc.setTitle('Programmazione HAND');
+    const fn = await doc.embedFont(StandardFonts.TimesRoman), fb = await doc.embedFont(StandardFonts.TimesRomanBold);
+    const k = 72 / 25.4, Y = y => (297 - y) * k, nero = rgb(0, 0, 0);
+    LAY.forEach(pg => {
+      const page = doc.addPage([595.28, 841.89]);
+      pg.lines.forEach(l => page.drawLine({ start: { x: l.x1 * k, y: Y(l.y1) }, end: { x: l.x2 * k, y: Y(l.y2) }, thickness: l.w * k, color: nero }));
+      pg.rects.forEach(r => page.drawRectangle({ x: r.x * k, y: Y(r.y + r.h), width: r.w * k, height: r.h * k, color: nero }));
+      pg.items.forEach(t => page.drawText(t.t, { x: t.x * k, y: Y(t.y), size: t.sz, font: t.b ? fb : fn, color: nero }));
+    });
+    return await doc.save();
+  }
+  function nomeFile() {
+    const gr = groupsSel()[0], n = g('nome').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    return 'Programmazione_HAND_' + (gr ? MESI[gr.m] + '_' + gr.y : 'compilato') + (n ? '_' + n : '') + '.pdf';
+  }
+  async function preparaPdf() {
+    S.bytes = await costruisciPdf();
+    S.fname = nomeFile();
+    if (S.url) URL.revokeObjectURL(S.url);
+    S.url = URL.createObjectURL(new Blob([S.bytes], { type: 'application/pdf' }));
+  }
+  const hmsg = (t, c) => { $('h-msg').textContent = t; $('h-msg').className = 'msg ' + (c || ''); };
+  function scarica() {
+    const a = document.createElement('a'); a.href = S.url; a.download = S.fname;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function oggettoMail() {
+    const mesi = groupsSel().map(x => cap(MESI[x.m]) + ' ' + x.y).join(', ');
+    return 'Programmazione HAND' + (mesi ? ' - ' + mesi : '') + (g('nome') ? ' - ' + g('nome') : '');
+  }
+  function corpoMail() {
+    const mesi = groupsSel().map(x => MESI[x.m] + ' ' + x.y).join(', ');
+    return 'Buongiorno,\n\nin allegato la programmazione HAND (permessi ex art. 33 L. 104/1992)' + (mesi ? ' per ' + mesi : '') + ', con la relativa autocertificazione.\n\nCordiali saluti\n' + g('nome');
+  }
+  function puoCondividere(file) {
+    try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { return false; }
+  }
+  async function invia() {
+    try {
+      await preparaPdf();
+      const dest = $('h-dest').value.trim();
+      try { localStorage.setItem(KEYDEST, dest); } catch (e) {}
+      const f = new File([S.bytes], S.fname, { type: 'application/pdf' });
+      if (puoCondividere(f)) {
+        try {
+          await navigator.share({ files: [f], title: oggettoMail(), text: corpoMail() });
+          hmsg('Scegli Aruba Mail o la tua app di posta: il PDF è già allegato.', 'ok');
+          return;
+        } catch (e) {
+          if (e && e.name === 'AbortError') return;
+        }
+      }
+      scarica();
+      hmsg('PDF scaricato (' + S.fname + '). Si apre una nuova email: allega il file scaricato e invia.', 'ok');
+      setTimeout(() => { location.href = 'mailto:' + encodeURIComponent(dest).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(oggettoMail()) + '&body=' + encodeURIComponent(corpoMail()); }, 600);
+    } catch (e) { hmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+
+  /* ---------- avvio ---------- */
+  async function initFonts() {
+    const d = await PDFLib.PDFDocument.create();
+    S.fonts = { n: await d.embedFont(PDFLib.StandardFonts.TimesRoman), b: await d.embedFont(PDFLib.StandardFonts.TimesRomanBold) };
+  }
+  function clearAll() {
+    S.data = blank(); S.sel.clear(); persist(); syncInputs(); changed(); setUp('Dati svuotati.', '');
+  }
+  let avviato = false;
+  async function init() {
+    S.data = load();
+    buildFields();
+    $('h-dows').innerHTML = ['L', 'M', 'M', 'G', 'V', 'S', 'D'].map(x => '<div class="dow">' + x + '</div>').join('');
+    try { $('h-dest').value = localStorage.getItem(KEYDEST) || ''; } catch (e) {}
+    syncInputs(); renderCal(); renderSel();
+    $('h-btn-file').onclick = () => $('h-file').click();
+    $('h-file').onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); };
+    $('h-luogo').oninput = e => { S.data.luogo = e.target.value; persist(); refresh(); };
+    $('h-data').oninput = e => { S.dataFirma = e.target.value; refresh(); };
+    ['h-modo-fam', 'h-modo-se'].forEach(id => $(id).onchange = e => { S.data.modo = e.target.value; applyMode(); persist(); refresh(); });
+    $('h-clear').onclick = clearAll;
+    $('h-none').onclick = () => { S.sel.clear(); changed(); };
+    $('h-days').onclick = e => { const b = e.target.closest('[data-d]'); if (!b) return; const id = b.dataset.d; if (S.sel.has(id)) S.sel.delete(id); else S.sel.add(id); changed(); };
+    $('h-sel').onclick = e => { const b = e.target.closest('button[data-d]'); if (b) { S.sel.delete(b.dataset.d); changed(); } };
+    $('h-prev').onclick = () => { S.view.m--; if (S.view.m < 0) { S.view.m = 11; S.view.y--; } renderCal(); };
+    $('h-next').onclick = () => { S.view.m++; if (S.view.m > 11) { S.view.m = 0; S.view.y++; } renderCal(); };
+    $('h-mail').onclick = invia;
+    $('h-dest').onchange = () => { try { localStorage.setItem(KEYDEST, $('h-dest').value.trim()); } catch (e) {} };
+    $('h-open').onclick = async () => { try { await preparaPdf(); window.open(S.url, '_blank') || hmsg('Il browser ha bloccato la nuova scheda. Usa "Scarica".', 'err'); } catch (e) { hmsg('Errore: ' + e.message, 'err'); } };
+    $('h-dl').onclick = async () => { try { await preparaPdf(); scarica(); hmsg('PDF scaricato.', 'ok'); } catch (e) { hmsg('Errore: ' + e.message, 'err'); } };
+    doRefresh();
+    try { await initFonts(); } catch (e) { hmsg('Il generatore di PDF non si è caricato. Ricarica la pagina.', 'err'); }
+    doRefresh();
+  }
+  return {
+    avvia() { if (!avviato) { avviato = true; init(); } },
+    // backup
+    esporta() { return JSON.stringify({ dati: S.data, dest: (() => { try { return localStorage.getItem(KEYDEST) || ''; } catch (e) { return ''; } })() }); },
+    importa(o) {
+      if (!o || typeof o !== 'object') return;
+      try {
+        const d = o.dati || {}, ok = {};
+        Object.keys(blank()).forEach(k => { if (typeof d[k] === 'string') ok[k] = d[k].slice(0, 200); });
+        localStorage.setItem(KEY, JSON.stringify(ok));
+        if (typeof o.dest === 'string') localStorage.setItem(KEYDEST, o.dest.slice(0, 200));
+        if (avviato) { S.data = load(); $('h-dest').value = o.dest || ''; syncInputs(); refresh(); }
+      } catch (e) {}
+    },
+    _core: { parseText, page1, page2, S, mw, safe, groupsSel }
+  };
+})();
+
 // --- BACKUP & RIPRISTINO ---
 const CHIAVI_ASSENZE = { nome: 'fe_nome', cid: 'fe_cid', tipo: 'fe_tipo', firma: 'fe_firma' };
 
@@ -764,7 +1339,7 @@ function esportaBackup() {
   for (const [k, ls] of Object.entries(CHIAVI_ASSENZE)) {
     try { assenze[k] = localStorage.getItem(ls) || ''; } catch (e) {}
   }
-  const blob = new Blob([JSON.stringify({ turniSalvati, noteGiornaliere, assenze, nomeUtente }, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify({ turniSalvati, noteGiornaliere, assenze, nomeUtente, hand: JSON.parse(Hand.esporta()) }, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `backup_turnihub_${new Date().toISOString().split('T')[0]}.json`;
@@ -823,6 +1398,7 @@ function importaBackup(event) {
         }
         Assenze.ricarica();
       }
+      if (b.hand) Hand.importa(b.hand);
       disegnaCalendario(turniSalvati);
       CambioTurno.avvia();
       toast('Backup ripristinato');
