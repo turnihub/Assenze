@@ -177,9 +177,8 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
           <p>Ognuno genera il proprio codice e lo manda all'altro (per esempio su WhatsApp). Il codice contiene solo i turni del mese.</p>
           <div class="azioni" style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button type="button" class="btn chiaro" onclick="CambioTurno.copiaMioCodice()"><i class="fas fa-copy"></i> Copia il mio codice</button>
-            <a id="btn-wa-link" href="#" target="_blank" class="btn verde" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none;">
-              <i class="fab fa-whatsapp" style="margin-right:8px;"></i> Manda su WhatsApp
-            </a>
+            <button type="button" class="btn verde" onclick="CambioTurno.inviaCodiceWhatsApp()"><i class="fab fa-whatsapp" style="margin-right:8px;"></i> Manda su WhatsApp</button>
+          </div>
           </div>
           <textarea class="cambio-textarea" id="codice-collega" placeholder="Incolla qui il codice del collega (es. TH1:...)" oninput="CambioTurno.leggiCodiceCollega()"></textarea>
           <div id="info-collega" style="font-size:14px;color:var(--muted);margin-top:6px"></div>
@@ -499,11 +498,16 @@ const CambioTurno = (() => {
       return;
     }
     const c = generaMioCodice();
+    if (!c) return;
+
     const testo = `Ecco il mio codice turni per TurniHub:\n\n${c}`;
+    const urlWa = 'https://wa.me/?text=' + encodeURIComponent(testo);
     
-    // Usa location.href per forzare l'apertura diretta di WhatsApp senza blocchi popup
-    const url = 'https://wa.me/?text=' + encodeURIComponent(testo);
-    window.location.href = url;
+    // Tentativo di apertura diretta
+    const win = window.open(urlWa, '_blank');
+    if (!win) {
+      window.location.href = urlWa;
+    }
   }
 
   function disegnaCalendarioInterattivo() {
@@ -705,6 +709,7 @@ const CambioTurno = (() => {
     },
     cambiaMese,
     copiaMioCodice,
+    inviaCodiceWhatsApp, // <-- Eccola qui inserita!
     leggiCodiceCollega,
     eseguiVerificaCambio
   };
