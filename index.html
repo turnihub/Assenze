@@ -567,15 +567,15 @@ const CambioTurno = (() => {
   }
 
   function contesto(turni, iso) {
-    const lav = turni.filter(t => !RIPOSI.includes(t.codiceTurno)).sort((a, b) => a.dataIso.localeCompare(b.dataIso));
+    const lav = (turni || []).filter(t => t && !RIPOSI.includes(t.codiceTurno)).sort((a, b) => a.dataIso.localeCompare(b.dataIso));
     const oggi = lav.find(t => t.dataIso === iso);
     const prima = lav.filter(t => t.dataIso < iso).pop();
     const dopo = lav.find(t => t.dataIso > iso);
     return {
-      inizio: oggi ? intervallo(oggi)[0] : null,
-      fine: oggi ? intervallo(oggi)[1] : null,
-      prima: prima ? intervallo(prima)[1] : null,
-      dopo: dopo ? intervallo(dopo)[0] : null
+      inizio: (oggi && oggi.inizio && oggi.fine) ? intervallo(oggi)[0] : null,
+      fine: (oggi && oggi.inizio && oggi.fine) ? intervallo(oggi)[1] : null,
+      prima: (prima && prima.inizio && prima.fine) ? intervallo(prima)[1] : null,
+      dopo: (dopo && dopo.inizio && dopo.fine) ? intervallo(dopo)[0] : null
     };
   }
 
