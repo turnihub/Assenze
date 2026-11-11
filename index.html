@@ -606,7 +606,7 @@ const CambioTurno = (() => {
     b.textContent = testo;
   }
 
-  async async function eseguiVerificaCambio() {
+  async function eseguiVerificaCambio() {
     mostraEsito('neutro-box', 'Calcolo in corso...');
     const payload = {
       nomeCollega: collega.nome,
@@ -615,7 +615,6 @@ const CambioTurno = (() => {
     };
     const r = calcolaRiposo(payload);
     mostraEsito(r.esito === 'VERDE' ? 'verde-box' : 'rosso-box', r.messaggio);
-  }
   }
 
   return {
