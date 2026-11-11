@@ -486,7 +486,10 @@ const CambioTurno = (() => {
     }
     const c = generaMioCodice();
     const testo = `Ecco il mio codice turni per TurniHub:\n\n${c}`;
-    window.open('https://wa.me/?text=' + encodeURIComponent(testo), '_blank');
+    
+    // Usa location.href per forzare l'apertura diretta di WhatsApp senza blocchi popup
+    const url = 'https://wa.me/?text=' + encodeURIComponent(testo);
+    window.location.href = url;
   }
 
   function disegnaCalendarioInterattivo() {
