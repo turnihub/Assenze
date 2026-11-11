@@ -459,19 +459,30 @@ function disegnaCalendario(calendario) {
   const t = turniSalvati[indice];
   if (!t) return;
 
-  const nuovoCodice = prompt(`Modifica la sigla del turno per il giorno ${t.dataFormattata || t.dataIso}:`, t.codiceTurno);
+  // 1. Chiede la nuova sigla del turno
+  const nuovoCodice = prompt(`Modifica la sigla del turno per il ${t.dataFormattata || t.dataIso}:`, t.codiceTurno);
   if (nuovoCodice === null) return; // Annullato
 
   const codicePulito = nuovoCodice.trim().toUpperCase();
-  
-  // Se inserisce un riposo o un turno vuoto, possiamo azzerare o impostare gli orari di default
+  if (codicePulito === "") return;
+
+  t.codiceTurno = codicePulito;
+
+  // 2. Se è un riposo o un'assenza senza orari, impostiamo 00:00 - 00:00
   if (["R", "RIS", "RIP"].includes(codicePulito)) {
-    t.codiceTurno = codicePulito;
     t.inizio = "00:00";
     t.fine = "00:00";
-  } else if (codicePulito !== "") {
-    t.codiceTurno = codicePulito;
-    // Se vuoi puoi anche lasciare invariati gli orari precedenti o regolarli
+  } else {
+    // 3. Altrimenti chiede anche l'orario di inizio e fine per mantenere i calcoli corretti
+    const nuovoInizio = prompt(`Inserisci l'orario di INIZIO (formato HH:MM):`, t.inizio);
+    if (nuovoInizio !== null && nuovoInizio.trim() !== "") {
+      t.inizio = nuovoInizio.trim();
+    }
+
+    const nuovaFine = prompt(`Inserisci l'orario di FINE (formato HH:MM):`, t.fine);
+    if (nuovaFine !== null && nuovaFine.trim() !== "") {
+      t.fine = nuovaFine.trim();
+    }
   }
 
   // Salva i turni aggiornati nel LocalStorage
@@ -483,8 +494,8 @@ function disegnaCalendario(calendario) {
     const [y, m] = t.dataIso.split('-').map(Number);
     CambioTurno.aggiornaDaPdf(y, m);
   }
-  toast('Turno modificato con successo');
-} 
+  toast('Turno e orari aggiornati con successo');
+}
 
 function salvaNotaGiorno(dataIso) {
   const inputVal = document.getElementById(`nota-${dataIso}`).value;
