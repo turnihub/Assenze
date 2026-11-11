@@ -579,23 +579,54 @@ const CambioTurno = (() => {
     };
   }
 
-  function calcolaRiposo(d) {
-    const H = 36e5, u = d.utente, c = d.collega, ok = [], ko = [];
+  function calcolaRiposo(payload) {
+    // 1. Controllo limite delle 60 ore dalla data/ora attuale
+    const adesso = new Date().getTime();
+    const [y, m, d] = dataSelezionataIso.split('-').map(Number);
+    const dataSceltaMs = new Date(y, m - 1, d, 0, 0).getTime(); // Inizio della giornata scelta
+    const diffOre = (dataSceltaMs - adesso) / 36e5;
+
+    if (diffOre < 60) {
+      return { 
+        esito: 'ROSSO', 
+        messaggio: 'Il cambio non è possibile: non si possono effettuare cambi turno a meno di 60 ore di preavviso.' 
+      };
+    }
+
+    // 2. Controllo se uno dei due ha un codice di riposo o riserva (R, RIS, RIP) nel giorno scelto
+    // Cerchiamo il turno esatto del giorno scelto per l'utente e per il collega
+    const turnoUtenteGiorno = turniSalvati.find(t => t.dataIso === dataSelezionataIso);
+    const turnoCollegaGiorno = collega.turni.find(t => t.dataIso === dataSelezionataIso);
+
+    const codiceU = turnoUtenteGiorno ? turnoUtenteGiorno.codiceTurno : '';
+    const codiceC = turnoCollegaGiorno ? turnoCollegaGiorno.codiceTurno : '';
+
+    if (RIPOSI.includes(codiceU) || RIPOSI.includes(codiceC) || !codiceU || !codiceC) {
+      return { 
+        esito: 'ROSSO', 
+        messaggio: 'Il cambio non è possibile con RIS/ASSENTE/RIPOSO.' 
+      };
+    }
+
+    // 3. Controllo standard delle ore di riposo (11 ore)
+    const H = 36e5, u = payload.utente, c = payload.collega, ok = [], ko = [];
     const ctrl = (chi, da, a) => {
       if (da == null || a == null) return;
       const ore = (a - da) / H;
       (ore >= RIPOSO_ORE ? ok : ko).push(chi + ': ' + ore.toFixed(1) + ' h di riposo');
     };
+
     if (c.inizio != null) {
       ctrl('Tu (prima del turno)', u.prima, c.inizio);
       ctrl('Tu (dopo il turno)', c.fine, u.dopo);
     }
     if (u.inizio != null) {
-      ctrl(d.nomeCollega + ' (prima del turno)', c.prima, u.inizio);
-      ctrl(d.nomeCollega + ' (dopo il turno)', u.fine, c.dopo);
+      ctrl(payload.nomeCollega + ' (prima del turno)', c.prima, u.inizio);
+      ctrl(payload.nomeCollega + ' (dopo il turno)', u.fine, c.dopo);
     }
+
     if (ko.length) return { esito: 'ROSSO', messaggio: 'Cambio NON possibile, riposo sotto le ' + RIPOSO_ORE + ' ore:\n' + ko.join('\n') };
-    if (!ok.length) return { esito: 'ROSSO', messaggio: 'Nessun controllo possibile: il giorno scelto non ha turni da scambiare.' };
+    if (!ok.length) return { esito: 'ROSSO', messaggio: 'Nessun controllo possibile: il giorno scelto non ha turni validi da scambiare.' };
     return { esito: 'VERDE', messaggio: 'Cambio possibile: tutti i riposi sono di almeno ' + RIPOSO_ORE + ' ore.\n' + ok.join('\n') };
   }
 
