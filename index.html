@@ -606,30 +606,16 @@ const CambioTurno = (() => {
     b.textContent = testo;
   }
 
-  async function eseguiVerificaCambio() {
+  async async function eseguiVerificaCambio() {
     mostraEsito('neutro-box', 'Calcolo in corso...');
     const payload = {
       nomeCollega: collega.nome,
       utente: contesto(turniSalvati, dataSelezionataIso),
       collega: contesto(collega.turni, dataSelezionataIso)
     };
-    let r;
-    try {
-      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
-      const resp = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-        signal: ctl.signal
-      });
-      clearTimeout(to);
-      r = JSON.parse(await resp.text());
-      if (!r || !r.esito) throw new Error('risposta non valida');
-    } catch (err) {
-      r = calcolaRiposo(payload);
-      r.messaggio += '\n(Calcolato sul dispositivo: ' + err.message + ')';
-    }
+    const r = calcolaRiposo(payload);
     mostraEsito(r.esito === 'VERDE' ? 'verde-box' : 'rosso-box', r.messaggio);
+  }
   }
 
   return {
