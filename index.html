@@ -1268,26 +1268,35 @@ const Hand = (() => {
   function puoCondividere(file) {
     try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { return false; }
   }
+  function motivoNoShare(file) {
+    if (location.protocol === 'file:') return 'la pagina è aperta come file del telefono, non da un indirizzo web';
+    if (!window.isSecureContext) return 'la pagina non è su un indirizzo sicuro (https)';
+    if (!navigator.share) return 'questo browser o questa app non ha la condivisione';
+    if (!navigator.canShare || !navigator.canShare({ files: [file] })) return 'questo browser o questa app non permette di condividere file PDF';
+    return '';
+  }
   async function invia() {
     try {
       const dest = $('h-dest').value.trim();
       try { localStorage.setItem(KEYDEST, dest); } catch (e) {}
       if (!S.bytes) await preparaPdf();
       const f = new File([S.bytes], S.fname, { type: 'application/pdf' });
-      if (puoCondividere(f)) {
+      let motivo = motivoNoShare(f);
+      if (!motivo) {
         try {
           await navigator.share({ files: [f], title: oggettoMail(), text: corpoMail() });
           hmsg('Scegli Aruba Mail o la tua app di posta: il PDF è già allegato.', 'ok');
           return;
         } catch (e) {
           if (e && e.name === 'AbortError') return;
+          motivo = 'il telefono ha rifiutato la condivisione (' + (e && e.name ? e.name : 'errore') + ')';
         }
       }
       scarica();
       const a = $('h-mailto');
       a.href = 'mailto:' + encodeURIComponent(dest).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(oggettoMail()) + '&body=' + encodeURIComponent(corpoMail());
       a.hidden = false;
-      hmsg('PDF scaricato (' + S.fname + '). Ora tocca "Apri la posta" e allega il file dalla cartella Download.', 'ok');
+      hmsg('Allegato automatico non possibile: ' + motivo + '. Il PDF è stato scaricato (' + S.fname + '). Tocca "Apri la posta" e allegalo a mano dalla cartella Download.', 'ok');
     } catch (e) { hmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
   }
 
