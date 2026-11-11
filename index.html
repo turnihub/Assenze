@@ -174,8 +174,11 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
 
         <div class="panel">
           <h2>2. Turni del collega</h2>
-          <p>Ognuno genera il proprio codice e lo manda all'altro (per esempio su WhatsApp). Il codice contiene solo i turni del mese: non viene salvato da nessuna parte.</p>
-          <button type="button" class="btn chiaro" onclick="CambioTurno.copiaMioCodice()"><i class="fas fa-copy"></i> Copia il mio codice</button>
+          <p>Ognuno genera il proprio codice e lo manda all'altro (per esempio su WhatsApp). Il codice contiene solo i turni del mese.</p>
+          <div class="azioni">
+            <button type="button" class="btn chiaro" onclick="CambioTurno.copiaMioCodice()"><i class="fas fa-copy"></i> Copia il mio codice</button>
+            <button type="button" class="btn verde" onclick="CambioTurno.inviaCodiceWhatsApp()"><i class="fab fa-whatsapp"></i> Manda su WhatsApp</button>
+          </div>
           <textarea class="cambio-textarea" id="codice-collega" placeholder="Incolla qui il codice del collega (es. TH1:...)" oninput="CambioTurno.leggiCodiceCollega()"></textarea>
           <div id="info-collega" style="font-size:14px;color:var(--muted);margin-top:6px"></div>
         </div>
@@ -185,6 +188,7 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
           <p>Giorno scelto: <b id="data-scelta-txt">nessuno</b></p>
           <button type="button" class="btn verde" id="btn-verifica" style="width:100%" onclick="CambioTurno.eseguiVerificaCambio()" disabled>Verifica il cambio</button>
           <div class="box" id="risultato-box" style="display:none"></div>
+          <button type="button" class="btn" id="btn-wa-esito" style="display:none;width:100%;margin-top:10px;background:#25D366" onclick="CambioTurno.inviaEsitoWhatsApp()"><i class="fab fa-whatsapp"></i> Invia esito su WhatsApp</button>
         </div>
       </section>
 
@@ -457,8 +461,7 @@ function salvaNotaGiorno(dataIso) {
 
 // --- MODULO CAMBIO TURNO ---
 const CambioTurno = (() => {
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyxAh-HecOJSmq8Yop88gOkrS1rGFf1vERBxKso7jHPgLO-SUCWQjVbwDchI7CJyez37g/exec";
-  const RIPOSO_ORE = 9; // Imposta a 9 se preferisci la soglia ridotta
+  const RIPOSO_ORE = 9;
   const RIPOSI = ['R', 'RIS', 'RIP'];
   const MESI_NOMI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
@@ -468,6 +471,23 @@ const CambioTurno = (() => {
   let meseCorrente = new Date().getMonth() + 1;
 
   const $ = id => document.getElementById(id);
+
+  function generaMioCodice() {
+    return 'TH1:' + b64(JSON.stringify({
+      n: nomeUtente || 'Collega',
+      t: turniSalvati.map(t => [t.dataIso, t.codiceTurno, t.inizio, t.fine])
+    }));
+  }
+
+  function inviaCodiceWhatsApp() {
+    if (!turniSalvati.length) {
+      toast('Carica prima il PDF dei tuoi turni');
+      return;
+    }
+    const c = generaMioCodice();
+    const testo = `Ecco il mio codice turni per TurniHub:\n\n${c}`;
+    window.open('https://wa.me/?text=' + encodeURIComponent(testo), '_blank');
+  }
 
   function disegnaCalendarioInterattivo() {
     $('cambio-cal-title').textContent = `${MESI_NOMI[meseCorrente - 1]} ${annoCorrente}`;
