@@ -425,7 +425,7 @@ function disegnaCalendario(calendario) {
   const oggiIso = _d.getFullYear() + '-' + pad(_d.getMonth() + 1) + '-' + pad(_d.getDate());
   const sett = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
 
-  calendario.forEach(g => {
+  calendario.forEach((g, indice) => {
     const div = document.createElement('div');
     div.className = "turno-card";
     const nomeGiorno = sett[new Date(g.dataIso + "T12:00:00").getDay()];
@@ -440,7 +440,10 @@ function disegnaCalendario(calendario) {
     div.innerHTML = `
       <div class="turno-info-top">
         <span><i>${nomeGiorno}</i> <b>${esc(g.dataFormattata || g.dataIso)}</b></span>
-        <span><b>${esc(g.codiceTurno)}</b> <small>(${esc(g.inizio)}-${esc(g.fine)})</small></span>
+        <span>
+          <b style="cursor:pointer; background:var(--primary-dark); color:#fff; padding:2px 6px; border-radius:4px;" onclick="modificaTurnoManuale(${indice})" title="Tocca per modificare turno">${esc(g.codiceTurno)}</b> 
+          <small>(${esc(g.inizio)}-${esc(g.fine)})</small>
+        </span>
       </div>
       <div class="nota-giorno-box">
         <input type="text" id="nota-${g.dataIso}" value="${esc(notaSalvata)}" placeholder="Aggiungi nota per questo giorno...">
@@ -451,6 +454,37 @@ function disegnaCalendario(calendario) {
   });
   mostraOggi();
 }
+
+ function modificaTurnoManuale(indice) {
+  const t = turniSalvati[indice];
+  if (!t) return;
+
+  const nuovoCodice = prompt(`Modifica la sigla del turno per il giorno ${t.dataFormattata || t.dataIso}:`, t.codiceTurno);
+  if (nuovoCodice === null) return; // Annullato
+
+  const codicePulito = nuovoCodice.trim().toUpperCase();
+  
+  // Se inserisce un riposo o un turno vuoto, possiamo azzerare o impostare gli orari di default
+  if (["R", "RIS", "RIP"].includes(codicePulito)) {
+    t.codiceTurno = codicePulito;
+    t.inizio = "00:00";
+    t.fine = "00:00";
+  } else if (codicePulito !== "") {
+    t.codiceTurno = codicePulito;
+    // Se vuoi puoi anche lasciare invariati gli orari precedenti o regolarli
+  }
+
+  // Salva i turni aggiornati nel LocalStorage
+  localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati));
+  
+  // Ridisegna la barra laterale e aggiorna il modulo cambio turno
+  disegnaCalendario(turniSalvati);
+  if (typeof CambioTurno !== 'undefined' && CambioTurno.aggiornaDaPdf) {
+    const [y, m] = t.dataIso.split('-').map(Number);
+    CambioTurno.aggiornaDaPdf(y, m);
+  }
+  toast('Turno modificato con successo');
+} 
 
 function salvaNotaGiorno(dataIso) {
   const inputVal = document.getElementById(`nota-${dataIso}`).value;
