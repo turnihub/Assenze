@@ -500,13 +500,10 @@ const CambioTurno = (() => {
     if (!c) return;
 
     const testo = `Ecco il mio codice turni per TurniHub:\n\n${c}`;
-    const urlWa = 'https://wa.me/?text=' + encodeURIComponent(testo);
     
-    // Tentativo di apertura diretta
-    const win = window.open(urlWa, '_blank');
-    if (!win) {
-      window.location.href = urlWa;
-    }
+    // Usa il protocollo nativo dell'app per aprirla direttamente
+    const urlWa = 'whatsapp://send?text=' + encodeURIComponent(testo);
+    window.location.href = urlWa;
   }
 
   function disegnaCalendarioInterattivo() {
