@@ -14,7 +14,7 @@
 :root{--primary:#0056b3;--primary-dark:#003f85;--soft:#e3eefb;--ink:#1b2430;--muted:#5f6b7a;--line:#dde3ea;--bg:#eef2f6;--card:#fff;--success:#28a745;--danger:#dc3545;--amber:#f59e0b;--accent:var(--primary);--accent-soft:var(--soft);--pending:var(--amber)}
 *{box-sizing:border-box}html,body{height:100%}
 body{margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
-button{font:inherit}:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+button,textarea{font:inherit}:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .app{display:flex;height:100vh;height:100dvh;overflow:hidden}
 .sidebar{width:340px;flex:0 0 340px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;position:relative;transition:margin-left .3s;z-index:100}
 .sidebar.nascosta{margin-left:-340px}
@@ -38,9 +38,9 @@ button{font:inherit}:focus-visible{outline:3px solid var(--amber);outline-offset
 .tab.attiva{background:var(--primary);border-color:var(--primary);color:#fff}
 .content{flex:1;width:100%;max-width:1040px;margin:0 auto;padding:22px 24px}
 .sezione{display:none}.sezione.attiva{display:block}
-.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px}
-.panel h2{margin:0 0 8px;font-size:22px}.panel p{color:var(--muted);margin:0 0 16px;max-width:62ch}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 20px;border:0;border-radius:10px;background:var(--primary);color:#fff;font-weight:600;cursor:pointer}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px}
+.panel h2{margin:0 0 8px;font-size:20px;color:var(--primary)}.panel p{color:var(--muted);margin:0 0 16px;max-width:62ch;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border:0;border-radius:10px;background:var(--primary);color:#fff;font-weight:600;cursor:pointer}
 .btn.verde{background:var(--success)}.btn.chiaro{background:#fff;color:var(--primary);border:1px solid var(--primary)}.btn:disabled{background:#c5ccd4;cursor:not-allowed}
 .azioni{display:flex;gap:12px;flex-wrap:wrap}#stato-caricamento-pdf{margin-top:14px;font-weight:600}
 .assenze-grid{display:grid;gap:16px;grid-template-columns:1fr}
@@ -51,311 +51,621 @@ footer{padding:16px;text-align:center;font-size:12px;color:var(--muted)}
 .privacy-box label{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:14px;cursor:pointer;background:#f4f7fb;padding:12px;border-radius:10px}
 .scrim{display:none}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:10000}.toast.on{opacity:1;transform:translate(-50%,0)}
-.card h2{font-size:17px;text-transform:none;letter-spacing:0;color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h2{margin:0 0 12px;font-size:17px;text-transform:none;letter-spacing:0;color:var(--ink)}
+:where(.card) label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+:where(.card) input[type=text],:where(.card) input[type=date]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:16px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cal-head button{background:none;border:1px solid var(--line);border-radius:8px;width:38px;height:38px;font-size:18px;cursor:pointer}
+.cal-title{font-weight:600;text-transform:capitalize}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{text-align:center;font-size:12px;color:var(--muted);padding:4px 0;font-weight:bold}
+.day{aspect-ratio:1;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:15px;cursor:pointer}
+.day.empty{border:none;background:none;cursor:default}
+.day.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+.day.pending{background:var(--pending);color:#fff;border-color:var(--pending)}
+.day.today{outline:2px solid var(--accent-soft)}
+.hint{font-size:13px;color:var(--muted);margin-top:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:6px 12px;font-size:14px;display:flex;gap:8px;align-items:center}
+.chip button{border:none;background:none;color:var(--accent);font-size:16px;cursor:pointer;padding:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+button.primary{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 18px;font-size:16px;cursor:pointer}
+button.primary:disabled{opacity:.4;cursor:not-allowed}
+button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);border-radius:10px;padding:12px 18px;font-size:16px;cursor:pointer}
+.msg{font-size:13px;margin-top:10px}.msg.err{color:#b91c1c}.msg.ok{color:#047857}
+#preview{width:100%;height:420px;border:1px solid var(--line);border-radius:8px;margin-top:12px;display:none}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--ink);margin:14px 0 4px;cursor:pointer}
+.chk input{width:20px;height:20px;margin-top:2px;flex:0 0 auto}
+.tipi-card{grid-column:1/-1}.tipi{display:flex;gap:8px;flex-wrap:wrap}
+.tipo{flex:1 1 140px;padding:12px 10px;font-size:16px;border:1px solid var(--accent);background:#fff;color:var(--accent);border-radius:10px;cursor:pointer}
+.tipo.on{background:var(--accent);color:#fff}
+
+/* Stili specifici per la sezione Cambio Turno */
+.g7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.giorno-cell{min-height:62px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px;font-size:13px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between}
+.giorno-cell.empty{border:0;background:none;cursor:default}
+.giorno-cell.has-turno{background:#f0f7ff;border-color:#b9d6f2}
+.giorno-cell.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
+.et{font-weight:bold;font-size:11px;background:var(--primary);color:#fff;padding:2px 4px;border-radius:4px;text-align:center}
+.sel .et{background:#fff;color:var(--primary)}
+.cambio-textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;min-height:84px;margin-top:12px}
+.box{margin-top:14px;padding:14px;border-radius:8px;font-weight:600;white-space:pre-line}
+.verde-box{background:#d4edda;color:#155724}.rosso-box{background:#f8d7da;color:#721c24}.neutro-box{background:#e9eef4}
+
 @media(min-width:900px){.assenze-grid{grid-template-columns:1fr 1fr}#preview.on{display:block}}
 @media(max-width:860px){
-.sidebar{position:fixed;top:0;bottom:0;left:0;width:min(340px,88vw);flex:none;transform:translateX(-100%);transition:transform .25s}
-.sidebar.aperta{transform:none}.linguetta{display:none}
-.scrim.on{display:block;position:fixed;inset:0;background:rgba(10,20,35,.5);z-index:90}
-.brand{flex-direction:column;text-align:center;gap:10px;padding:14px 14px 16px}
-.logo{justify-content:center;width:100%;padding:8px}.logo img{height:84px}
-.btn-turni{display:inline-flex;align-items:center;gap:8px}
-.tabs{padding:10px 14px}.content{padding:16px 14px}.panel{padding:18px}}
+  .sidebar{position:fixed;top:0;bottom:0;left:0;width:min(340px,88vw);flex:none;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.aperta{transform:none}.linguetta{display:none}
+  .scrim.on{display:block;position:fixed;inset:0;background:rgba(10,20,35,.5);z-index:90}
+  .brand{flex-direction:column;text-align:center;gap:10px;padding:14px 14px 16px}
+  .logo{justify-content:center;width:100%;padding:8px}.logo img{height:84px}
+  .btn-turni{display:inline-flex;align-items:center;gap:8px}
+  .tabs{padding:10px 14px}.content{padding:16px 14px}.panel{padding:18px}
+}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
-  .card h2 { margin:0 0 12px; font-size:15px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
-  :where(.card) label { display:block; font-size:13px; color:var(--muted); margin:10px 0 4px; }
-  :where(.card) input[type=text], :where(.card) input[type=date] { width:100%; padding:10px; border:1px solid var(--line); border-radius:8px; font-size:16px; }
-  .cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-  .cal-head button { background:none; border:1px solid var(--line); border-radius:8px; width:38px; height:38px; font-size:18px; cursor:pointer; }
-  .cal-title { font-weight:600; text-transform:capitalize; }
-  .grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-  .dow { text-align:center; font-size:12px; color:var(--muted); padding:4px 0; }
-  .day { aspect-ratio:1; border:1px solid var(--line); background:#fff; border-radius:8px; font-size:15px; cursor:pointer; }
-  .day.empty { border:none; background:none; cursor:default; }
-  .day.sel { background:var(--accent); color:#fff; border-color:var(--accent); }
-  .day.pending { background:var(--pending); color:#fff; border-color:var(--pending); }
-  .day.today { outline:2px solid var(--accent-soft); }
-  .hint { font-size:13px; color:var(--muted); margin-top:10px; }
-  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
-  .chip { background:var(--accent-soft); color:var(--accent); border-radius:999px; padding:6px 12px; font-size:14px; display:flex; gap:8px; align-items:center; }
-  .chip button { border:none; background:none; color:var(--accent); font-size:16px; cursor:pointer; padding:0; }
-  .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
-  button.primary { background:var(--accent); color:#fff; border:none; border-radius:10px; padding:12px 18px; font-size:16px; cursor:pointer; }
-  button.primary:disabled { opacity:.4; cursor:not-allowed; }
-  button.ghost { background:#fff; color:var(--accent); border:1px solid var(--accent); border-radius:10px; padding:12px 18px; font-size:16px; cursor:pointer; }
-  .msg { font-size:13px; margin-top:10px; }
-  .msg.err { color:#b91c1c; }
-  .msg.ok { color:#047857; }
-  #preview { width:100%; height:420px; border:1px solid var(--line); border-radius:8px; margin-top:12px; display:none; }
-  .chk { display:flex; gap:10px; align-items:flex-start; font-size:15px; color:var(--ink); margin:14px 0 4px; cursor:pointer; }
-  .chk input { width:20px; height:20px; margin-top:2px; flex:0 0 auto; }
-  .tipi-card { grid-column:1 / -1; }
-  .tipi { display:flex; gap:8px; flex-wrap:wrap; }
-  .tipo { flex:1 1 140px; padding:12px 10px; font-size:16px; border:1px solid var(--accent); background:#fff; color:var(--accent); border-radius:10px; cursor:pointer; }
-  .tipo.on { background:var(--accent); color:#fff; }
 </style>
 </head>
 <body>
+
 <div id="modal-privacy"><div class="privacy-box">
-<h2><i class="fas fa-shield-halved"></i> Informativa privacy e condizioni</h2>
-<p style="margin:0;font-size:14px;color:#3c4654">Benvenuto su <b>TurniHub</b>. Prima di procedere, ecco come vengono gestite le tue informazioni:</p>
-<ul>
-<li><b>Nessun dato inviato a server:</b> i tuoi turni, le tue note e i dati delle richieste di assenza non vengono inviati ad alcun server o cloud di terze parti. Per funzionare, l'app scarica da servizi esterni (cdnjs, jsDelivr, GitHub, Google) alcune librerie, i caratteri e il modulo vuoto: questi servizi possono vedere il tuo indirizzo IP e il tipo di browser, ma non i tuoi dati.</li>
-<li><b>Memoria locale (LocalStorage):</b> tutti i dati risiedono esclusivamente sul dispositivo (smartphone o computer) che stai utilizzando.</li>
-<li><b>Responsabilità dei dati:</b> poiché i dati sono salvati solo sul tuo dispositivo, la loro conservazione e protezione è affidata al tuo terminale. Usa regolarmente la funzione di backup integrata per evitare perdite in caso di cambio dispositivo o pulizia del browser.</li>
-</ul>
-<label><input type="checkbox" id="check-privacy" onchange="togglePulsanteAccetta()" style="width:20px;height:20px;flex:none"> Ho letto, compreso e accetto l'informativa sulla privacy e la gestione locale dei dati.</label>
-<button type="button" class="btn verde" id="btn-accetta-privacy" onclick="accettaPrivacy()" disabled>Accedi a TurniHub</button>
+  <h2><i class="fas fa-shield-halved"></i> Informativa privacy e condizioni</h2>
+  <p style="margin:0;font-size:14px;color:#3c4654">Benvenuto su <b>TurniHub</b>. Prima di procedere, ecco come vengono gestite le tue informazioni:</p>
+  <ul>
+    <li><b>Nessun dato inviato a server:</b> i tuoi turni, le tue note e i dati delle richieste di assenza non vengono inviati ad alcun server o cloud di terze parti. Per funzionare, l'app scarica da servizi esterni (cdnjs, jsDelivr, GitHub, Google) alcune librerie, i caratteri e il modulo vuoto: questi servizi possono vedere il tuo indirizzo IP e il tipo di browser, ma non i tuoi dati.</li>
+    <li><b>Memoria locale (LocalStorage):</b> tutti i dati risiedono esclusivamente sul dispositivo (smartphone o computer) che stai utilizzando.</li>
+    <li><b>Responsabilità dei dati:</b> poiché i dati sono salvati solo sul tuo dispositivo, la loro conservazione e protezione è affidata al tuo terminale. Usa regolarmente la funzione di backup integrata per evitare perdite in caso di cambio dispositivo o pulizia del browser.</li>
+  </ul>
+  <label><input type="checkbox" id="check-privacy" onchange="togglePulsanteAccetta()" style="width:20px;height:20px;flex:none"> Ho letto, compreso e accetto l'informativa sulla privacy e la gestione locale dei dati.</label>
+  <button type="button" class="btn verde" id="btn-accetta-privacy" onclick="accettaPrivacy()" disabled>Accedi a TurniHub</button>
 </div></div>
+
 <div class="app">
-<aside class="sidebar" id="sidebar">
-<button class="linguetta" onclick="toggleCalendario()" aria-label="Mostra o nascondi i turni"><i id="icona-toggle" class="fas fa-chevron-left"></i></button>
-<div class="sb-head"><h3><i class="fas fa-calendar-days"></i> I miei turni</h3><small id="nome-utente-sidebar">Nessun turno caricato</small></div>
-<div class="sb-lista" id="lista-turni-personali"><div class="vuoto">Carica il PDF dei turni per iniziare.</div></div>
-</aside>
-<div class="scrim" id="scrim" onclick="toggleCalendario()"></div>
-<div class="main" id="main">
-<header class="brand">
-<span class="logo"><img src="logo faisa cisal.png" alt="Logo Faisa Cisal"></span>
-<div><h1>TurniHub</h1><p>Turni, assenze e note personali, sul tuo dispositivo</p></div>
-<button class="btn-turni" onclick="toggleCalendario()"><i class="fas fa-calendar-days"></i> I miei turni</button>
-</header>
-<nav class="tabs" id="nav" aria-label="Sezioni"></nav>
-<div class="content">
-<section id="sec-carica" class="sezione attiva"><div class="panel">
-<h2><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Carica il piano turni (PDF)</h2>
-<p>Seleziona il PDF ufficiale dei turni. I dati vengono letti ed elaborati interamente sul tuo dispositivo.</p>
-<input type="file" id="filePdfInput" accept="application/pdf" style="display:none" onchange="elaboraPDFLocale()">
-<button type="button" class="btn verde" onclick="document.getElementById('filePdfInput').click()"><i class="fas fa-upload"></i> Scegli il PDF</button>
-<div id="stato-caricamento-pdf"></div>
-</div></section>
-<section id="sec-assenze" class="sezione"><div class="assenze-grid">
-  <section class="card tipi-card">
-    <h2>Tipo di richiesta</h2>
-    <div class="tipi" id="tipi"></div>
-  </section>
-  <section class="card">
-    <h2>1 · Scegli i giorni</h2>
-    <div class="cal-head">
-      <button id="prev" aria-label="Mese precedente">‹</button>
-      <div class="cal-title" id="title"></div>
-      <button id="next" aria-label="Mese successivo">›</button>
+  <aside class="sidebar" id="sidebar">
+    <button class="linguetta" onclick="toggleCalendario()" aria-label="Mostra o nascondi i turni"><i id="icona-toggle" class="fas fa-chevron-left"></i></button>
+    <div class="sb-head">
+      <h3><i class="fas fa-calendar-days"></i> I miei turni</h3>
+      <small id="nome-utente-sidebar">Nessun turno caricato</small>
     </div>
-    <div class="grid" id="dows"></div>
-    <div class="grid" id="days"></div>
-    <div class="hint">Tocca il primo giorno e poi l'ultimo per selezionare un periodo. Tocca lo stesso giorno due volte per un giorno singolo.</div>
-    <label>Periodi scelti</label>
-    <div class="chips" id="chips"></div>
-    <div class="msg" id="periodMsg"></div>
-    <div class="row"><button class="ghost" id="clear">Azzera selezione</button></div>
-  </section>
-
-  <section class="card">
-    <h2>2 · Dati del modulo</h2>
-    <div class="msg" id="tplMsg"></div>
-    <div class="row" style="margin-top:6px"><button class="ghost" id="retry" style="display:none">Riprova a caricare il modulo</button></div>
-
-    <label for="nome">Nome e cognome</label>
-    <input type="text" id="nome" autocomplete="name">
-    <label for="cid">Cid</label>
-    <input type="text" id="cid" inputmode="numeric">
-    <label for="dataPres">Data presentazione</label>
-    <input type="date" id="dataPres">
-    <label for="note">Note (facoltative)</label>
-    <input type="text" id="note">
-
-    <label class="chk" for="firma"><input type="checkbox" id="firma"> <span>Aggiungi la firma (nome scritto a mano in stile firma)</span></label>
-    <div class="hint" style="margin-top:0">È solo una grafica generata dal nome: non è una firma autografa né una firma digitale valida. Controlla che l'ufficio la accetti, altrimenti lascia la casella vuota e firma a penna dopo la stampa.</div>
-
-    <div class="row">
-      <button class="primary" id="gen" disabled>Compila il modulo</button>
+    <div class="sb-lista" id="lista-turni-personali">
+      <div class="vuoto">Carica il PDF dei turni per iniziare.</div>
     </div>
-    <div class="msg" id="genMsg"></div>
-    <div class="row" id="outBtns" style="display:none">
-      <button class="ghost" id="open">Apri PDF</button>
-      <button class="ghost" id="dl">Scarica</button>
-      <button class="ghost" id="share" style="display:none">Condividi</button>
+  </aside>
+
+  <div class="scrim" id="scrim" onclick="toggleCalendario()"></div>
+
+  <div class="main" id="main">
+    <header class="brand">
+      <span class="logo"><img src="logo faisa cisal.png" alt="Logo Faisa Cisal"></span>
+      <div>
+        <h1>TurniHub</h1>
+        <p>Turni, cambio turno, assenze e note personali sul tuo dispositivo</p>
+      </div>
+      <button class="btn-turni" onclick="toggleCalendario()"><i class="fas fa-calendar-days"></i> I miei turni</button>
+    </header>
+
+    <nav class="tabs" id="nav" aria-label="Sezioni"></nav>
+
+    <div class="content">
+      <!-- SEZIONE 1: CARICA TURNI -->
+      <section id="sec-carica" class="sezione attiva">
+        <div class="panel">
+          <h2><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Carica il piano turni (PDF)</h2>
+          <p>Seleziona il PDF ufficiale dei turni. I dati vengono letti ed elaborati interamente sul tuo dispositivo.</p>
+          <input type="file" id="filePdfInput" accept="application/pdf" style="display:none" onchange="elaboraPDFLocale()">
+          <button type="button" class="btn verde" onclick="document.getElementById('filePdfInput').click()"><i class="fas fa-upload"></i> Scegli il PDF</button>
+          <div id="stato-caricamento-pdf"></div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 2: CAMBIO TURNO -->
+      <section id="sec-cambio" class="sezione">
+        <div class="panel">
+          <h2>1. Tocca il giorno del cambio</h2>
+          <p>Seleziona sul calendario il giorno in cui vorresti effettuare lo scambio turno.</p>
+          <div class="cal-head">
+            <button type="button" onclick="CambioTurno.cambiaMese(-1)">‹</button>
+            <div class="cal-title" id="cambio-cal-title"></div>
+            <button type="button" onclick="CambioTurno.cambiaMese(1)">›</button>
+          </div>
+          <div class="g7" id="cambio-dows"></div>
+          <div class="g7" id="cambio-grid-giorni"></div>
+        </div>
+
+        <div class="panel">
+          <h2>2. Turni del collega</h2>
+          <p>Ognuno genera il proprio codice e lo manda all'altro (per esempio su WhatsApp). Il codice contiene solo i turni del mese: non viene salvato da nessuna parte.</p>
+          <button type="button" class="btn chiaro" onclick="CambioTurno.copiaMioCodice()"><i class="fas fa-copy"></i> Copia il mio codice</button>
+          <textarea class="cambio-textarea" id="codice-collega" placeholder="Incolla qui il codice del collega (es. TH1:...)" oninput="CambioTurno.leggiCodiceCollega()"></textarea>
+          <div id="info-collega" style="font-size:14px;color:var(--muted);margin-top:6px"></div>
+        </div>
+
+        <div class="panel">
+          <h2>3. Verifica il riposo</h2>
+          <p>Giorno scelto: <b id="data-scelta-txt">nessuno</b></p>
+          <button type="button" class="btn verde" id="btn-verifica" style="width:100%" onclick="CambioTurno.eseguiVerificaCambio()" disabled>Verifica il cambio</button>
+          <div class="box" id="risultato-box" style="display:none"></div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 3: ASSENZE -->
+      <section id="sec-assenze" class="sezione">
+        <div class="assenze-grid">
+          <section class="card tipi-card">
+            <h2>Tipo di richiesta</h2>
+            <div class="tipi" id="tipi"></div>
+          </section>
+          <section class="card">
+            <h2>1 · Scegli i giorni</h2>
+            <div class="cal-head">
+              <button id="prev" aria-label="Mese precedente">‹</button>
+              <div class="cal-title" id="title"></div>
+              <button id="next" aria-label="Mese successivo">›</button>
+            </div>
+            <div class="grid" id="dows"></div>
+            <div class="grid" id="days"></div>
+            <div class="hint">Tocca il primo giorno e poi l'ultimo per selezionare un periodo. Tocca lo stesso giorno due volte per un giorno singolo.</div>
+            <label>Periodi scelti</label>
+            <div class="chips" id="chips"></div>
+            <div class="msg" id="periodMsg"></div>
+            <div class="row"><button class="ghost" id="clear">Azzera selezione</button></div>
+          </section>
+          <section class="card">
+            <h2>2 · Dati del modulo</h2>
+            <div class="msg" id="tplMsg"></div>
+            <div class="row" style="margin-top:6px"><button class="ghost" id="retry" style="display:none">Riprova a caricare il modulo</button></div>
+            <label for="nome">Nome e cognome</label>
+            <input type="text" id="nome" autocomplete="name">
+            <label for="cid">Cid</label>
+            <input type="text" id="cid" inputmode="numeric">
+            <label for="dataPres">Data presentazione</label>
+            <input type="date" id="dataPres">
+            <label for="note">Note (facoltative)</label>
+            <input type="text" id="note">
+            <label class="chk" for="firma"><input type="checkbox" id="firma"> <span>Aggiungi la firma (nome scritto a mano in stile firma)</span></label>
+            <div class="hint" style="margin-top:0">È solo una grafica generata dal nome: non è una firma autografa né una firma digitale valida. Controlla che l'ufficio la accetti, altrimenti lascia la casella vuota e firma a penna dopo la stampa.</div>
+            <div class="row">
+              <button class="primary" id="gen" disabled>Compila il modulo</button>
+            </div>
+            <div class="msg" id="genMsg"></div>
+            <div class="row" id="outBtns" style="display:none">
+              <button class="ghost" id="open">Apri PDF</button>
+              <button class="ghost" id="dl">Scarica</button>
+              <button class="ghost" id="share" style="display:none">Condividi</button>
+            </div>
+            <div class="hint" id="shareHint" style="display:none">Su smartphone puoi anche usare "Condividi" per inviare il PDF con WhatsApp, posta o altre app.</div>
+            <iframe id="preview" title="Anteprima"></iframe>
+          </section>
+        </div>
+      </section>
+
+      <!-- SEZIONE 4: PRIVACY E BACKUP -->
+      <section id="sec-privacy" class="sezione">
+        <div class="panel">
+          <h2><i class="fas fa-shield-halved"></i> Privacy e gestione dati (backup)</h2>
+          <p><strong>Come sono protetti i tuoi dati:</strong> TurniHub non invia i tuoi dati a nessun server. I tuoi turni, le note giornaliere e i dati delle richieste di assenza sono salvati solo nella memoria del tuo browser (<i>LocalStorage</i>). Il file di backup è in chiaro: conservalo con attenzione.</p>
+          <p><strong>Come evitare di perderli se cambi telefono o browser:</strong> esporta un file di backup sul tuo dispositivo e ricaricalo quando vuoi.</p>
+          <div class="azioni">
+            <button class="btn" onclick="esportaBackup()"><i class="fas fa-download"></i> Esporta backup dati</button>
+            <label class="btn chiaro" style="cursor:pointer"><i class="fas fa-upload"></i> Importa backup <input type="file" id="fileBackupInput" accept=".json" style="display:none" onchange="importaBackup(event)"></label>
+          </div>
+        </div>
+      </section>
     </div>
-    <div class="hint" id="shareHint" style="display:none">Su smartphone puoi anche usare "Condividi" per inviare il PDF con WhatsApp, posta o altre app.</div>
-    <iframe id="preview" title="Anteprima"></iframe>
-  </section>
-</div></section>
-<section id="sec-privacy" class="sezione"><div class="panel">
-<h2><i class="fas fa-shield-halved"></i> Privacy e gestione dati (backup)</h2>
-<p><strong>Come sono protetti i tuoi dati:<p><strong>Come sono protetti i tuoi dati:</strong> TurniHub non invia i tuoi dati a nessun server. I tuoi turni, le note giornaliere e i dati delle richieste di assenza sono salvati solo nella memoria del tuo browser (<i>LocalStorage</i>). Il file di backup è in chiaro: conservalo con attenzione.</p>
-<p><strong>Come evitare di perderli se cambi telefono o browser:</strong> esporta un file di backup sul tuo dispositivo e ricaricalo quando vuoi.</p>
-<div class="azioni"><button class="btn" onclick="esportaBackup()"><i class="fas fa-download"></i> Esporta backup dati</button>
-<label class="btn chiaro" style="cursor:pointer"><i class="fas fa-upload"></i> Importa backup <input type="file" id="fileBackupInput" accept=".json" style="display:none" onchange="importaBackup(event)"></label></div>
-</div></section>
+
+    <footer>TurniHub App &bull; Sviluppato per uso privato su dispositivo locale</footer>
+  </div>
 </div>
-<footer>TurniHub App &bull; Sviluppato per uso privato su dispositivo locale</footer>
-</div></div>
+
 <div class="toast" id="toast" role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
 <script>
-
 const pad = n => String(n).padStart(2, '0');
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 let turniSalvati = JSON.parse(localStorage.getItem('turnihub_turni')) || [];
+let nomeUtente = localStorage.getItem('turnihub_utente') || '';
 let noteGiornaliere = JSON.parse(localStorage.getItem('turnihub_note_giornaliere')) || {};
 
-// MENU: per aggiungere un pulsante basta una riga qui + una <section id="..." class="sezione"> nella pagina.
-// "apri" (facoltativo) viene eseguito quando si apre la sezione.
+// MENU PRINCIPALE
 const SEZIONI = [
   { id: 'sec-carica',  etichetta: 'Carica turni',     icona: 'fa-file-pdf' },
-  { id: 'sec-assenze', etichetta: 'Assenze',          icona: 'fa-calendar-check', apri: () => Assenze.avvia() },
+  { id: 'sec-cambio',  etichetta: 'Cambio turno',     icona: 'fa-right-left',      apri: () => CambioTurno.avvia() },
+  { id: 'sec-assenze', etichetta: 'Assenze',          icona: 'fa-calendar-check',  apri: () => Assenze.avvia() },
   { id: 'sec-privacy', etichetta: 'Privacy e backup', icona: 'fa-shield-halved' }
 ];
+
 function costruisciMenu() {
   const nav = document.getElementById('nav');
   nav.innerHTML = SEZIONI.map(s => '<button class="tab" data-id="' + s.id + '"><i class="fas ' + s.icona + '"></i><span>' + s.etichetta + '</span></button>').join('');
   nav.onclick = e => { const b = e.target.closest('.tab'); if (b) cambiaSezione(b.dataset.id); };
 }
+
 function cambiaSezione(id) {
   document.querySelectorAll('.sezione').forEach(s => s.classList.toggle('attiva', s.id === id));
-  document.querySelectorAll('.tab').forEach(b => { const on = b.dataset.id === id; b.classList.toggle('attiva', on); if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' }); });
-  const s = SEZIONI.find(x => x.id === id); if (s && s.apri) s.apri();
+  document.querySelectorAll('.tab').forEach(b => {
+    const on = b.dataset.id === id;
+    b.classList.toggle('attiva', on);
+    if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' });
+  });
+  const s = SEZIONI.find(x => x.id === id);
+  if (s && s.apri) s.apri();
   document.getElementById('main').scrollTo({ top: 0 });
 }
 
 const mobile = () => matchMedia('(max-width: 860px)').matches;
 function toggleCalendario() {
   const sb = document.getElementById('sidebar');
-  if (mobile()) { document.getElementById('scrim').classList.toggle('on', sb.classList.toggle('aperta')); return; }
+  if (mobile()) {
+    document.getElementById('scrim').classList.toggle('on', sb.classList.toggle('aperta'));
+    return;
+  }
   sb.classList.toggle('nascosta');
   document.getElementById('icona-toggle').className = sb.classList.contains('nascosta') ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
 }
-function toast(m) { const t = document.getElementById('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2200); }
-function mostraOggi() { const l = document.getElementById('lista-turni-personali'), t = l.querySelector('[data-oggi]'); if (t) l.scrollTop = Math.max(0, t.offsetTop - 80); }
 
-function togglePulsanteAccetta() { document.getElementById('btn-accetta-privacy').disabled = !document.getElementById('check-privacy').checked; }
-function accettaPrivacy() { localStorage.setItem('turnihub_privacy_ok', 'true'); document.getElementById('modal-privacy').style.display = 'none'; }
+function toast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m;
+  t.classList.add('on');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+function mostraOggi() {
+  const l = document.getElementById('lista-turni-personali'), t = l.querySelector('[data-oggi]');
+  if (t) l.scrollTop = Math.max(0, t.offsetTop - 80);
+}
+
+function togglePulsanteAccetta() {
+  document.getElementById('btn-accetta-privacy').disabled = !document.getElementById('check-privacy').checked;
+}
+
+function accettaPrivacy() {
+  localStorage.setItem('turnihub_privacy_ok', 'true');
+  document.getElementById('modal-privacy').style.display = 'none';
+}
 
 window.addEventListener('DOMContentLoaded', () => {
-  if (localStorage.getItem('turnihub_privacy_ok') === 'true') document.getElementById('modal-privacy').style.display = 'none';
-  costruisciMenu(); cambiaSezione('sec-carica');
+  if (localStorage.getItem('turnihub_privacy_ok') === 'true') {
+    document.getElementById('modal-privacy').style.display = 'none';
+  }
+  costruisciMenu();
+  cambiaSezione('sec-carica');
   disegnaCalendario(turniSalvati);
-  if (turniSalvati.length > 0) document.getElementById('nome-utente-sidebar').textContent = "Turni caricati correttamente";
+  if (turniSalvati.length > 0) {
+    document.getElementById('nome-utente-sidebar').textContent = nomeUtente || "Turni caricati correttamente";
+  }
 });
 
-  // --- PARSING PDF LOCALE ---
-  function elaboraPDFLocale() {
-    const fileInput = document.getElementById('filePdfInput');
-    const statoDiv = document.getElementById('stato-caricamento-pdf');
-    if (!fileInput.files.length) return;
-    
-    statoDiv.style.color = '#0056b3';
-    statoDiv.textContent = 'Lettura del PDF in corso...';
-    
-    const reader = new FileReader();
-    reader.onload = e => {
-      pdfjsLib.getDocument(new Uint8Array(e.target.result)).promise.then(pdf => {
-        return Promise.all(Array.from({length: pdf.numPages}, (_, j) => pdf.getPage(j + 1).then(p => p.getTextContent())));
-      }).then(pages => {
-        const testo = pages.flatMap(p => p.items.map(it => it.str.trim())).filter(Boolean).join(' ');
-        const h = testo.match(/Cognome\s+(.+?)\s+Nome\s+(.+?)\s+Matricola\s+(\d+)\s+Deposito\s+(\S+)/);
-        const p = testo.match(/(\d{1,2})\s+([A-Za-záù]+)\s+(\d{4})\s*-/);
-        
-        const MESI = {gennaio:1, febbraio:2, marzo:3, aprile:4, maggio:5, giugno:6, luglio:7, agosto:8, settembre:9, ottobre:10, novembre:11, dicembre:12};
-        if (!h || !p || !MESI[p[2].toLowerCase()]) {
-          fileInput.value = '';
-          statoDiv.style.color = '#dc3545';
-          statoDiv.textContent = 'PDF non riconosciuto: controlla che sia un piano turni valido.';
-          return;
-        }
+// --- PARSING PDF LOCALE ---
+function elaboraPDFLocale() {
+  const fileInput = document.getElementById('filePdfInput');
+  const statoDiv = document.getElementById('stato-caricamento-pdf');
+  if (!fileInput.files.length) return;
+  statoDiv.style.color = '#0056b3';
+  statoDiv.textContent = 'Lettura del PDF in corso...';
 
-        const [, cognome, nome, matricola, deposito] = h;
-        const mese = MESI[p[2].toLowerCase()], anno = Number(p[3]);
-        const re = /(?:^|\s)(\d{1,2})\s+([A-Z]{1,4}\d{0,4}[A-Z]?)\s+(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/g;
-        
-        let m, visti = new Set(), turni = [];
-        while ((m = re.exec(testo)) !== null) {
-          const g = Number(m[1]);
-          if (g < 1 || g > 31 || visti.has(g)) continue;
-          visti.add(g);
-          turni.push({ dataIso: `${anno}-${pad(mese)}-${pad(g)}`, dataFormattata: `${g} ${p[2]} ${anno}`, codiceTurno: m[2], inizio: m[3], fine: m[4] });
-        }
+  const reader = new FileReader();
+  reader.onload = e => {
+    pdfjsLib.getDocument(new Uint8Array(e.target.result)).promise.then(pdf => {
+      return Promise.all(Array.from({length: pdf.numPages}, (_, j) => pdf.getPage(j + 1).then(p => p.getTextContent())));
+    }).then(pages => {
+      const testo = pages.flatMap(p => p.items.map(it => it.str.trim())).filter(Boolean).join(' ');
+      const h = testo.match(/Cognome\s+(.+?)\s+Nome\s+(.+?)\s+Matricola\s+(\d+)\s+Deposito\s+(\S+)/);
+      const p = testo.match(/(\d{1,2})\s+([A-Za-zàù]+)\s+(\d{4})\s*-/);
+      const MESI = {gennaio:1, febbraio:2, marzo:3, aprile:4, maggio:5, giugno:6, luglio:7, agosto:8, settembre:9, ottobre:10, novembre:11, dicembre:12};
 
-        if (!turni.length) {
-          fileInput.value = '';
-          statoDiv.style.color = '#dc3545';
-          statoDiv.textContent = 'Nessun turno trovato nel PDF.';
-          return;
-        }
-
-        turniSalvati = turni;
-        localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati));
-        document.getElementById('nome-utente-sidebar').textContent = `${nome} ${cognome} (${matricola})`;
-        statoDiv.style.color = '#28a745';
-        statoDiv.textContent = `Caricati con successo ${turni.length} turni!`;
-        disegnaCalendario(turniSalvati);
-      }).catch(err => {
+      if (!h || !p || !MESI[p[2].toLowerCase()]) {
+        fileInput.value = '';
         statoDiv.style.color = '#dc3545';
-        statoDiv.textContent = 'Errore lettura PDF: ' + err.message;
-      });
-    };
-    reader.readAsArrayBuffer(fileInput.files[0]);
-  }
-
-  // --- DISEGNA CALENDARIO E NOTE GIORNALIERE ---
-  function disegnaCalendario(calendario) {
-    const box = document.getElementById('lista-turni-personali');
-    box.innerHTML = "";
-    if (!calendario.length) {
-      box.innerHTML = "<i style='color:#888; text-align:center;'>Nessun turno caricato.</i>";
-      return;
-    }
-
-    const _d = new Date(); const oggiIso = _d.getFullYear() + '-' + pad(_d.getMonth() + 1) + '-' + pad(_d.getDate());
-    const sett = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
-
-    calendario.forEach(g => {
-      const div = document.createElement('div');
-      div.className = "turno-card";
-      const nomeGiorno = sett[new Date(g.dataIso + "T12:00:00").getDay()];
-      
-      if (g.dataIso === oggiIso) {
-        div.dataset.oggi = "1";
-        div.style.borderLeftColor = "#dc3545";
-        div.style.backgroundColor = "#fff3f4";
-      } else if (["R", "RIS", "RIP"].includes(g.codiceTurno)) {
-        div.style.borderLeftColor = "#28a745";
+        statoDiv.textContent = 'PDF non riconosciuto: controlla che sia un piano turni valido.';
+        return;
       }
 
-      const notaSalvata = noteGiornaliere[g.dataIso] || "";
+      const [, cognome, nome, matricola] = h;
+      const mese = MESI[p[2].toLowerCase()], anno = Number(p[3]);
+      const re = /(?:^|\s)(\d{1,2})\s+([A-Z]{1,4}\d{0,4}[A-Z]?)\s+(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/g;
+      let m, visti = new Set(), turni = [];
 
-      div.innerHTML = `
-        <div class="turno-info-top">
-          <span><i>${nomeGiorno}</i> <b>${esc(g.dataFormattata)}</b></span>
-<span>${esc(g.codiceTurno)} <small>(${esc(g.inizio)}-${esc(g.fine)})</small></span>
-        </div>
-        <div class="nota-giorno-box">
-          <input type="text" id="nota-${g.dataIso}" value="${esc(notaSalvata)}" placeholder="Aggiungi nota per questo giorno...">
-          <button onclick="salvaNotaGiorno('${g.dataIso}')" title="Salva nota"><i class="fas fa-save"></i></button>
-        </div>
-      `;
-      box.appendChild(div);
+      while ((m = re.exec(testo)) !== null) {
+        const g = Number(m[1]);
+        if (g < 1 || g > 31 || visti.has(g)) continue;
+        visti.add(g);
+        turni.push({
+          dataIso: `${anno}-${pad(mese)}-${pad(g)}`,
+          dataFormattata: `${g} ${p[2]} ${anno}`,
+          codiceTurno: m[2],
+          inizio: m[3],
+          fine: m[4]
+        });
+      }
+
+      if (!turni.length) {
+        fileInput.value = '';
+        statoDiv.style.color = '#dc3545';
+        statoDiv.textContent = 'Nessun turno trovato nel PDF.';
+        return;
+      }
+
+      turniSalvati = turni.sort((a, b) => a.dataIso.localeCompare(b.dataIso));
+      nomeUtente = `${nome} ${cognome} (${matricola})`;
+      localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati));
+      localStorage.setItem('turnihub_utente', nomeUtente);
+
+      document.getElementById('nome-utente-sidebar').textContent = nomeUtente;
+      statoDiv.style.color = '#28a745';
+      statoDiv.textContent = `Caricati con successo ${turni.length} turni!`;
+
+      disegnaCalendario(turniSalvati);
+      CambioTurno.aggiornaDaPdf(anno, mese);
+    }).catch(err => {
+      statoDiv.style.color = '#dc3545';
+      statoDiv.textContent = 'Errore lettura PDF: ' + err.message;
     });
-    mostraOggi();
+  };
+  reader.readAsArrayBuffer(fileInput.files[0]);
+}
+
+// --- DISEGNA CALENDARIO SIDEBAR E NOTE GIORNALIERE ---
+function disegnaCalendario(calendario) {
+  const box = document.getElementById('lista-turni-personali');
+  box.innerHTML = "";
+  if (!calendario.length) {
+    box.innerHTML = "<div class='vuoto'>Nessun turno caricato.</div>";
+    return;
+  }
+  const _d = new Date();
+  const oggiIso = _d.getFullYear() + '-' + pad(_d.getMonth() + 1) + '-' + pad(_d.getDate());
+  const sett = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
+
+  calendario.forEach(g => {
+    const div = document.createElement('div');
+    div.className = "turno-card";
+    const nomeGiorno = sett[new Date(g.dataIso + "T12:00:00").getDay()];
+    if (g.dataIso === oggiIso) {
+      div.dataset.oggi = "1";
+      div.style.borderLeftColor = "#dc3545";
+      div.style.backgroundColor = "#fff3f4";
+    } else if (["R", "RIS", "RIP"].includes(g.codiceTurno)) {
+      div.style.borderLeftColor = "#28a745";
+    }
+    const notaSalvata = noteGiornaliere[g.dataIso] || "";
+    div.innerHTML = `
+      <div class="turno-info-top">
+        <span><i>${nomeGiorno}</i> <b>${esc(g.dataFormattata || g.dataIso)}</b></span>
+        <span><b>${esc(g.codiceTurno)}</b> <small>(${esc(g.inizio)}-${esc(g.fine)})</small></span>
+      </div>
+      <div class="nota-giorno-box">
+        <input type="text" id="nota-${g.dataIso}" value="${esc(notaSalvata)}" placeholder="Aggiungi nota per questo giorno...">
+        <button onclick="salvaNotaGiorno('${g.dataIso}')" title="Salva nota"><i class="fas fa-save"></i></button>
+      </div>
+    `;
+    box.appendChild(div);
+  });
+  mostraOggi();
+}
+
+function salvaNotaGiorno(dataIso) {
+  const inputVal = document.getElementById(`nota-${dataIso}`).value;
+  noteGiornaliere[dataIso] = inputVal;
+  localStorage.setItem('turnihub_note_giornaliere', JSON.stringify(noteGiornaliere));
+  toast('Nota salvata');
+}
+
+// --- MODULO CAMBIO TURNO ---
+const CambioTurno = (() => {
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyxAh-HecOJSmq8Yop88gOkrS1rGFf1vERBxKso7jHPgLO-SUCWQjVbwDchI7CJyez37g/exec";
+  const RIPOSO_ORE = 11; // Imposta a 9 se preferisci la soglia ridotta
+  const RIPOSI = ['R', 'RIS', 'RIP'];
+  const MESI_NOMI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+  let collega = null;
+  let dataSelezionataIso = null;
+  let annoCorrente = new Date().getFullYear();
+  let meseCorrente = new Date().getMonth() + 1;
+
+  const $ = id => document.getElementById(id);
+
+  function disegnaCalendarioInterattivo() {
+    $('cambio-cal-title').textContent = `${MESI_NOMI[meseCorrente - 1]} ${annoCorrente}`;
+    $('cambio-dows').innerHTML = ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"].map(d => `<div class="dow">${d}</div>`).join('');
+    const grid = $('cambio-grid-giorni');
+    grid.innerHTML = '';
+
+    const primo = (new Date(annoCorrente, meseCorrente - 1, 1).getDay() + 6) % 7;
+    const totali = new Date(annoCorrente, meseCorrente, 0).getDate();
+
+    for (let i = 0; i < primo; i++) {
+      const v = document.createElement('div');
+      v.className = 'giorno-cell empty';
+      grid.appendChild(v);
+    }
+
+    for (let d = 1; d <= totali; d++) {
+      const iso = `${annoCorrente}-${pad(meseCorrente)}-${pad(d)}`;
+      const t = turniSalvati.find(x => x.dataIso === iso);
+      const c = document.createElement('div');
+      c.className = 'giorno-cell' + (t ? ' has-turno' : '') + (dataSelezionataIso === iso ? ' sel' : '');
+      c.innerHTML = `<span><b>${d}</b></span>${t ? `<span class="et">${esc(t.codiceTurno)}</span>` : ''}`;
+      c.onclick = () => {
+        dataSelezionataIso = iso;
+        $('data-scelta-txt').textContent = iso + (t ? ` (${t.codiceTurno}: ${t.inizio} - ${t.fine})` : ' (nessun turno)');
+        disegnaCalendarioInterattivo();
+        aggiornaPulsante();
+      };
+      grid.appendChild(c);
+    }
   }
 
-  function salvaNotaGiorno(dataIso) {
-    const inputVal = document.getElementById(`nota-${dataIso}`).value;
-    noteGiornaliere[dataIso] = inputVal;
-    localStorage.setItem('turnihub_note_giornaliere', JSON.stringify(noteGiornaliere));
-    toast('Nota salvata');
+  function cambiaMese(delta) {
+    meseCorrente += delta;
+    if (meseCorrente > 12) { meseCorrente = 1; annoCorrente++; }
+    if (meseCorrente < 1) { meseCorrente = 12; annoCorrente--; }
+    disegnaCalendarioInterattivo();
   }
 
+  const b64 = s => btoa(unescape(encodeURIComponent(s)));
+  const unb64 = s => decodeURIComponent(escape(atob(s)));
 
-// --- BACKUP & RIPRISTINO (turni, note e dati delle richieste di assenza) ---
+  async function copiaMioCodice() {
+    if (!turniSalvati.length) {
+      toast('Carica prima il PDF dei tuoi turni');
+      return;
+    }
+    const c = 'TH1:' + b64(JSON.stringify({
+      n: nomeUtente || 'Collega',
+      t: turniSalvati.map(t => [t.dataIso, t.codiceTurno, t.inizio, t.fine])
+    }));
+    try {
+      await navigator.clipboard.writeText(c);
+      $('info-collega').textContent = 'Codice copiato: incollalo in un messaggio al collega.';
+      toast('Codice copiato negli appunti');
+    } catch (e) {
+      prompt('Copia questo codice e mandalo al collega:', c);
+    }
+  }
+
+  function leggiCodiceCollega() {
+    const v = $('codice-collega').value.trim();
+    collega = null;
+    if (!v) {
+      $('info-collega').textContent = '';
+    } else {
+      try {
+        if (!v.startsWith('TH1:')) throw 0;
+        const o = JSON.parse(unb64(v.slice(4)));
+        collega = {
+          nome: o.n,
+          turni: o.t.map(a => ({ dataIso: a[0], codiceTurno: a[1], inizio: a[2], fine: a[3] }))
+        };
+        $('info-collega').textContent = `Collega: ${collega.nome} (${collega.turni.length} turni)`;
+      } catch (e) {
+        $('info-collega').textContent = 'Codice non valido: chiedi al collega di copiarlo di nuovo.';
+      }
+    }
+    aggiornaPulsante();
+  }
+
+  function aggiornaPulsante() {
+    $('btn-verifica').disabled = !(collega && dataSelezionataIso);
+  }
+
+  const ts = (iso, hm) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    const [h, mi] = hm.split(':').map(Number);
+    return new Date(y, m - 1, d, h, mi).getTime();
+  };
+
+  function intervallo(t) {
+    const i = ts(t.dataIso, t.inizio);
+    let f = ts(t.dataIso, t.fine);
+    if (f <= i) f += 864e5;
+    return [i, f];
+  }
+
+  function contesto(turni, iso) {
+    const lav = turni.filter(t => !RIPOSI.includes(t.codiceTurno)).sort((a, b) => a.dataIso.localeCompare(b.dataIso));
+    const oggi = lav.find(t => t.dataIso === iso);
+    const prima = lav.filter(t => t.dataIso < iso).pop();
+    const dopo = lav.find(t => t.dataIso > iso);
+    return {
+      inizio: oggi ? intervallo(oggi)[0] : null,
+      fine: oggi ? intervallo(oggi)[1] : null,
+      prima: prima ? intervallo(prima)[1] : null,
+      dopo: dopo ? intervallo(dopo)[0] : null
+    };
+  }
+
+  function calcolaRiposo(d) {
+    const H = 36e5, u = d.utente, c = d.collega, ok = [], ko = [];
+    const ctrl = (chi, da, a) => {
+      if (da == null || a == null) return;
+      const ore = (a - da) / H;
+      (ore >= RIPOSO_ORE ? ok : ko).push(chi + ': ' + ore.toFixed(1) + ' h di riposo');
+    };
+    if (c.inizio != null) {
+      ctrl('Tu (prima del turno)', u.prima, c.inizio);
+      ctrl('Tu (dopo il turno)', c.fine, u.dopo);
+    }
+    if (u.inizio != null) {
+      ctrl(d.nomeCollega + ' (prima del turno)', c.prima, u.inizio);
+      ctrl(d.nomeCollega + ' (dopo il turno)', u.fine, c.dopo);
+    }
+    if (ko.length) return { esito: 'ROSSO', messaggio: 'Cambio NON possibile, riposo sotto le ' + RIPOSO_ORE + ' ore:\n' + ko.join('\n') };
+    if (!ok.length) return { esito: 'ROSSO', messaggio: 'Nessun controllo possibile: il giorno scelto non ha turni da scambiare.' };
+    return { esito: 'VERDE', messaggio: 'Cambio possibile: tutti i riposi sono di almeno ' + RIPOSO_ORE + ' ore.\n' + ok.join('\n') };
+  }
+
+  function mostraEsito(cls, testo) {
+    const b = $('risultato-box');
+    b.style.display = 'block';
+    b.className = 'box ' + cls;
+    b.textContent = testo;
+  }
+
+  async function eseguiVerificaCambio() {
+    mostraEsito('neutro-box', 'Calcolo in corso...');
+    const payload = {
+      nomeCollega: collega.nome,
+      utente: contesto(turniSalvati, dataSelezionataIso),
+      collega: contesto(collega.turni, dataSelezionataIso)
+    };
+    let r;
+    try {
+      const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 12000);
+      const resp = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        signal: ctl.signal
+      });
+      clearTimeout(to);
+      r = JSON.parse(await resp.text());
+      if (!r || !r.esito) throw new Error('risposta non valida');
+    } catch (err) {
+      r = calcolaRiposo(payload);
+      r.messaggio += '\n(Calcolato sul dispositivo: ' + err.message + ')';
+    }
+    mostraEsito(r.esito === 'VERDE' ? 'verde-box' : 'rosso-box', r.messaggio);
+  }
+
+  return {
+    avvia() {
+      if (turniSalvati.length) {
+        const [y, m] = turniSalvati[0].dataIso.split('-').map(Number);
+        annoCorrente = y;
+        meseCorrente = m;
+      }
+      disegnaCalendarioInterattivo();
+      aggiornaPulsante();
+    },
+    aggiornaDaPdf(anno, mese) {
+      annoCorrente = anno;
+      meseCorrente = mese;
+      dataSelezionataIso = null;
+      $('data-scelta-txt').textContent = 'nessuno';
+      disegnaCalendarioInterattivo();
+      aggiornaPulsante();
+    },
+    cambiaMese,
+    copiaMioCodice,
+    leggiCodiceCollega,
+    eseguiVerificaCambio
+  };
+})();
+
+// --- BACKUP & RIPRISTINO ---
 const CHIAVI_ASSENZE = { nome: 'fe_nome', cid: 'fe_cid', tipo: 'fe_tipo', firma: 'fe_firma' };
+
 function esportaBackup() {
   const assenze = {};
-  for (const [k, ls] of Object.entries(CHIAVI_ASSENZE)) { try { assenze[k] = localStorage.getItem(ls) || ''; } catch (e) {} }
-  const blob = new Blob([JSON.stringify({ turniSalvati, noteGiornaliere, assenze }, null, 2)], { type: 'application/json' });
+  for (const [k, ls] of Object.entries(CHIAVI_ASSENZE)) {
+    try { assenze[k] = localStorage.getItem(ls) || ''; } catch (e) {}
+  }
+  const blob = new Blob([JSON.stringify({ turniSalvati, noteGiornaliere, assenze, nomeUtente }, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `backup_turnihub_${new Date().toISOString().split('T')[0]}.json`;
@@ -363,15 +673,15 @@ function esportaBackup() {
 }
 
 const RE_DATA = /^\d{4}-\d{2}-\d{2}$/;
-const RE_ORA  = /^\d{2}:\d{2}$/;
-const RE_COD  = /^[A-Z]{1,4}\d{0,4}[A-Z]?$/;
+const RE_ORA = /^\d{2}:\d{2}$/;
+const RE_COD = /^[A-Z]{1,4}\d{0,4}[A-Z]?$/;
 const RE_DATA_FORM = /^\d{1,2} [A-Za-zàèéìòù]+ \d{4}$/;
 
 function turnoValido(t) {
   return t && typeof t === 'object'
     && RE_DATA.test(t.dataIso) && RE_COD.test(t.codiceTurno)
     && RE_ORA.test(t.inizio) && RE_ORA.test(t.fine)
-    && RE_DATA_FORM.test(t.dataFormattata);
+    && (!t.dataFormattata || RE_DATA_FORM.test(t.dataFormattata));
 }
 
 function importaBackup(event) {
@@ -381,16 +691,19 @@ function importaBackup(event) {
   reader.onload = e => {
     try {
       const b = JSON.parse(e.target.result);
-
-      // Turni: tengo solo quelli con formato valido
       if (Array.isArray(b.turniSalvati)) {
         turniSalvati = b.turniSalvati.filter(turnoValido).map(t => ({
-          dataIso: t.dataIso, dataFormattata: t.dataFormattata,
-          codiceTurno: t.codiceTurno, inizio: t.inizio, fine: t.fine
+          dataIso: t.dataIso,
+          dataFormattata: t.dataFormattata || t.dataIso,
+          codiceTurno: t.codiceTurno,
+          inizio: t.inizio,
+          fine: t.fine
         }));
       }
-
-      // Note: solo chiavi data valide e valori testuali
+      if (typeof b.nomeUtente === 'string') {
+        nomeUtente = b.nomeUtente.slice(0, 100);
+        localStorage.setItem('turnihub_utente', nomeUtente);
+      }
       if (b.noteGiornaliere && typeof b.noteGiornaliere === 'object') {
         const puliteNote = {};
         for (const [k, v] of Object.entries(b.noteGiornaliere)) {
@@ -398,11 +711,9 @@ function importaBackup(event) {
         }
         noteGiornaliere = puliteNote;
       }
-
       localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati));
       localStorage.setItem('turnihub_note_giornaliere', JSON.stringify(noteGiornaliere));
 
-      // Dati assenze: solo testo, con tipo limitato ai valori ammessi
       if (b.assenze && typeof b.assenze === 'object') {
         for (const [k, ls] of Object.entries(CHIAVI_ASSENZE)) {
           let v = b.assenze[k];
@@ -413,432 +724,475 @@ function importaBackup(event) {
         }
         Assenze.ricarica();
       }
-
       disegnaCalendario(turniSalvati);
+      CambioTurno.avvia();
       toast('Backup ripristinato');
-    } catch (err) { toast('Errore durante il ripristino del backup'); }
+    } catch (err) {
+      toast('Errore durante il ripristino del backup');
+    }
     event.target.value = '';
   };
   reader.readAsText(file);
 }
 
+// --- MODULO ASSENZE ---
 const Assenze = (() => {
+  const MONTHS = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  const DOW = ['L','M','M','G','V','S','D'];
 
-const MONTHS = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
-const DOW = ['L','M','M','G','V','S','D'];
-
-//<fill>
-// Posizioni misurate sul modello (punti PDF, misurate dall'alto della pagina).
-const LAYOUT = {
-  // La linea spessa in alto viene coperta e sostituita dal mese della richiesta.
-  testata:  { x0: 259.4, x1: 528.8, baseTop: 93.5, coverTop: 90.5, coverBottom: 103 },
-  dataPres: { x: 224,   top: 196.8, maxW: 160, riga: { y: 199.2, x0: 219.2, x1: 386.4 } },
-  nome:     { x: 194,   top: 232.8, maxW: 195, riga: { y: 235.2, x0: 190.1, x1: 393.0 } },
-  cid:      { x: 465,   top: 232.8, maxW: 54,  riga: { y: 235.2, x0: 461.4, x1: 521.1 } },
-  note:     { x: 449,   top: 521.0, maxW: 318, riga: { y: 523.5, x0: 444.6, x1: 767.6 } },
-  // Posizioni misurate sul modulo originale: origine del testo (x, linea di base) e corpo.
-  titolo: { cover: [179.2, 222.5, 128.6, 146.8], x: 180.59, baseTop: 143.46, size: 16.956 },
-  frase:  { cover: [72.0, 486.0, 294.2, 310.4],  x: 73.85,  baseTop: 306.28, size: 13.325 },
-  // Riga "Il Dipendente" (y = 469.6, da x = 73.8 a 240.8): la firma sta sopra la riga, sotto l'etichetta.
-  firma:  { x: 79, baseTop: 465.5, maxW: 158, maxSize: 19, rot: 2 },
-  periodi: [
-    { top: 341.0, riga: 343.5,
-      dal: { g:[107.0,142.9],  m:[147.8,285.1], a:[289.9,331.7] },
-      al:  { g:[391.0,426.8],  m:[431.7,569.0], a:[573.9,615.6] } },
-    { top: 377.0, riga: 379.5,
-      dal: { g:[103.6,139.4],  m:[144.3,281.6], a:[286.5,328.3] },
-      al:  { g:[391.0,426.8],  m:[431.7,569.0], a:[573.9,615.6] } }
-  ]
-};
-// Tipi di richiesta: stesso PDF per tutti. Per i tipi diversi dalle ferie, la parola "ferie" nel titolo
-// e la frase "Chiede di poter usufruire..." vengono sostituite (stesso carattere, corpo e posizione).
-const MODULI = {
-  ferie:   { etichetta: 'Ferie', titolo: null, frase: null, file: 'Domanda_ferie.pdf' },
-  sangue:  { etichetta: 'Donazione sangue', titolo: 'donazione sangue',
-             frase: 'Chiede di poter usufruire del permesso per donazione di sangue nei seguenti periodi:',
-             file: 'Domanda_donazione_sangue.pdf' },
-  cariche: { etichetta: 'Cariche elettive', titolo: 'cariche elettive',
-             frase: 'Chiede di poter usufruire dei permessi per cariche elettive nei seguenti periodi:',
-             file: 'Domanda_cariche_elettive.pdf' }
-};
-
-// Carattere del modulo (Open Sans), caricato solo quando serve.
-const FONT_URL = w => 'https://cdn.jsdelivr.net/npm/@fontsource/open-sans@5.3.0/files/open-sans-latin-' + w + '-normal.woff';
-let _fontPromise = null;
-let fontFallback = false;
-function caricaFontOpenSans() {
-  if (!_fontPromise) {
-    _fontPromise = Promise.all([fetch(FONT_URL(400)), fetch(FONT_URL(700))]).then(async r => {
-      if (!r[0].ok || !r[1].ok) throw new Error('font');
-      return { regular: await r[0].arrayBuffer(), bold: await r[1].arrayBuffer() };
-    }).catch(e => { _fontPromise = null; throw e; });
-  }
-  return _fontPromise;
-}
-
-// Firma stilizzata: il nome scritto con un carattere "a mano" sulla riga del dipendente.
-const FIRMA_FONT_URL = 'https://cdn.jsdelivr.net/npm/@fontsource/mr-dafoe@5.3.0/files/mr-dafoe-latin-400-normal.woff';
-let _firmaPromise = null;
-let firmaNonCaricata = false;
-function caricaFontFirma() {
-  if (!_firmaPromise) {
-    _firmaPromise = fetch(FIRMA_FONT_URL).then(async r => {
-      if (!r.ok) throw new Error('font');
-      return r.arrayBuffer();
-    }).catch(e => { _firmaPromise = null; throw e; });
-  }
-  return _firmaPromise;
-}
-
-const CANCELLA_RIGHE = false;  // false = le righe del modulo restano e la scritta ci poggia sopra
-const OFFSET_X = 0;            // ritocchi fini: sposta TUTTE le scritte (punti; X positivo = a destra)
-const OFFSET_Y = 0;            //                                         (Y positivo = verso il basso)
-const TXT_MAX = 14;   // corpo massimo delle scritte nelle celle
-const HEAD_MAX = 46;  // corpo massimo del mese in testata
-
-// Un foglio per ogni mese; al massimo 2 periodi per foglio (le righe del modulo).
-function raggruppaFogli(periodi) {
-  const mesi = new Map();
-  periodi.forEach(p => {
-    const k = p.y1 * 100 + p.m1;
-    if (!mesi.has(k)) mesi.set(k, []);
-    mesi.get(k).push(p);
-  });
-  const fogli = [];
-  [...mesi.keys()].sort((a, b) => a - b).forEach(k => {
-    const l = mesi.get(k);
-    for (let i = 0; i < l.length; i += 2) fogli.push(l.slice(i, i + 2));
-  });
-  return fogli;
-}
-
-async function fillSheet(tplBytes, data, periodi, outDoc) {
-  const { PDFDocument, StandardFonts, rgb } = PDFLib;
-  const doc = await PDFDocument.load(tplBytes);
-  const font = await doc.embedFont(StandardFonts.Helvetica);
-  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-  const page = doc.getPages()[0];
-  const mb = page.getMediaBox();
-  const Yraw = top => mb.y + mb.height - top;        // per ciò che sta sul modulo originale
-  const Y = top => Yraw(top + OFFSET_Y);              // per le scritte compilate (con ritocco)
-  const color = rgb(0.05, 0.1, 0.45);
-
-  // Cancella la sottolineatura del modulo (striscia bianca sottile) prima di scrivere.
-  const erase = (x0, x1, y) => CANCELLA_RIGHE && page.drawRectangle({ x: x0 - 0.5, y: Yraw(y + 2.6), width: (x1 - x0) + 1, height: 4.2, color: rgb(1, 1, 1) });
-
-  // Corpo più grande possibile, ma entro la larghezza disponibile.
-  const fit = (f, txt, maxW, maxSize) => {
-    let s = maxSize;
-    while (s > 6 && f.widthOfTextAtSize(txt, s) > maxW) s -= 0.5;
-    return s;
-  };
-  const put = (txt, x, top, maxW, riga) => {
-    if (!txt) return;
-    txt = String(txt);
-    if (riga) erase(riga.x0, riga.x1, riga.y);
-    const size = fit(font, txt, maxW, TXT_MAX);
-    page.drawText(txt, { x: x + OFFSET_X, y: Y(top), size, font, color });
-  };
-  const center = (txt, seg, top, rigaY) => {
-    txt = String(txt);
-    erase(seg[0], seg[1], rigaY);
-    const maxW = (seg[1] - seg[0]) - 3;
-    const size = fit(font, txt, maxW, TXT_MAX);
-    const w = font.widthOfTextAtSize(txt, size);
-    page.drawText(txt, { x: seg[0] + ((seg[1] - seg[0]) - w) / 2 + OFFSET_X, y: Y(top), size, font, color });
+  const LAYOUT = {
+    testata:  { x0: 259.4, x1: 528.8, baseTop: 93.5, coverTop: 90.5, coverBottom: 103 },
+    dataPres: { x: 224, top: 196.8, maxW: 160, riga: { y: 199.2, x0: 219.2, x1: 386.4 } },
+    nome:     { x: 194, top: 232.8, maxW: 195, riga: { y: 235.2, x0: 190.1, x1: 393.0 } },
+    cid:      { x: 465, top: 232.8, maxW: 54,  riga: { y: 235.2, x0: 461.4, x1: 521.1 } },
+    note:     { x: 449, top: 521.0, maxW: 318, riga: { y: 523.5, x0: 444.6, x1: 767.6 } },
+    titolo:   { cover: [179.2, 222.5, 128.6, 146.8], x: 180.59, baseTop: 143.46, size: 16.956 },
+    frase:    { cover: [72.0, 486.0, 294.2, 310.4], x: 73.85, baseTop: 306.28, size: 13.325 },
+    firma:    { x: 79, baseTop: 465.5, maxW: 158, maxSize: 19, rot: 2 },
+    periodi: [
+      { top: 341.0, riga: 343.5, dal: { g: [107.0,142.9], m: [147.8,285.1], a: [289.9,331.7] }, al: { g: [391.0,426.8], m: [431.7,569.0], a: [573.9,615.6] } },
+      { top: 377.0, riga: 379.5, dal: { g: [103.6,139.4], m: [144.3,281.6], a: [286.5,328.3] }, al: { g: [391.0,426.8], m: [431.7,569.0], a: [573.9,615.6] } }
+    ]
   };
 
-  // Testata: copro la linea spessa e scrive il mese in maiuscolo e grassetto.
-  if (periodi.length) {
-    const T = LAYOUT.testata;
-    page.drawRectangle({ x: T.x0 - 10, y: Yraw(T.coverBottom), width: (T.x1 - T.x0) + 20, height: T.coverBottom - T.coverTop, color: rgb(1, 1, 1) });
-    const mese = MONTHS[periodi[0].m1 - 1].toUpperCase();
-    const maxW = (T.x1 - T.x0) - 6;
-    const size = fit(bold, mese, maxW, HEAD_MAX);
-    const w = bold.widthOfTextAtSize(mese, size);
-    page.drawText(mese, { x: T.x0 + ((T.x1 - T.x0) - w) / 2, y: Yraw(T.baseTop), size, font: bold, color });
+  const MODULI = {
+    ferie:   { etichetta: 'Ferie',            titolo: null,               frase: null, file: 'Domanda_ferie.pdf' },
+    sangue:  { etichetta: 'Donazione sangue', titolo: 'donazione sangue', frase: 'Chiede di poter usufruire del permesso per donazione di sangue nei seguenti periodi:', file: 'Domanda_donazione_sangue.pdf' },
+    cariche: { etichetta: 'Cariche elettive', titolo: 'cariche elettive', frase: 'Chiede di poter usufruire dei permessi per cariche elettive nei seguenti periodi:', file: 'Domanda_cariche_elettive.pdf' }
+  };
+
+  const FONT_URL = w => `https://cdn.jsdelivr.net/npm/@fontsource/open-sans@5.3.0/files/open-sans-latin-${w}-normal.woff`;
+  let _fontPromise = null;
+  let fontFallback = false;
+
+  function caricaFontOpenSans() {
+    if (!_fontPromise) {
+      _fontPromise = Promise.all([fetch(FONT_URL(400)), fetch(FONT_URL(700))]).then(async r => {
+        if (!r[0].ok || !r[1].ok) throw new Error('font');
+        return { regular: await r[0].arrayBuffer(), bold: await r[1].arrayBuffer() };
+      }).catch(e => { _fontPromise = null; throw e; });
+    }
+    return _fontPromise;
   }
 
-  // Altri tipi di richiesta: sostituisco "ferie" nel titolo e la frase, con lo stesso carattere dell'originale.
-  const tipo = MODULI[data.tipo] || MODULI.ferie;
-  if (tipo.titolo) {
-    let osR = font, osB = bold;
+  const FIRMA_FONT_URL = 'https://cdn.jsdelivr.net/npm/@fontsource/mr-dafoe@5.3.0/files/mr-dafoe-latin-400-normal.woff';
+  let _firmaPromise = null;
+  let firmaNonCaricata = false;
+
+  function caricaFontFirma() {
+    if (!_firmaPromise) {
+      _firmaPromise = fetch(FIRMA_FONT_URL).then(async r => {
+        if (!r.ok) throw new Error('font');
+        return r.arrayBuffer();
+      }).catch(e => { _firmaPromise = null; throw e; });
+    }
+    return _firmaPromise;
+  }
+
+  const CANCELLA_RIGHE = false;
+  const OFFSET_X = 0;
+  const OFFSET_Y = 0;
+  const TXT_MAX = 14;
+  const HEAD_MAX = 46;
+
+  function raggruppaFogli(periodi) {
+    const mesi = new Map();
+    periodi.forEach(p => {
+      const k = p.y1 * 100 + p.m1;
+      if (!mesi.has(k)) mesi.set(k, []);
+      mesi.get(k).push(p);
+    });
+    const fogli = [];
+    [...mesi.keys()].sort((a, b) => a - b).forEach(k => {
+      const l = mesi.get(k);
+      for (let i = 0; i < l.length; i += 2) fogli.push(l.slice(i, i + 2));
+    });
+    return fogli;
+  }
+
+  async function fillSheet(tplBytes, data, periodi, outDoc) {
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const doc = await PDFDocument.load(tplBytes);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const page = doc.getPages()[0];
+    const mb = page.getMediaBox();
+    const Yraw = top => mb.y + mb.height - top;
+    const Y = top => Yraw(top + OFFSET_Y);
+    const color = rgb(0.05, 0.1, 0.45);
+
+    const erase = (x0, x1, y) => CANCELLA_RIGHE && page.drawRectangle({ x: x0 - 0.5, y: Yraw(y + 2.6), width: (x1 - x0) + 1, height: 4.2, color: rgb(1, 1, 1) });
+    const fit = (f, txt, maxW, maxSize) => {
+      let s = maxSize;
+      while (s > 6 && f.widthOfTextAtSize(txt, s) > maxW) s -= 0.5;
+      return s;
+    };
+    const put = (txt, x, top, maxW, riga) => {
+      if (!txt) return;
+      txt = String(txt);
+      if (riga) erase(riga.x0, riga.x1, riga.y);
+      const size = fit(font, txt, maxW, TXT_MAX);
+      page.drawText(txt, { x: x + OFFSET_X, y: Y(top), size, font, color });
+    };
+    const center = (txt, seg, top, rigay) => {
+      txt = String(txt);
+      erase(seg[0], seg[1], rigay);
+      const maxW = (seg[1] - seg[0]) - 3;
+      const size = fit(font, txt, maxW, TXT_MAX);
+      const w = font.widthOfTextAtSize(txt, size);
+      page.drawText(txt, { x: seg[0] + ((seg[1] - seg[0]) - w) / 2 + OFFSET_X, y: Y(top), size, font, color });
+    };
+
+    if (periodi.length) {
+      const T = LAYOUT.testata;
+      page.drawRectangle({ x: T.x0 - 10, y: Yraw(T.coverBottom), width: (T.x1 - T.x0) + 20, height: T.coverBottom - T.coverTop, color: rgb(1, 1, 1) });
+      const mese = MONTHS[periodi[0].m1 - 1].toUpperCase();
+      const maxW = (T.x1 - T.x0) - 6;
+      const size = fit(bold, mese, maxW, HEAD_MAX);
+      const w = bold.widthOfTextAtSize(mese, size);
+      page.drawText(mese, { x: T.x0 + ((T.x1 - T.x0) - w) / 2, y: Yraw(T.baseTop), size, font: bold, color });
+    }
+
+    const tipo = MODULI[data.tipo] || MODULI.ferie;
+    if (tipo.titolo) {
+      let osR = font, osB = bold;
+      try {
+        if (typeof fontkit === 'undefined') throw new Error('fontkit');
+        doc.registerFontkit(fontkit);
+        const fb = await caricaFontOpenSans();
+        osR = await doc.embedFont(fb.regular, { subset: true });
+        osB = await doc.embedFont(fb.bold, { subset: true });
+      } catch (e) { fontFallback = true; }
+      const nero = rgb(0, 0, 0), bianco = rgb(1, 1, 1);
+      const cover = c => page.drawRectangle({ x: c[0], y: Yraw(c[3]), width: c[1] - c[0], height: c[3] - c[2], color: bianco });
+      cover(LAYOUT.titolo.cover);
+      page.drawText(tipo.titolo, { x: LAYOUT.titolo.x, y: Yraw(LAYOUT.titolo.baseTop), size: LAYOUT.titolo.size, font: osB, color: nero });
+      cover(LAYOUT.frase.cover);
+      page.drawText(tipo.frase, { x: LAYOUT.frase.x, y: Yraw(LAYOUT.frase.baseTop), size: LAYOUT.frase.size, font: osR, color: nero });
+    }
+
+    if (data.firma && data.nome) {
+      try {
+        if (typeof fontkit === 'undefined') throw new Error('fontkit');
+        doc.registerFontkit(fontkit);
+        const bytes = await caricaFontFirma();
+        const fF = await doc.embedFont(bytes, { subset: true });
+        const F = LAYOUT.firma;
+        let sz = F.maxSize;
+        while (sz > 8 && fF.widthOfTextAtSize(data.nome, sz) > F.maxW) sz -= 0.5;
+        page.drawText(data.nome, { x: F.x, y: Yraw(F.baseTop), size: sz, font: fF, color, rotate: PDFLib.degrees(F.rot) });
+      } catch (e) { firmaNonCaricata = true; }
+    }
+
+    put(data.dataPres, LAYOUT.dataPres.x, LAYOUT.dataPres.top, LAYOUT.dataPres.maxW, LAYOUT.dataPres.riga);
+    put(data.nome,     LAYOUT.nome.x,     LAYOUT.nome.top,     LAYOUT.nome.maxW,     LAYOUT.nome.riga);
+    put(data.cid,      LAYOUT.cid.x,      LAYOUT.cid.top,      LAYOUT.cid.maxW,      LAYOUT.cid.riga);
+    put(data.note,     LAYOUT.note.x,     LAYOUT.note.top,     LAYOUT.note.maxW,     LAYOUT.note.riga);
+
+    periodi.slice(0, 2).forEach((p, i) => {
+      const L = LAYOUT.periodi[i];
+      center(String(p.d1).padStart(2, '0'), L.dal.g, L.top, L.riga);
+      center(MONTHS[p.m1 - 1].toUpperCase(), L.dal.m, L.top, L.riga);
+      center(p.y1,                           L.dal.a, L.top, L.riga);
+      center(String(p.d2).padStart(2, '0'), L.al.g,  L.top, L.riga);
+      center(MONTHS[p.m2 - 1].toUpperCase(), L.al.m,  L.top, L.riga);
+      center(p.y2,                           L.al.a,  L.top, L.riga);
+    });
+
+    const [copied] = await outDoc.copyPages(doc, [0]);
+    outDoc.addPage(copied);
+  }
+
+  async function buildPdf(tplBytes, data, periodi) {
+    const outDoc = await PDFLib.PDFDocument.create();
+    for (const foglio of raggruppaFogli(periodi)) await fillSheet(tplBytes, data, foglio, outDoc);
+    return await outDoc.save();
+  }
+
+  const st = { tipo: 'ferie', fileName: 'Domanda_ferie.pdf', shareTitle: 'Domanda di ferie', tpl: null, days: new Set(), anchor: null, vy: 0, vm: 0, url: null };
+  const key = (y, m, d) => y * 10000 + m * 100 + d;
+  const unkey = k => ({ y: Math.floor(k / 10000), m: Math.floor(k / 100) % 100, d: k % 100 });
+  const $ = id => document.getElementById(id);
+
+  const MODULO_FILES = ['MODULO RICHIESTA FERIE.pdf', 'MODULO_RICHIESTA_FERIE.pdf', 'Copia_di_MODULO_RICHIESTA_FERIE.pdf', 'modulo.pdf'];
+
+  function setTpl(buf, msg, cls) {
+    st.tpl = buf;
+    $('tplMsg').textContent = msg;
+    $('tplMsg').className = 'msg ' + cls;
+  }
+
+  function salvaTpl(buf) {
     try {
-      if (typeof fontkit === 'undefined') throw new Error('fontkit');
-      doc.registerFontkit(fontkit);
-      const fb = await caricaFontOpenSans();
-      osR = await doc.embedFont(fb.regular, { subset: true });
-      osB = await doc.embedFont(fb.bold, { subset: true });
-    } catch (e) { fontFallback = true; }
-    const nero = rgb(0, 0, 0), bianco = rgb(1, 1, 1);
-    const cover = c => page.drawRectangle({ x: c[0], y: Yraw(c[3]), width: c[1] - c[0], height: c[3] - c[2], color: bianco });
-    cover(LAYOUT.titolo.cover);
-    page.drawText(tipo.titolo, { x: LAYOUT.titolo.x, y: Yraw(LAYOUT.titolo.baseTop), size: LAYOUT.titolo.size, font: osB, color: nero });
-    cover(LAYOUT.frase.cover);
-    page.drawText(tipo.frase, { x: LAYOUT.frase.x, y: Yraw(LAYOUT.frase.baseTop), size: LAYOUT.frase.size, font: osR, color: nero });
+      let s = '';
+      for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]);
+      localStorage.setItem('fe_tpl', btoa(s));
+    } catch (e) {}
   }
 
-  if (data.firma && data.nome) {
-    try {
-      if (typeof fontkit === 'undefined') throw new Error('fontkit');
-      doc.registerFontkit(fontkit);
-      const bytes = await caricaFontFirma();
-      const fF = await doc.embedFont(bytes, { subset: true });
-      const F = LAYOUT.firma;
-      let sz = F.maxSize;
-      while (sz > 8 && fF.widthOfTextAtSize(data.nome, sz) > F.maxW) sz -= 0.5;
-      page.drawText(data.nome, { x: F.x, y: Yraw(F.baseTop), size: sz, font: fF, color, rotate: PDFLib.degrees(F.rot) });
-    } catch (e) { firmaNonCaricata = true; }
-  }
+  const MODULO_URL_DIRETTO = 'https://raw.githubusercontent.com/turnihub/Assenze/main/MODULO%20RICHIESTA%20FERIE.pdf';
 
-  put(data.dataPres, LAYOUT.dataPres.x, LAYOUT.dataPres.top, LAYOUT.dataPres.maxW, LAYOUT.dataPres.riga);
-  put(data.nome,     LAYOUT.nome.x,     LAYOUT.nome.top,     LAYOUT.nome.maxW, LAYOUT.nome.riga);
-  put(data.cid,      LAYOUT.cid.x,      LAYOUT.cid.top,      LAYOUT.cid.maxW, LAYOUT.cid.riga);
-  put(data.note,     LAYOUT.note.x,     LAYOUT.note.top,     LAYOUT.note.maxW, LAYOUT.note.riga);
+  async function caricaModuloDaGithub() {
+    const provati = [];
+    const candidati = MODULO_FILES.map(n => ({ nome: n, url: new URL(encodeURIComponent(n), location.href).href }))
+      .concat([{ nome: 'link diretto', url: MODULO_URL_DIRETTO }]);
 
-  periodi.slice(0, 2).forEach((p, i) => {
-    const L = LAYOUT.periodi[i];
-    center(String(p.d1).padStart(2, '0'), L.dal.g, L.top, L.riga);
-    center(MONTHS[p.m1 - 1].toUpperCase(), L.dal.m, L.top, L.riga);
-    center(p.y1,                          L.dal.a, L.top, L.riga);
-    center(String(p.d2).padStart(2, '0'), L.al.g,  L.top, L.riga);
-    center(MONTHS[p.m2 - 1].toUpperCase(), L.al.m,  L.top, L.riga);
-    center(p.y2,                          L.al.a,  L.top, L.riga);
-  });
-
-  const [copied] = await outDoc.copyPages(doc, [0]);
-  outDoc.addPage(copied);
-}
-
-async function buildPdf(tplBytes, data, periodi) {
-  const outDoc = await PDFLib.PDFDocument.create();
-  for (const foglio of raggruppaFogli(periodi)) await fillSheet(tplBytes, data, foglio, outDoc);
-  return await outDoc.save();
-}
-//</fill>
-
-// ---------- stato ----------
-const st = { tipo: 'ferie', fileName: 'Domanda_ferie.pdf', shareTitle: 'Domanda di ferie', tpl: null, days: new Set(), anchor: null, vy: 0, vm: 0, url: null };
-const key = (y, m, d) => y * 10000 + m * 100 + d;
-const unkey = k => ({ y: Math.floor(k / 10000), m: Math.floor(k / 100) % 100, d: k % 100 });
-const $ = id => document.getElementById(id);
-
-// Nomi possibili del modulo nella stessa cartella dell'app su GitHub.
-const MODULO_FILES = ['MODULO RICHIESTA FERIE.pdf', 'MODULO_RICHIESTA_FERIE.pdf', 'Copia_di_MODULO_RICHIESTA_FERIE.pdf', 'modulo.pdf'];
-
-function setTpl(buf, msg, cls) {
-  st.tpl = buf;
-  $('tplMsg').textContent = msg; $('tplMsg').className = 'msg ' + cls;
-}
-function salvaTpl(buf) {
-  try { let s = ''; for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]); localStorage.setItem('fe_tpl', btoa(s)); } catch (e) {}
-}
-// Link diretto al modulo nel repository (accetta richieste da qualsiasi sito): serve come seconda strada.
-const MODULO_URL_DIRETTO = 'https://raw.githubusercontent.com/turnihub/Assenze/main/MODULO%20RICHIESTA%20FERIE.pdf';
-
-async function caricaModuloDaGithub() {
-  const provati = [];
-  const candidati = MODULO_FILES.map(n => ({ nome: n, url: new URL(encodeURIComponent(n), location.href).href }))
-    .concat([{ nome: 'link diretto', url: MODULO_URL_DIRETTO }]);
-  for (const c of candidati) {
-    try {
-      const res = await fetch(c.url, { cache: 'no-cache' });
-      if (!res.ok) { provati.push(c.nome + ' (' + res.status + ')'); continue; }
-      const buf = new Uint8Array(await res.arrayBuffer());
-      // deve essere davvero un PDF (e non una pagina di errore)
-      if (String.fromCharCode(buf[0], buf[1], buf[2], buf[3]) !== '%PDF') { provati.push(c.nome + ' (non è un PDF)'); continue; }
-      return { buf, nome: c.nome };
-    } catch (e) { provati.push(c.nome + ' (non raggiungibile)'); }
-  }
-  return { errore: provati.join(', ') };
-}
-
-function buildTipi() {
-  try { const t = localStorage.getItem('fe_tipo'); if (t && MODULI[t]) st.tipo = t; } catch (e) {}
-  $('tipi').innerHTML = Object.keys(MODULI).map(k =>
-    '<button class="tipo' + (k === st.tipo ? ' on' : '') + '" data-t="' + k + '">' + MODULI[k].etichetta + '</button>').join('');
-}
-$('tipi').addEventListener('click', e => {
-  const t = e.target.dataset && e.target.dataset.t;
-  if (!t) return;
-  st.tipo = t;
-  try { localStorage.setItem('fe_tipo', t); } catch (err) {}
-  buildTipi();
-});
-
-async function avviaModulo() {
-  $('retry').style.display = 'none';
-  setTpl(null, 'Carico il modulo…', '');
-  renderPeriods();
-  const r = await caricaModuloDaGithub();
-  if (r.buf) {
-    setTpl(r.buf, '', 'ok');
-    salvaTpl(r.buf);
-  } else {
-    let cache = null;
-    try { const b64 = localStorage.getItem('fe_tpl'); if (b64) cache = Uint8Array.from(atob(b64), c => c.charCodeAt(0)); } catch (e) {}
-    if (cache) setTpl(cache, 'Uso la copia del modulo salvata su questo dispositivo (quello online non è raggiungibile).', 'ok');
-    else { setTpl(null, 'Modulo non trovato online (provati: ' + r.errore + '). Controlla il nome del file su GitHub.', 'err'); $('retry').style.display = ''; }
-  }
-  renderPeriods();
-}
-$('retry').onclick = avviaModulo;
-
-// "Condividi" apre il menu di condivisione del telefono (WhatsApp, posta, Drive...) con il PDF allegato.
-// Non tutti i browser lo permettono per i file: lo mostro solo dove funziona davvero.
-function puoCondividere() {
-  try {
-    if (!navigator.share || !navigator.canShare) return false;
-    const prova = new File([new Uint8Array([37, 80, 68, 70])], 'prova.pdf', { type: 'application/pdf' });
-    return navigator.canShare({ files: [prova] });
-  } catch (e) { return false; }
-}
-
-async function init() {
-  const t = new Date();
-  st.vy = t.getFullYear(); st.vm = t.getMonth() + 1;
-  $('dows').innerHTML = DOW.map(d => '<div class="dow">' + d + '</div>').join('');
-  $('dataPres').value = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
-  try {
-    $('nome').value = localStorage.getItem('fe_nome') || '';
-    $('cid').value  = localStorage.getItem('fe_cid') || '';
-    $('firma').checked = localStorage.getItem('fe_firma') === '1';
-  } catch (e) {}
-  if (puoCondividere()) { $('share').style.display = ''; $('shareHint').style.display = ''; }
-  render();   // il calendario compare subito, senza aspettare il modulo
-
-  buildTipi();
-  avviaModulo();
-}
-
-// ---------- calendario ----------
-function render() {
-  $('title').textContent = MONTHS[st.vm - 1] + ' ' + st.vy;
-  const first = new Date(st.vy, st.vm - 1, 1);
-  const offset = (first.getDay() + 6) % 7;
-  const n = new Date(st.vy, st.vm, 0).getDate();
-  const today = new Date();
-  let h = '';
-  for (let i = 0; i < offset; i++) h += '<button class="day empty" disabled></button>';
-  for (let d = 1; d <= n; d++) {
-    const k = key(st.vy, st.vm, d);
-    let cls = 'day';
-    if (st.days.has(k)) cls += ' sel';
-    if (st.anchor === k) cls += ' pending';
-    if (today.getFullYear() === st.vy && today.getMonth() + 1 === st.vm && today.getDate() === d) cls += ' today';
-    h += '<button class="' + cls + '" data-k="' + k + '">' + d + '</button>';
-  }
-  $('days').innerHTML = h;
-  renderPeriods();
-}
-
-function addRange(a, b) {
-  if (a > b) [a, b] = [b, a];
-  const A = unkey(a), B = unkey(b);
-  const d = new Date(A.y, A.m - 1, A.d), end = new Date(B.y, B.m - 1, B.d);
-  while (d <= end) { st.days.add(key(d.getFullYear(), d.getMonth() + 1, d.getDate())); d.setDate(d.getDate() + 1); }
-}
-
-$('days').addEventListener('click', e => {
-  const k = e.target.dataset && +e.target.dataset.k;
-  if (!k) return;
-  if (st.anchor === null) { st.anchor = k; }
-  else if (st.anchor === k) { st.days.has(k) ? st.days.delete(k) : st.days.add(k); st.anchor = null; }
-  else { addRange(st.anchor, k); st.anchor = null; }
-  render();
-});
-$('prev').onclick = () => { st.vm--; if (st.vm < 1) { st.vm = 12; st.vy--; } render(); };
-$('next').onclick = () => { st.vm++; if (st.vm > 12) { st.vm = 1; st.vy++; } render(); };
-$('clear').onclick = () => { st.days.clear(); st.anchor = null; render(); };
-
-// Raggruppa i giorni scelti in periodi (giorni consecutivi, stesso mese).
-function periodi() {
-  const ks = [...st.days].sort((a, b) => a - b);
-  const out = [];
-  let cur = null;
-  for (const k of ks) {
-    const x = unkey(k);
-    if (cur) {
-      const prev = new Date(cur.y2, cur.m2 - 1, cur.d2 + 1);
-      if (prev.getFullYear() === x.y && prev.getMonth() + 1 === x.m && prev.getDate() === x.d && cur.m2 === x.m) {
-        cur.d2 = x.d; continue;
+    for (const c of candidati) {
+      try {
+        const res = await fetch(c.url, { cache: 'no-cache' });
+        if (!res.ok) { provati.push(c.nome + ' (' + res.status + ')'); continue; }
+        const buf = new Uint8Array(await res.arrayBuffer());
+        if (String.fromCharCode(buf[0], buf[1], buf[2], buf[3]) !== '%PDF') {
+          provati.push(c.nome + ' (non è un PDF)');
+          continue;
+        }
+        return { buf, nome: c.nome };
+      } catch (e) {
+        provati.push(c.nome + ' (non raggiungibile)');
       }
     }
-    cur = { d1: x.d, m1: x.m, y1: x.y, d2: x.d, m2: x.m, y2: x.y };
-    out.push(cur);
+    return { errore: provati.join(', ') };
   }
-  return out;
-}
 
-function fmt(p) {
-  return p.d1 === p.d2 ? p.d1 + ' ' + MONTHS[p.m1 - 1] : p.d1 + '–' + p.d2 + ' ' + MONTHS[p.m1 - 1];
-}
-
-function renderPeriods() {
-  const ps = periodi();
-  $('chips').innerHTML = ps.map((p, i) =>
-    '<span class="chip">' + fmt(p) + ' ' + p.y1 + '<button data-i="' + i + '" aria-label="Rimuovi">×</button></span>').join('');
-  const sheets = raggruppaFogli(ps).length;
-  $('periodMsg').className = 'msg';
-  $('periodMsg').textContent = ps.length
-    ? (sheets > 1
-        ? 'Verranno creati ' + sheets + ' fogli: ogni richiesta vale per un solo mese e il modulo ha 2 righe.'
-        : 'Un solo mese per ogni richiesta: i periodi a cavallo di due mesi sono divisi automaticamente.')
-    : '';
-  $('gen').disabled = !(ps.length && st.tpl);
-}
-$('chips').addEventListener('click', e => {
-  const i = e.target.dataset && e.target.dataset.i;
-  if (i === undefined) return;
-  const p = periodi()[+i];
-  for (let d = p.d1; d <= p.d2; d++) st.days.delete(key(p.y1, p.m1, d));
-  render();
-});
-
-// ---------- generazione ----------
-function isoToIt(v) { const [y, m, d] = v.split('-'); return d + '/' + m + '/' + y; }
-
-$('gen').onclick = async () => {
-  $('genMsg').textContent = 'Sto compilando…'; $('genMsg').className = 'msg';
-  try {
-    const data = { nome: $('nome').value.trim(), cid: $('cid').value.trim(), dataPres: $('dataPres').value ? isoToIt($('dataPres').value) : '', note: $('note').value.trim(), tipo: st.tipo, firma: $('firma').checked };
-    try { localStorage.setItem('fe_nome', data.nome); localStorage.setItem('fe_cid', data.cid); } catch (e) {}
-    fontFallback = false; firmaNonCaricata = false;
-    try { localStorage.setItem('fe_firma', $('firma').checked ? '1' : '0'); } catch (e) {}
-    const bytes = await buildPdf(st.tpl, data, periodi());
-    st.fileName = MODULI[st.tipo].file;
-    st.shareTitle = 'Domanda di ' + (MODULI[st.tipo].titolo || 'ferie');
-    if (st.url) URL.revokeObjectURL(st.url);
-    st.bytes = bytes;
-    st.url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-    $('preview').src = st.url; $('preview').classList.add('on');
-    $('outBtns').style.display = 'flex';
-    $('genMsg').textContent = 'Fatto. Controlla il modulo prima di stamparlo.' + (fontFallback ? ' Attenzione: il carattere originale del modulo non si è caricato e ne ho usato uno simile.' : '') + (firmaNonCaricata ? ' La firma non è stata inserita: il carattere non si è caricato.' : '') + (($('firma').checked && !data.nome) ? ' Per la firma scrivi prima nome e cognome.' : ''); $('genMsg').className = 'msg ' + ((fontFallback || firmaNonCaricata) ? 'err' : 'ok');
-  } catch (err) {
-    $('genMsg').textContent = 'Errore: ' + err.message; $('genMsg').className = 'msg err';
+  function buildTipi() {
+    try {
+      const t = localStorage.getItem('fe_tipo');
+      if (t && MODULI[t]) st.tipo = t;
+    } catch (e) {}
+    $('tipi').innerHTML = Object.keys(MODULI).map(k =>
+      '<button class="tipo' + (k === st.tipo ? ' on' : '') + '" data-t="' + k + '">' + MODULI[k].etichetta + '</button>'
+    ).join('');
   }
-};
-$('open').onclick = () => window.open(st.url, '_blank');
-$('dl').onclick = () => { const a = document.createElement('a'); a.href = st.url; a.download = st.fileName; document.body.appendChild(a); a.click(); a.remove(); };
-$('share').onclick = async () => {
-  const f = new File([st.bytes], st.fileName, { type: 'application/pdf' });
-  try {
-    if (!navigator.canShare || !navigator.canShare({ files: [f] })) throw new Error('non supportato');
-    await navigator.share({ files: [f], title: st.shareTitle });
-  } catch (e) {
-    if (e && e.name === 'AbortError') return;   // hai chiuso tu il menu di condivisione
-    $('genMsg').textContent = 'Questo dispositivo non permette di condividere il file da qui. Usa "Scarica" o "Apri PDF" e invialo da lì.';
-    $('genMsg').className = 'msg err';
+
+  $('tipi').addEventListener('click', e => {
+    const t = e.target.dataset && e.target.dataset.t;
+    if (!t) return;
+    st.tipo = t;
+    try { localStorage.setItem('fe_tipo', t); } catch (err) {}
+    buildTipi();
+  });
+
+  async function avviaModulo() {
+    $('retry').style.display = 'none';
+    setTpl(null, 'Carico il modulo...', '');
+    renderPeriods();
+    const r = await caricaModuloDaGithub();
+    if (r.buf) {
+      setTpl(r.buf, '', 'ok');
+      salvaTpl(r.buf);
+    } else {
+      let cache = null;
+      try {
+        const b64 = localStorage.getItem('fe_tpl');
+        if (b64) cache = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      } catch (e) {}
+      if (cache) {
+        setTpl(cache, 'Uso la copia del modulo salvata su questo dispositivo (quello online non è raggiungibile).', 'ok');
+      } else {
+        setTpl(null, 'Modulo non trovato online (provati: ' + r.errore + '). Controlla il nome del file su GitHub.', 'err');
+        $('retry').style.display = '';
+      }
+    }
+    renderPeriods();
   }
-};
+  $('retry').onclick = avviaModulo;
+
+  function puoCondividere() {
+    try {
+      if (!navigator.share || !navigator.canShare) return false;
+      const prova = new File([new Uint8Array([37, 80, 68, 70])], 'prova.pdf', { type: 'application/pdf' });
+      return navigator.canShare({ files: [prova] });
+    } catch (e) { return false; }
+  }
+
+  async function init() {
+    const t = new Date();
+    st.vy = t.getFullYear();
+    st.vm = t.getMonth() + 1;
+    $('dows').innerHTML = DOW.map(d => '<div class="dow">' + d + '</div>').join('');
+    $('dataPres').value = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+    try {
+      $('nome').value = localStorage.getItem('fe_nome') || '';
+      $('cid').value = localStorage.getItem('fe_cid') || '';
+      $('firma').checked = localStorage.getItem('fe_firma') === '1';
+    } catch (e) {}
+    if (puoCondividere()) {
+      $('share').style.display = '';
+      $('shareHint').style.display = '';
+    }
+    render();
+    buildTipi();
+    avviaModulo();
+  }
+
+  function render() {
+    $('title').textContent = MONTHS[st.vm - 1] + ' ' + st.vy;
+    const first = new Date(st.vy, st.vm - 1, 1);
+    const offset = (first.getDay() + 6) % 7;
+    const n = new Date(st.vy, st.vm, 0).getDate();
+    const today = new Date();
+    let h = '';
+    for (let i = 0; i < offset; i++) h += '<button class="day empty" disabled></button>';
+    for (let d = 1; d <= n; d++) {
+      const k = key(st.vy, st.vm, d);
+      let cls = 'day';
+      if (st.days.has(k)) cls += ' sel';
+      if (st.anchor === k) cls += ' pending';
+      if (today.getFullYear() === st.vy && today.getMonth() + 1 === st.vm && today.getDate() === d) cls += ' today';
+      h += '<button class="' + cls + '" data-k="' + k + '">' + d + '</button>';
+    }
+    $('days').innerHTML = h;
+    renderPeriods();
+  }
+
+  function addRange(a, b) {
+    if (a > b) [a, b] = [b, a];
+    const A = unkey(a), B = unkey(b);
+    const d = new Date(A.y, A.m - 1, A.d), end = new Date(B.y, B.m - 1, B.d);
+    while (d <= end) {
+      st.days.add(key(d.getFullYear(), d.getMonth() + 1, d.getDate()));
+      d.setDate(d.getDate() + 1);
+    }
+  }
+
+  $('days').addEventListener('click', e => {
+    const k = e.target.dataset && +e.target.dataset.k;
+    if (!k) return;
+    if (st.anchor === null) { st.anchor = k; }
+    else if (st.anchor === k) { st.days.has(k) ? st.days.delete(k) : st.days.add(k); st.anchor = null; }
+    else { addRange(st.anchor, k); st.anchor = null; }
+    render();
+  });
+
+  $('prev').onclick = () => { st.vm--; if (st.vm < 1) { st.vm = 12; st.vy--; } render(); };
+  $('next').onclick = () => { st.vm++; if (st.vm > 12) { st.vm = 1; st.vy++; } render(); };
+  $('clear').onclick = () => { st.days.clear(); st.anchor = null; render(); };
+
+  function periodi() {
+    const ks = [...st.days].sort((a, b) => a - b);
+    const out = [];
+    let cur = null;
+    for (const k of ks) {
+      const x = unkey(k);
+      if (cur) {
+        const prev = new Date(cur.y2, cur.m2 - 1, cur.d2 + 1);
+        if (prev.getFullYear() === x.y && prev.getMonth() + 1 === x.m && prev.getDate() === x.d && cur.m2 === x.m) {
+          cur.d2 = x.d;
+          continue;
+        }
+      }
+      cur = { d1: x.d, m1: x.m, y1: x.y, d2: x.d, m2: x.m, y2: x.y };
+      out.push(cur);
+    }
+    return out;
+  }
+
+  function fmt(p) {
+    return p.d1 === p.d2 ? p.d1 + ' ' + MONTHS[p.m1 - 1] : p.d1 + '–' + p.d2 + ' ' + MONTHS[p.m1 - 1];
+  }
+
+  function renderPeriods() {
+    const ps = periodi();
+    $('chips').innerHTML = ps.map((p, i) =>
+      '<span class="chip">' + fmt(p) + ' ' + p.y1 + '<button data-i="' + i + '" aria-label="Rimuovi">×</button></span>'
+    ).join('');
+    const sheets = raggruppaFogli(ps).length;
+    $('periodMsg').className = 'msg';
+    $('periodMsg').textContent = ps.length
+      ? (sheets > 1
+          ? 'Verranno creati ' + sheets + ' fogli: ogni richiesta vale per un solo mese e il modulo ha 2 righe.'
+          : 'Un solo mese per ogni richiesta: i periodi a cavallo di due mesi sono divisi automaticamente.')
+      : '';
+    $('gen').disabled = !(ps.length && st.tpl);
+  }
+
+  $('chips').addEventListener('click', e => {
+    const i = e.target.dataset && e.target.dataset.i;
+    if (i === undefined) return;
+    const p = periodi()[+i];
+    for (let d = p.d1; d <= p.d2; d++) st.days.delete(key(p.y1, p.m1, d));
+    render();
+  });
+
+  function isoToIt(v) {
+    const [y, m, d] = v.split('-');
+    return d + '/' + m + '/' + y;
+  }
+
+  $('gen').onclick = async () => {
+    $('genMsg').textContent = 'Sto compilando…';
+    $('genMsg').className = 'msg';
+    try {
+      const data = {
+        nome: $('nome').value.trim(),
+        cid: $('cid').value.trim(),
+        dataPres: $('dataPres').value ? isoToIt($('dataPres').value) : '',
+        note: $('note').value.trim(),
+        tipo: st.tipo,
+        firma: $('firma').checked
+      };
+      try {
+        localStorage.setItem('fe_nome', data.nome);
+        localStorage.setItem('fe_cid', data.cid);
+      } catch (e) {}
+      fontFallback = false;
+      firmaNonCaricata = false;
+      try { localStorage.setItem('fe_firma', $('firma').checked ? '1' : '0'); } catch (e) {}
+
+      const bytes = await buildPdf(st.tpl, data, periodi());
+      st.fileName = MODULI[st.tipo].file;
+      st.shareTitle = 'Domanda di ' + (MODULI[st.tipo].titolo || 'ferie');
+      if (st.url) URL.revokeObjectURL(st.url);
+      st.bytes = bytes;
+      st.url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      $('preview').src = st.url;
+      $('preview').classList.add('on');
+      $('outBtns').style.display = 'flex';
+      $('genMsg').textContent = 'Fatto. Controlla il modulo prima di stamparlo.' +
+        (fontFallback ? ' Attenzione: il carattere originale non si è caricato, ho usato quello di riserva.' : '') +
+        (firmaNonCaricata ? ' Attenzione: il carattere della firma non si è caricato.' : '') +
+        (($('firma').checked && !data.nome) ? ' Per la firma scrivi prima nome e cognome.' : '');
+      $('genMsg').className = 'msg ' + ((fontFallback || firmaNonCaricata) ? 'err' : 'ok');
+    } catch (err) {
+      $('genMsg').textContent = 'Errore: ' + err.message;
+      $('genMsg').className = 'msg err';
+    }
+  };
+
+  $('open').onclick = () => window.open(st.url, '_blank');
+  $('dl').onclick = () => {
+    const a = document.createElement('a');
+    a.href = st.url;
+    a.download = st.fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+  $('share').onclick = async () => {
+    const f = new File([st.bytes], st.fileName, { type: 'application/pdf' });
+    try {
+      if (!navigator.canShare || !navigator.canShare({ files: [f] })) throw new Error('non supportato');
+      await navigator.share({ files: [f], title: st.shareTitle });
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+      $('genMsg').textContent = 'Questo dispositivo non permette di condividere il file da qui. Usa "Scarica" o "Apri PDF" e invialo da lì.';
+      $('genMsg').className = 'msg err';
+    }
+  };
 
   let _avviato = false;
   return {
     avvia() { if (!_avviato) { _avviato = true; init(); } },
-    ricarica() { try { $('nome').value = localStorage.getItem('fe_nome') || ''; $('cid').value = localStorage.getItem('fe_cid') || ''; $('firma').checked = localStorage.getItem('fe_firma') === '1'; buildTipi(); } catch (e) {} }
+    ricarica() {
+      try {
+        $('nome').value = localStorage.getItem('fe_nome') || '';
+        $('cid').value = localStorage.getItem('fe_cid') || '';
+        $('firma').checked = localStorage.getItem('fe_firma') === '1';
+        buildTipi();
+      } catch (e) {}
+    }
   };
 })();
-
 </script>
 </body>
 </html>
