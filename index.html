@@ -201,7 +201,7 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
 
         <div class="panel">
           <h2>2. Turni del collega</h2>
-          <p>Ognuno genera il proprio codice e lo manda all'altro (per esempio su WhatsApp). Il codice contiene solo i turni del mese.</p>
+          <p><b>Il richiedente</b> (chi sceglie il giorno) manda per primo il suo codice al collega su WhatsApp. Il collega risponde mandando il proprio, che il richiedente incolla qui sotto. Il codice contiene solo i turni del mese.</p>
           <div class="azioni" style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button type="button" class="btn chiaro" onclick="CambioTurno.copiaMioCodice()"><i class="fas fa-copy"></i> Copia il mio codice</button>
             <button type="button" class="btn verde" onclick="CambioTurno.inviaCodiceWhatsApp()"><i class="fab fa-whatsapp" style="margin-right:8px;"></i> Manda su WhatsApp</button>
@@ -630,7 +630,7 @@ const CambioTurno = (() => {
       t: turniSalvati.map(t => [t.dataIso, t.codiceTurno, t.inizio, t.fine])
     }));
     
-    const testo = `Ecco il mio codice turni per TurniHub:\n\n${c}`;
+    const testo = c;
     const urlWa = 'https://wa.me/?text=' + encodeURIComponent(testo);
     
     const btnWa = $('btn-wa-link');
@@ -647,7 +647,7 @@ const CambioTurno = (() => {
     const c = generaMioCodice();
     if (!c) return;
 
-    const testo = `Ecco il mio codice turni per TurniHub:\n\n${c}`;
+    const testo = c;
     
     // Usa il protocollo nativo dell'app per aprirla direttamente
     const urlWa = 'whatsapp://send?text=' + encodeURIComponent(testo);
@@ -714,7 +714,9 @@ const CambioTurno = (() => {
   }
 
   function leggiCodiceCollega() {
-    const v = $('codice-collega').value.trim();
+    const raw = $('codice-collega').value.trim();
+    const mt = raw.match(/TH1:[A-Za-z0-9+\/=_-]+/);
+    const v = mt ? mt[0] : raw;
     collega = null;
     if (!v) {
       $('info-collega').textContent = '';
@@ -901,8 +903,8 @@ const CambioTurno = (() => {
     scrivi('dep', DEPOSITI[String(mio.codiceTurno).slice(0, 2).toUpperCase()] || 'Sede');
     scrivi('turno', mio.codiceTurno); scrivi('giorno', giorno); scrivi('ore', ore(mio));
     scrivi('chiede', suo.codiceTurno); scrivi('assegnato', giorno); scrivi('alsig', nomeC);
-    scrivi('cuiSig', nomeR); scrivi('cuiTurno', suo.codiceTurno); scrivi('g1', giorno); scrivi('o1', ore(suo));
-    scrivi('eSig', nomeC); scrivi('eTurno', mio.codiceTurno); scrivi('g2', giorno); scrivi('o2', ore(mio));
+    scrivi('cuiSig', nomeC); scrivi('cuiTurno', mio.codiceTurno); scrivi('g1', giorno); scrivi('o1', ore(mio));
+    scrivi('eSig', nomeR); scrivi('eTurno', suo.codiceTurno); scrivi('g2', giorno); scrivi('o2', ore(suo));
     scrivi('motivo', $('cm-motivo').value.trim());
     scrivi('addi', pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear());
     let nota = '';
