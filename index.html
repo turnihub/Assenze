@@ -128,6 +128,9 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
 .h-sheet .w{position:absolute;white-space:pre;line-height:1;font-family:"Times New Roman",Times,"Liberation Serif",serif;color:#111}
 .h-sheet .b{font-weight:700}
 .h-sheet .ln{position:absolute;background:#111}
+.fld{display:block;font-size:13px;color:var(--muted);margin-top:10px}
+.fld input{display:block;width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:16px;margin-top:4px;color:var(--ink)}
+.chk{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:15px;cursor:pointer}.chk input{width:20px;height:20px;flex:none}
 </style>
 </head>
 <body>
@@ -213,6 +216,25 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
           <button type="button" class="btn verde" id="btn-verifica" style="width:100%" onclick="CambioTurno.eseguiVerificaCambio()" disabled>Verifica il cambio</button>
           <div class="box" id="risultato-box" style="display:none"></div>
           <button type="button" class="btn" id="btn-wa-esito" style="display:none;width:100%;margin-top:10px;background:#25D366" onclick="CambioTurno.inviaEsitoWhatsApp()"><i class="fab fa-whatsapp"></i> Invia esito su WhatsApp</button>
+        </div>
+
+        <div class="panel">
+          <h2>4. Modulo di richiesta cambio turno</h2>
+          <p>Compila il modulo con i dati del cambio e invialo per email.</p>
+          <label class="fld">Richiedente<input type="text" id="cm-rich"></label>
+          <label class="fld">Collega<input type="text" id="cm-coll"></label>
+          <label class="fld">Motivo<input type="text" id="cm-motivo" value="Motivi familiari"></label>
+          <label class="fld">Indirizzo a cui inviare (resta salvato)<input type="text" id="cm-dest" inputmode="email" autocomplete="email" placeholder="es. ufficio@azienda.it"></label>
+          <label class="chk"><input type="checkbox" id="cm-firma"><span>Aggiungi le firme (i due nomi scritti a mano)</span></label>
+          <div class="hint" style="margin-top:4px">Sono solo una grafica generata dai nomi: non sono firme autografe né digitali valide. Se l'ufficio le richiede vere, lascia la casella vuota e firma a penna.</div>
+          <div class="row">
+            <button type="button" class="primary" id="cm-mail" onclick="CambioTurno.inviaModulo()" disabled><i class="fas fa-envelope"></i> Invia per email</button>
+            <button type="button" class="ghost" id="cm-open" onclick="CambioTurno.apriModulo()" disabled>Apri PDF</button>
+            <button type="button" class="ghost" id="cm-dl" onclick="CambioTurno.scaricaModulo()" disabled>Scarica</button>
+          </div>
+          <div class="msg" id="cm-msg" aria-live="polite"></div>
+          <div class="row"><a class="btn verde" id="cm-mailto" href="#" hidden><i class="fas fa-envelope-open-text"></i> Apri la posta</a></div>
+          <div class="hint">Se il telefono lo permette, "Invia per email" apre l'elenco delle app e il PDF è già allegato. Altrimenti il PDF viene scaricato e compare "Apri la posta": si apre una email con destinatario, oggetto e testo pronti e devi solo allegare il file scaricato.</div>
         </div>
       </section>
 
@@ -591,6 +613,7 @@ const CambioTurno = (() => {
   const MESI_NOMI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
   let collega = null;
+  let esitoCorrente = null;
   let dataSelezionataIso = null;
   let annoCorrente = new Date().getFullYear();
   let meseCorrente = new Date().getMonth() + 1;
@@ -703,6 +726,7 @@ const CambioTurno = (() => {
           nome: o.n,
           turni: o.t.map(a => ({ dataIso: a[0], codiceTurno: a[1], inizio: a[2], fine: a[3] }))
         };
+        $('cm-coll').value = collega.nome;
         $('info-collega').textContent = `Collega: ${collega.nome} (${collega.turni.length} turni)`;
       } catch (e) {
         $('info-collega').textContent = 'Codice non valido: chiedi al collega di copiarlo di nuovo.';
@@ -713,6 +737,7 @@ const CambioTurno = (() => {
 
   function aggiornaPulsante() {
     $('btn-verifica').disabled = !(collega && dataSelezionataIso);
+    ['cm-mail', 'cm-open', 'cm-dl'].forEach(i => $(i).disabled = !(collega && dataSelezionataIso));
   }
 
   const ts = (iso, hm) => {
@@ -808,10 +833,150 @@ const CambioTurno = (() => {
     };
     const r = calcolaRiposo(payload);
     mostraEsito(r.esito === 'VERDE' ? 'verde-box' : 'rosso-box', r.messaggio);
+    esitoCorrente = r;
+    $('btn-wa-esito').style.display = 'block';
+  }
+
+  function inviaEsitoWhatsApp() {
+    if (!esitoCorrente) return;
+    const t = 'Verifica cambio turno del ' + itData(dataSelezionataIso) + (collega ? ' con ' + collega.nome : '') + ':\n' + esitoCorrente.messaggio;
+    window.location.href = 'whatsapp://send?text=' + encodeURIComponent(t);
+  }
+
+
+  // ---- Modulo "Richiesta cambio turno": compilazione e invio per email (come per il modulo HAND) ----
+  const itData = iso => iso.split('-').reverse().join('/');
+  const MOD_FILES = ['RICHIESTA CAMBIO TURNO.pdf', 'RICHIESTA_CAMBIO_TURNO.pdf'];
+  const MOD_URL_DIRETTO = 'https://raw.githubusercontent.com/turnihub/Assenze/main/RICHIESTA%20CAMBIO%20TURNO.pdf';
+  const MOD_FIRMA_FONT = 'https://cdn.jsdelivr.net/npm/@fontsource/mr-dafoe@5.3.0/files/mr-dafoe-latin-400-normal.woff';
+  const SEDE = 'Oristano';
+  const DEPOSITI = { LC: 'Laconi', AL: 'Ales', BS: 'Bosa', AB: 'Abbasanta' };   // altrimenti "Sede"
+  // Posizione di ogni riga: [x iniziale, altezza della riga dal bordo alto, larghezza] in punti.
+  const FORM = {
+    sott: [151.5, 130.0, 226.6], sede: [206.2, 155.5, 271.0], dep: [129.6, 178.0, 177.4], turno: [190.8, 208.0, 113.4],
+    giorno: [135.4, 238.8, 167.5], ore: [328.8, 238.8, 147.8], chiede: [255.9, 268.8, 221.7], assegnato: [190.4, 299.5, 78.9], alsig: [302.5, 299.5, 177.3],
+    cuiSig: [147.6, 329.5, 133.0], cuiTurno: [377.2, 329.5, 103.4], g1: [116.9, 360.2, 113.3], o1: [253.2, 360.2, 54.2],
+    eSig: [118.7, 390.2, 162.6], eTurno: [375.0, 390.2, 103.5], g2: [116.9, 421.0, 113.3], o2: [253.2, 421.0, 54.2],
+    motivo: [80.7, 481.5, 399.1], addi: [102.3, 542.2, 99.6], f1: [80.7, 603.0, 133.0], f2: [345.1, 603.0, 133.0]
+  };
+  const KEYDEST = 'cambio_dest';
+  let _tpl = null, _bytes = null, _url = null, _fname = 'Richiesta_cambio_turno.pdf', _dati = null;
+  const cmsg = (t, c) => { $('cm-msg').textContent = t; $('cm-msg').className = 'msg ' + (c || ''); };
+  const lavora = t => t && !RIPOSI.includes(String(t.codiceTurno).toUpperCase());
+
+  function initModulo() {
+    if (nomeUtente) $('cm-rich').value = nomeUtente;
+    try { $('cm-dest').value = localStorage.getItem(KEYDEST) || ''; } catch (e) {}
+    $('cm-dest').onchange = () => { try { localStorage.setItem(KEYDEST, $('cm-dest').value.trim()); } catch (e) {} };
+  }
+  async function caricaModulo() {
+    if (_tpl) return _tpl;
+    const url = MOD_FILES.map(n => new URL(encodeURIComponent(n), location.href).href).concat([MOD_URL_DIRETTO]);
+    for (const u of url) {
+      try {
+        const r = await fetch(u); if (!r.ok) continue;
+        const b = new Uint8Array(await r.arrayBuffer());
+        if (String.fromCharCode(b[0], b[1], b[2], b[3]) === '%PDF') return (_tpl = b);
+      } catch (e) {}
+    }
+    throw new Error('modulo vuoto non trovato nel repository (controlla il nome del file)');
+  }
+  async function costruisciModulo() {
+    const mio = turniSalvati.find(t => t.dataIso === dataSelezionataIso), suo = collega.turni.find(t => t.dataIso === dataSelezionataIso);
+    if (!lavora(mio) || !lavora(suo)) throw new Error('per il modulo servono i turni di lavoro di entrambi nel giorno scelto');
+    const nomeR = $('cm-rich').value.trim(), nomeC = $('cm-coll').value.trim();
+    if (!nomeR || !nomeC) throw new Error('scrivi il nome del richiedente e quello del collega');
+    const { PDFDocument, StandardFonts, rgb, degrees } = PDFLib;
+    const doc = await PDFDocument.load(await caricaModulo());
+    const font = await doc.embedFont(StandardFonts.Helvetica), page = doc.getPages()[0], mb = page.getMediaBox();
+    const col = rgb(0.05, 0.1, 0.45), Y = top => mb.y + mb.height - top;
+    const scrivi = (k, txt) => {
+      if (!txt) return;
+      const [x, y, w] = FORM[k]; let sz = 11;
+      while (sz > 6 && font.widthOfTextAtSize(txt, sz) > w - 4) sz -= 0.5;
+      page.drawText(txt, { x: x + 3, y: Y(y - 2.6), size: sz, font, color: col });
+    };
+    const giorno = itData(dataSelezionataIso), ore = t => t.inizio + '-' + t.fine, d = new Date();
+    scrivi('sott', nomeR); scrivi('sede', SEDE);
+    scrivi('dep', DEPOSITI[String(mio.codiceTurno).slice(0, 2).toUpperCase()] || 'Sede');
+    scrivi('turno', mio.codiceTurno); scrivi('giorno', giorno); scrivi('ore', ore(mio));
+    scrivi('chiede', suo.codiceTurno); scrivi('assegnato', giorno); scrivi('alsig', nomeC);
+    scrivi('cuiSig', nomeR); scrivi('cuiTurno', suo.codiceTurno); scrivi('g1', giorno); scrivi('o1', ore(suo));
+    scrivi('eSig', nomeC); scrivi('eTurno', mio.codiceTurno); scrivi('g2', giorno); scrivi('o2', ore(mio));
+    scrivi('motivo', $('cm-motivo').value.trim());
+    scrivi('addi', pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear());
+    let nota = '';
+    if ($('cm-firma').checked) {
+      try {
+        if (typeof fontkit === 'undefined') throw new Error('fontkit');
+        doc.registerFontkit(fontkit);
+        const sf = await doc.embedFont(await (await fetch(MOD_FIRMA_FONT)).arrayBuffer(), { subset: true });
+        [['f1', nomeR], ['f2', nomeC]].forEach(([k, n]) => {
+          const [x, y, w] = FORM[k]; let sz = 22;
+          while (sz > 8 && sf.widthOfTextAtSize(n, sz) > w - 6) sz -= 0.5;
+          page.drawText(n, { x: x + 3, y: Y(y - 3.5), size: sz, font: sf, color: col, rotate: degrees(2) });
+        });
+      } catch (e) { nota = ' Le firme non sono state inserite: il carattere non si è caricato.'; }
+    }
+    _dati = { giorno, nomeR, nomeC };
+    _fname = 'Richiesta_cambio_turno_' + giorno.replace(/\//g, '-') + '_' + nomeR.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '') + '.pdf';
+    return { bytes: await doc.save(), nota };
+  }
+  async function preparaModulo() {
+    cmsg('Compilo il modulo...', '');
+    const r = await costruisciModulo();
+    _bytes = r.bytes;
+    if (_url) URL.revokeObjectURL(_url);
+    _url = URL.createObjectURL(new Blob([_bytes], { type: 'application/pdf' }));
+    return r.nota;
+  }
+  const oggettoMail = () => 'Richiesta cambio turno del ' + _dati.giorno + ' - ' + _dati.nomeR;
+  const corpoMail = () => 'Buongiorno,\n\nin allegato la richiesta di cambio turno del giorno ' + _dati.giorno + ' tra ' + _dati.nomeR + ' e ' + _dati.nomeC + '.\n\nCordiali saluti\n' + _dati.nomeR;
+  function motivoNoShare(file) {
+    if (location.protocol === 'file:') return 'la pagina è aperta come file del telefono, non da un indirizzo web';
+    if (!window.isSecureContext) return 'la pagina non è su un indirizzo sicuro (https)';
+    if (!navigator.share) return 'questo browser o questa app non ha la condivisione';
+    if (!navigator.canShare || !navigator.canShare({ files: [file] })) return 'questo browser o questa app non permette di condividere file PDF';
+    return '';
+  }
+  function scaricaFile() { const a = document.createElement('a'); a.href = _url; a.download = _fname; document.body.appendChild(a); a.click(); a.remove(); }
+  async function inviaModulo() {
+    try {
+      const dest = $('cm-dest').value.trim();
+      try { localStorage.setItem(KEYDEST, dest); } catch (e) {}
+      $('cm-mailto').hidden = true;
+      const nota = await preparaModulo();
+      const f = new File([_bytes], _fname, { type: 'application/pdf' });
+      let motivo = motivoNoShare(f);
+      if (!motivo) {
+        try {
+          await navigator.share({ files: [f], title: oggettoMail(), text: corpoMail() });
+          cmsg('Scegli la tua app di posta: il PDF è già allegato.' + nota, 'ok');
+          return;
+        } catch (e) {
+          if (e && e.name === 'AbortError') return;
+          motivo = 'il telefono ha rifiutato la condivisione (' + (e && e.name ? e.name : 'errore') + ')';
+        }
+      }
+      scaricaFile();
+      const a = $('cm-mailto');
+      a.href = 'mailto:' + encodeURIComponent(dest).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(oggettoMail()) + '&body=' + encodeURIComponent(corpoMail());
+      a.hidden = false;
+      cmsg('Allegato automatico non possibile: ' + motivo + '. Il PDF è stato scaricato (' + _fname + '). Tocca "Apri la posta" e allegalo a mano dalla cartella Download.' + nota, 'ok');
+    } catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+  async function apriModulo() {
+    try { const nota = await preparaModulo(); window.open(_url, '_blank') || cmsg('Il browser ha bloccato la nuova scheda. Usa "Scarica".', 'err'); if (nota) cmsg(nota.trim(), 'err'); else cmsg('', ''); }
+    catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+  async function scaricaModulo() {
+    try { const nota = await preparaModulo(); scaricaFile(); cmsg('PDF scaricato.' + nota, 'ok'); }
+    catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
   }
 
   return {
     avvia() {
+      initModulo();
       if (turniSalvati.length) {
         const [y, m] = turniSalvati[0].dataIso.split('-').map(Number);
         annoCorrente = y;
@@ -830,9 +995,13 @@ const CambioTurno = (() => {
     },
     cambiaMese,
     copiaMioCodice,
-    inviaCodiceWhatsApp, // <-- Eccola qui inserita!
+    inviaCodiceWhatsApp,
     leggiCodiceCollega,
-    eseguiVerificaCambio
+    eseguiVerificaCambio,
+    inviaEsitoWhatsApp,
+    inviaModulo,
+    apriModulo,
+    scaricaModulo
   };
 })();
 
