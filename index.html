@@ -201,12 +201,13 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
 
         <div class="panel">
           <h2>2. Turni del collega</h2>
-          <p><b>Il richiedente</b> (chi sceglie il giorno) manda per primo il suo codice al collega su WhatsApp. Il collega risponde mandando il proprio, che il richiedente incolla qui sotto. Il codice contiene solo i turni del mese.</p>
+          <p><b>Il richiedente</b> (chi sceglie il giorno) può prima avvisare il collega con un messaggio a parte, poi gli manda il codice: contiene già il giorno richiesto, e l'app del collega lo seleziona da sola. Il collega risponde mandando il proprio codice, che il richiedente incolla qui sotto.</p>
           <div class="azioni" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn chiaro" onclick="CambioTurno.inviaAvvisoWhatsApp()"><i class="fab fa-whatsapp"></i> Avvisa il collega</button>
             <button type="button" class="btn chiaro" onclick="CambioTurno.copiaMioCodice()"><i class="fas fa-copy"></i> Copia il mio codice</button>
-            <button type="button" class="btn verde" onclick="CambioTurno.inviaCodiceWhatsApp()"><i class="fab fa-whatsapp" style="margin-right:8px;"></i> Manda su WhatsApp</button>
+            <button type="button" class="btn verde" onclick="CambioTurno.inviaCodiceWhatsApp()"><i class="fab fa-whatsapp" style="margin-right:8px;"></i> Manda il codice su WhatsApp</button>
           </div>
-          <textarea class="cambio-textarea" id="codice-collega" placeholder="Incolla qui il codice del collega (es. TH1:...)" oninput="CambioTurno.leggiCodiceCollega()"></textarea>
+          <textarea class="cambio-textarea" id="codice-collega" placeholder="Incolla qui il codice del collega (inizia con TH2:)" oninput="CambioTurno.leggiCodiceCollega()"></textarea>
           <div id="info-collega" style="font-size:14px;color:var(--muted);margin-top:6px"></div>
         </div>
 
@@ -625,10 +626,7 @@ const CambioTurno = (() => {
       toast('Carica prima il PDF dei tuoi turni');
       return null;
     }
-    const c = 'TH1:' + b64(JSON.stringify({
-      n: nomeUtente || 'Collega',
-      t: turniSalvati.map(t => [t.dataIso, t.codiceTurno, t.inizio, t.fine])
-    }));
+    const c = codiceMio();
     
     const testo = c;
     const urlWa = 'https://wa.me/?text=' + encodeURIComponent(testo);
@@ -700,10 +698,7 @@ const CambioTurno = (() => {
       toast('Carica prima il PDF dei tuoi turni');
       return;
     }
-    const c = 'TH1:' + b64(JSON.stringify({
-      n: nomeUtente || 'Collega',
-      t: turniSalvati.map(t => [t.dataIso, t.codiceTurno, t.inizio, t.fine])
-    }));
+    const c = codiceMio();
     try {
       await navigator.clipboard.writeText(c);
       $('info-collega').textContent = 'Codice copiato: incollalo in un messaggio al collega.';
@@ -713,23 +708,58 @@ const CambioTurno = (() => {
     }
   }
 
+  // Codice breve: nome, giorno richiesto e solo i turni nei 5 giorni attorno (bastano per il controllo del riposo).
+  function codiceMio() {
+    const o = { n: nomeUtente || 'Collega', m: turniSalvati[0].dataIso.slice(0, 7) };
+    let lista = turniSalvati;
+    if (dataSelezionataIso) {
+      o.d = dataSelezionataIso;
+      lista = turniSalvati.filter(t => Math.abs((new Date(t.dataIso) - new Date(dataSelezionataIso)) / 864e5) <= 5);
+    }
+    o.t = lista.map(t => [Number(t.dataIso.slice(8, 10)), t.codiceTurno, t.inizio, t.fine]);
+    return 'TH2:' + b64(JSON.stringify(o));
+  }
+  function selezionaGiorno(iso) {
+    dataSelezionataIso = iso;
+    const [y, m] = iso.split('-').map(Number);
+    annoCorrente = y; meseCorrente = m;
+    const t = turniSalvati.find(x => x.dataIso === iso);
+    $('data-scelta-txt').textContent = iso + (t ? ` (${t.codiceTurno}: ${t.inizio} - ${t.fine})` : ' (nessun turno)');
+    disegnaCalendarioInterattivo();
+  }
+  function inviaAvvisoWhatsApp() {
+    if (!dataSelezionataIso) { toast('Scegli prima il giorno del cambio'); return; }
+    const t = 'Ciao, ti chiedo il cambio turno per il giorno ' + itData(dataSelezionataIso) + '. Ti mando il codice nel messaggio successivo: copialo e incollalo in TurniHub.';
+    window.location.href = 'whatsapp://send?text=' + encodeURIComponent(t);
+  }
+
   function leggiCodiceCollega() {
     const raw = $('codice-collega').value.trim();
-    const mt = raw.match(/TH1:[A-Za-z0-9+\/=_-]+/);
+    const mt = raw.match(/TH[12]:[A-Za-z0-9+\/=_-]+/);
     const v = mt ? mt[0] : raw;
     collega = null;
+    $('info-collega').style.fontWeight = '400';
     if (!v) {
       $('info-collega').textContent = '';
     } else {
       try {
-        if (!v.startsWith('TH1:')) throw 0;
+        if (!/^TH[12]:/.test(v)) throw 0;
         const o = JSON.parse(unb64(v.slice(4)));
+        const breve = v.startsWith('TH2:');
         collega = {
           nome: o.n,
-          turni: o.t.map(a => ({ dataIso: a[0], codiceTurno: a[1], inizio: a[2], fine: a[3] }))
+          turni: o.t.map(a => breve ? { dataIso: o.m + '-' + pad(a[0]), codiceTurno: a[1], inizio: a[2], fine: a[3] }
+                                    : { dataIso: a[0], codiceTurno: a[1], inizio: a[2], fine: a[3] })
         };
         $('cm-coll').value = collega.nome;
-        $('info-collega').textContent = `Collega: ${collega.nome} (${collega.turni.length} turni)`;
+        let testo = `Collega: ${collega.nome} (${collega.turni.length} turni)`;
+        if (o.d && o.d !== dataSelezionataIso) {   // il collega mi sta chiedendo un cambio: seleziono il suo giorno
+          selezionaGiorno(o.d);
+          testo = `${collega.nome} chiede il cambio per il giorno ${itData(o.d)}. ` + testo;
+          $('info-collega').style.fontWeight = '700';
+          toast('Richiesta di cambio per il giorno ' + itData(o.d));
+        }
+        $('info-collega').textContent = testo;
       } catch (e) {
         $('info-collega').textContent = 'Codice non valido: chiedi al collega di copiarlo di nuovo.';
       }
@@ -998,6 +1028,7 @@ const CambioTurno = (() => {
     cambiaMese,
     copiaMioCodice,
     inviaCodiceWhatsApp,
+    inviaAvvisoWhatsApp,
     leggiCodiceCollega,
     eseguiVerificaCambio,
     inviaEsitoWhatsApp,
