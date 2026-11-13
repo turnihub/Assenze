@@ -131,6 +131,16 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
 .fld{display:block;font-size:13px;color:var(--muted);margin-top:10px}
 .fld input{display:block;width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:16px;margin-top:4px;color:var(--ink)}
 .chk{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:15px;cursor:pointer}.chk input{width:20px;height:20px;flex:none}
+
+/* Cambio turno: dati, sintesi, giorni cambiati */
+.cm-2{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:0 12px}
+.cm-h3{margin:26px 0 6px;font-size:17px;color:var(--primary);border-top:1px solid var(--line);padding-top:18px}
+.giorno-cell.cambiato{border-color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber)}
+.cb{font-weight:800;color:#b45309}.giorno-cell.sel .cb{color:#fff}
+.turno-card.cambiato{border-left-color:var(--amber)}
+.cambio-nota{font-size:13px;background:#fff7e6;border:1px solid #f3d089;border-radius:8px;padding:8px 10px;line-height:1.7}
+.cambio-tag{display:inline-block;background:var(--amber);color:#1b2430;font-weight:800;font-size:11px;letter-spacing:.04em;padding:2px 7px;border-radius:5px;margin-right:8px}
+.cambio-annulla{border:0;background:none;color:var(--primary);text-decoration:underline;cursor:pointer;padding:0 0 0 8px;font-size:13px}
 </style>
 </head>
 <body>
@@ -197,12 +207,17 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
           </div>
           <div class="g7" id="cambio-dows"></div>
           <div class="g7" id="cambio-grid-giorni"></div>
+          <div class="hint"><b style="color:#b45309">⇄</b> = giorno in cui hai già cambiato turno (i dettagli sono nella lista "I miei turni").</div>
         </div>
 
         <div class="panel">
-          <h2>2. Turni del collega</h2>
-          <p><b>Il richiedente</b> (chi sceglie il giorno) può prima avvisare il collega con un messaggio a parte, poi gli manda il codice: contiene già il giorno richiesto, e l'app del collega lo seleziona da sola. Il collega risponde mandando il proprio codice, che il richiedente incolla qui sotto.</p>
-          <div class="azioni" style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <h2>2. Tu e il collega</h2>
+          <p>Controlla i tuoi dati: vanno nel codice che mandi al collega e nel modulo. <b>Il richiedente</b> (chi sceglie il giorno) può prima avvisare il collega con un messaggio a parte, poi gli manda il codice: contiene già il giorno richiesto, e l'app del collega lo seleziona da sola. Il collega risponde mandando il proprio codice, che il richiedente incolla qui sotto.</p>
+          <div class="cm-2">
+            <label class="fld">Il tuo nome<input type="text" id="cm-mio-nome" autocomplete="off"></label>
+            <label class="fld">Il tuo CID<input type="text" id="cm-mio-cid" inputmode="numeric" autocomplete="off"></label>
+          </div>
+          <div class="azioni" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top:14px">
             <button type="button" class="btn chiaro" onclick="CambioTurno.inviaAvvisoWhatsApp()"><i class="fab fa-whatsapp"></i> Avvisa il collega</button>
             <button type="button" class="btn chiaro" onclick="CambioTurno.copiaMioCodice()"><i class="fas fa-copy"></i> Copia il mio codice</button>
             <button type="button" class="btn verde" onclick="CambioTurno.inviaCodiceWhatsApp()"><i class="fab fa-whatsapp" style="margin-right:8px;"></i> Manda il codice su WhatsApp</button>
@@ -219,11 +234,17 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
           <button type="button" class="btn" id="btn-wa-esito" style="display:none;width:100%;margin-top:10px;background:#25D366" onclick="CambioTurno.inviaEsitoWhatsApp()"><i class="fab fa-whatsapp"></i> Invia esito su WhatsApp</button>
         </div>
 
-        <div class="panel">
+        <div class="panel" id="pannello-modulo">
           <h2>4. Modulo di richiesta cambio turno</h2>
-          <p>Compila il modulo con i dati del cambio e invialo per email.</p>
-          <label class="fld">Richiedente<input type="text" id="cm-rich"></label>
-          <label class="fld">Collega<input type="text" id="cm-coll"></label>
+          <p>Il modulo lo prepara e lo invia solo chi ha chiesto il cambio, così l'ufficio ne riceve uno solo. Quando lo invii o lo scarichi, il cambio entra nel tuo calendario.</p>
+          <div class="cm-2">
+            <label class="fld">Richiedente<input type="text" id="cm-rich" autocomplete="off"></label>
+            <label class="fld">CID<input type="text" id="cm-rich-cid" inputmode="numeric" autocomplete="off"></label>
+          </div>
+          <div class="cm-2">
+            <label class="fld">Collega<input type="text" id="cm-coll" autocomplete="off"></label>
+            <label class="fld">CID<input type="text" id="cm-coll-cid" inputmode="numeric" autocomplete="off"></label>
+          </div>
           <label class="fld">Motivo<input type="text" id="cm-motivo" value="Motivi familiari"></label>
           <label class="fld">Indirizzo a cui inviare (resta salvato)<input type="text" id="cm-dest" inputmode="email" autocomplete="email" placeholder="es. ufficio@azienda.it"></label>
           <label class="chk"><input type="checkbox" id="cm-firma"><span>Aggiungi le firme (i due nomi scritti a mano)</span></label>
@@ -236,6 +257,26 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
           <div class="msg" id="cm-msg" aria-live="polite"></div>
           <div class="row"><a class="btn verde" id="cm-mailto" href="#" hidden><i class="fas fa-envelope-open-text"></i> Apri la posta</a></div>
           <div class="hint">Se il telefono lo permette, "Invia per email" apre l'elenco delle app e il PDF è già allegato. Altrimenti il PDF viene scaricato e compare "Apri la posta": si apre una email con destinatario, oggetto e testo pronti e devi solo allegare il file scaricato.</div>
+
+          <h3 class="cm-h3">Sintesi per il collega</h3>
+          <p>Il collega non deve mandare nessun modulo. Dopo aver inviato il tuo, mandagli la sintesi: contiene un codice che aggiorna il suo calendario.</p>
+          <div class="azioni">
+            <button type="button" class="btn verde" id="sint-wa" onclick="CambioTurno.inviaSintesiWhatsApp()" disabled><i class="fab fa-whatsapp"></i> Manda la sintesi su WhatsApp</button>
+            <button type="button" class="btn chiaro" id="sint-copia" onclick="CambioTurno.copiaSintesi()" disabled><i class="fas fa-copy"></i> Copia la sintesi</button>
+          </div>
+        </div>
+
+        <div class="panel" id="pannello-collega" style="display:none">
+          <h2>4. Il modulo lo invia il richiedente</h2>
+          <p>Il cambio l'ha chiesto <b id="chi-modulo">il collega</b>: sarà lui a inviare il modulo all'ufficio, tu non devi inviare nulla. Quando ti manda la sintesi, incollala nel punto 5 per aggiornare il tuo calendario.</p>
+        </div>
+
+        <div class="panel" id="pannello-sintesi">
+          <h2>5. Hai ricevuto la sintesi di un cambio?</h2>
+          <p>Incolla qui il messaggio che ti ha mandato il collega: il tuo calendario si aggiorna e il giorno risulta CAMBIATO.</p>
+          <textarea class="cambio-textarea" id="codice-sintesi" placeholder="Incolla qui la sintesi (contiene un codice che inizia con TH3:)" oninput="CambioTurno.leggiSintesi()"></textarea>
+          <div id="info-sintesi" style="font-size:14px;color:var(--muted);margin-top:6px"></div>
+          <button type="button" class="btn verde" id="btn-applica-sintesi" style="width:100%;margin-top:12px" onclick="CambioTurno.applicaSintesi()" disabled><i class="fas fa-calendar-check"></i> Aggiorna il mio calendario</button>
         </div>
       </section>
 
@@ -375,6 +416,83 @@ let turniSalvati = JSON.parse(localStorage.getItem('turnihub_turni')) || [];
 let nomeUtente = localStorage.getItem('turnihub_utente') || '';
 let noteGiornaliere = JSON.parse(localStorage.getItem('turnihub_note_giornaliere')) || {};
 
+// --- CAMBI TURNO CONFERMATI (restano anche se ricarichi il PDF del mese) ---
+// Il calendario contiene sempre il turno effettivo; qui si ricorda cosa è stato ceduto, a chi e cosa è stato preso.
+function parseNomeCid(s) {
+  s = String(s || '').trim();
+  const m = s.match(/^(.*?)\s*\((?:CID\s*)?(\d+)\)\s*$/i);   // "NOME COGNOME (5402)" oppure "(CID 5402)"
+  return m ? { nome: m[1].trim(), cid: m[2] } : { nome: s, cid: '' };
+}
+const nomeCid = (nome, cid) => cid ? `${nome} (CID ${cid})` : nome;
+const stessoTurno = (t, x) => !!t && !!x && t.codiceTurno === x.cod && t.inizio === x.ini && t.fine === x.fin;
+
+function normalizzaCambio(c) {
+  try {
+    const turno = x => (x && /^[A-Z]{1,4}\d{0,4}[A-Z]?$/.test(x.cod) && /^\d{2}:\d{2}$/.test(x.ini) && /^\d{2}:\d{2}$/.test(x.fin))
+      ? { cod: x.cod, ini: x.ini, fin: x.fin } : null;
+    if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(c.d)) return null;
+    const ceduto = turno(c.ceduto), preso = turno(c.preso);
+    if (!ceduto || !preso || !c.con) return null;
+    return { d: c.d, ceduto, preso, con: { n: String(c.con.n || '').slice(0, 100), c: String(c.con.c || '').replace(/\D/g, '').slice(0, 12) }, ts: Number(c.ts) || 0 };
+  } catch (e) { return null; }
+}
+let cambi = [];
+try { cambi = (JSON.parse(localStorage.getItem('turnihub_cambi')) || []).map(normalizzaCambio).filter(Boolean); } catch (e) { cambi = []; }
+const salvaCambi = () => { try { localStorage.setItem('turnihub_cambi', JSON.stringify(cambi)); } catch (e) {} };
+const salvaTurni = () => { try { localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati)); } catch (e) {} };
+const cambioDelGiorno = iso => cambi.find(c => c.d === iso);
+const itDataG = iso => iso.split('-').reverse().join('/');
+
+// Mette il cambio nel calendario: il turno del giorno diventa quello preso. Restituisce { ok, gia, motivo }.
+function registraCambio(c) {
+  const t = turniSalvati.find(x => x.dataIso === c.d);
+  if (!t) return { ok: false, motivo: 'il giorno ' + itDataG(c.d) + ' non è nei turni caricati' };
+  const reg = cambioDelGiorno(c.d);
+  if (stessoTurno(t, c.preso)) {                       // già aggiornato (anche a mano): registro solo l'etichetta
+    if (!reg) { cambi.push({ ...c, ts: Date.now() }); salvaCambi(); }
+    return { ok: true, gia: true };
+  }
+  if (!stessoTurno(t, c.ceduto)) {
+    return { ok: false, motivo: `il tuo turno del ${itDataG(c.d)} risulta ${t.codiceTurno} (${t.inizio}-${t.fine}), mentre il cambio parte da ${c.ceduto.cod} (${c.ceduto.ini}-${c.ceduto.fin})` };
+  }
+  t.codiceTurno = c.preso.cod; t.inizio = c.preso.ini; t.fine = c.preso.fin;
+  cambi = cambi.filter(x => x.d !== c.d);
+  cambi.push({ d: c.d, ceduto: c.ceduto, preso: c.preso, con: c.con, ts: Date.now() });
+  salvaCambi(); salvaTurni();
+  return { ok: true };
+}
+
+// Dopo aver caricato un nuovo PDF: rimette i cambi già confermati. Restituisce quanti ne ha riapplicati.
+function riapplicaCambi() {
+  let n = 0;
+  cambi.forEach(c => {
+    const t = turniSalvati.find(x => x.dataIso === c.d);
+    if (t && stessoTurno(t, c.ceduto)) { t.codiceTurno = c.preso.cod; t.inizio = c.preso.ini; t.fine = c.preso.fin; n++; }
+  });
+  return n;
+}
+
+function annullaCambio(iso) {
+  const c = cambioDelGiorno(iso);
+  if (!c) return;
+  if (!confirm(`Annullare il cambio del ${itDataG(iso)}? Il turno torna ${c.ceduto.cod} (${c.ceduto.ini}-${c.ceduto.fin}).`)) return;
+  const t = turniSalvati.find(x => x.dataIso === iso);
+  if (t && stessoTurno(t, c.preso)) { t.codiceTurno = c.ceduto.cod; t.inizio = c.ceduto.ini; t.fine = c.ceduto.fin; }
+  cambi = cambi.filter(x => x.d !== iso);
+  salvaCambi(); salvaTurni();
+  disegnaCalendario(turniSalvati);
+  if (typeof CambioTurno !== 'undefined') CambioTurno.ridisegna();
+  toast('Cambio annullato');
+}
+
+function cambioHtml(iso) {
+  const c = cambioDelGiorno(iso);
+  if (!c) return '';
+  const o = t => `${esc(t.cod)} ${esc(t.ini)}-${esc(t.fin)}`;
+  const chi = c.con.n ? esc(c.con.n) + (c.con.c ? ` (CID ${esc(c.con.c)})` : '') : 'il collega';
+  return `<div class="cambio-nota"><span class="cambio-tag">CAMBIATO</span>Ceduto ${o(c.ceduto)} a ${chi} · preso ${o(c.preso)}<button type="button" class="cambio-annulla" onclick="annullaCambio('${c.d}')">Annulla</button></div>`;
+}
+
 // MENU PRINCIPALE
 const SEZIONI = [
   { id: 'sec-carica',  etichetta: 'Carica turni',     icona: 'fa-file-pdf' },
@@ -498,13 +616,14 @@ function elaboraPDFLocale() {
       }
 
       turniSalvati = turni.sort((a, b) => a.dataIso.localeCompare(b.dataIso));
+      const nCambi = riapplicaCambi();
       nomeUtente = `${nome} ${cognome} (${matricola})`;
       localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati));
       localStorage.setItem('turnihub_utente', nomeUtente);
 
       document.getElementById('nome-utente-sidebar').textContent = nomeUtente;
       statoDiv.style.color = '#28a745';
-      statoDiv.textContent = `Caricati con successo ${turni.length} turni!`;
+      statoDiv.textContent = `Caricati con successo ${turni.length} turni!` + (nCambi ? ` ${nCambi === 1 ? 'Un cambio turno è stato riapplicato' : nCambi + ' cambi turno sono stati riapplicati'} (giorni CAMBIATI).` : '');
 
       disegnaCalendario(turniSalvati);
       CambioTurno.aggiornaDaPdf(anno, mese);
@@ -539,6 +658,7 @@ function disegnaCalendario(calendario) {
     } else if (["R", "RIS", "RIP"].includes(g.codiceTurno)) {
       div.style.borderLeftColor = "#28a745";
     }
+    if (cambioDelGiorno(g.dataIso)) { div.classList.add('cambiato'); div.style.borderLeftColor = 'var(--amber)'; }
     const notaSalvata = noteGiornaliere[g.dataIso] || "";
     div.innerHTML = `
       <div class="turno-info-top">
@@ -548,6 +668,7 @@ function disegnaCalendario(calendario) {
           <small>(${esc(g.inizio)}-${esc(g.fine)})</small>
         </span>
       </div>
+      ${cambioHtml(g.dataIso)}
       <div class="nota-giorno-box">
         <input type="text" id="nota-${g.dataIso}" value="${esc(notaSalvata)}" placeholder="Aggiungi nota per questo giorno...">
         <button onclick="salvaNotaGiorno('${g.dataIso}')" title="Salva nota"><i class="fas fa-save"></i></button>
@@ -588,6 +709,9 @@ function disegnaCalendario(calendario) {
     }
   }
 
+  // Se cambio a mano un turno già cambiato, l'etichetta CAMBIATO non è più valida
+  if (cambioDelGiorno(t.dataIso)) { cambi = cambi.filter(c => c.d !== t.dataIso); salvaCambi(); }
+
   // Salva i turni aggiornati nel LocalStorage
   localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati));
   
@@ -612,44 +736,67 @@ const CambioTurno = (() => {
   const RIPOSO_ORE = 9;
   const RIPOSI = ['R', 'RIS', 'RIP'];
   const MESI_NOMI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  const GENERICO = /^\s*collega\s*$/i;   // nome "di riserva" che le vecchie versioni mettevano nel codice
 
-  let collega = null;
+  let collega = null;            // { nome, cid, turni } letto dal codice ricevuto
   let esitoCorrente = null;
   let dataSelezionataIso = null;
+  let ruolo = 'richiedente';     // 'richiedente' = ho scelto io il giorno; 'collega' = il giorno è arrivato dal codice ricevuto
+  let sintesiRicevuta = null;
   let annoCorrente = new Date().getFullYear();
   let meseCorrente = new Date().getMonth() + 1;
 
   const $ = id => document.getElementById(id);
+  const itData = iso => iso.split('-').reverse().join('/');
+  const soloCifre = s => String(s || '').replace(/\D/g, '').slice(0, 12);
+  const oreTurno = t => t.ini + '-' + t.fin;
+  const descrTurno = t => t.cod + ' (' + oreTurno(t) + ')';
+
+  // ---- I miei dati (nome e CID) ----
+  function leggiIdentita() {
+    return { nome: $('cm-mio-nome').value.trim(), cid: soloCifre($('cm-mio-cid').value) };
+  }
+  function salvaIdentita() {
+    const { nome, cid } = leggiIdentita();
+    if (!nome) return;
+    nomeUtente = cid ? `${nome} (${cid})` : nome;
+    try { localStorage.setItem('turnihub_utente', nomeUtente); } catch (e) {}
+    if (turniSalvati.length) $('nome-utente-sidebar').textContent = nomeUtente;
+    $('cm-rich').value = nome;
+    $('cm-rich-cid').value = cid;
+    aggiornaPulsante();
+  }
+  function identitaOk() {
+    const { nome, cid } = leggiIdentita();
+    if (!nome || !cid) {
+      toast('Scrivi prima il tuo nome e il tuo CID (punto 2)');
+      (!nome ? $('cm-mio-nome') : $('cm-mio-cid')).focus();
+      return false;
+    }
+    salvaIdentita();
+    return true;
+  }
+
+  // Turni miei, ma con il turno originale al posto di quello preso col cambio (serve a controlli, codice e modulo dopo l'invio)
+  function mieiPerCambio() {
+    const c = dataSelezionataIso && cambioDelGiorno(dataSelezionataIso);
+    if (!c) return turniSalvati;
+    return turniSalvati.map(t => (t.dataIso === c.d && stessoTurno(t, c.preso))
+      ? { ...t, codiceTurno: c.ceduto.cod, inizio: c.ceduto.ini, fine: c.ceduto.fin } : t);
+  }
 
   function generaMioCodice() {
     if (!turniSalvati.length) {
       toast('Carica prima il PDF dei tuoi turni');
       return null;
     }
-    const c = codiceMio();
-    
-    const testo = c;
-    const urlWa = 'https://wa.me/?text=' + encodeURIComponent(testo);
-    
-    const btnWa = $('btn-wa-link');
-    if (btnWa) {
-      btnWa.href = urlWa;
-    }
-    return c;
+    if (!identitaOk()) return null;
+    return codiceMio();
   }
   function inviaCodiceWhatsApp() {
-    if (!turniSalvati.length) {
-      toast('Carica prima il PDF dei tuoi turni');
-      return;
-    }
     const c = generaMioCodice();
     if (!c) return;
-
-    const testo = c;
-    
-    // Usa il protocollo nativo dell'app per aprirla direttamente
-    const urlWa = 'whatsapp://send?text=' + encodeURIComponent(testo);
-    window.location.href = urlWa;
+    window.location.href = 'whatsapp://send?text=' + encodeURIComponent(c);
   }
 
   function disegnaCalendarioInterattivo() {
@@ -670,11 +817,13 @@ const CambioTurno = (() => {
     for (let d = 1; d <= totali; d++) {
       const iso = `${annoCorrente}-${pad(meseCorrente)}-${pad(d)}`;
       const t = turniSalvati.find(x => x.dataIso === iso);
+      const cb = cambioDelGiorno(iso);
       const c = document.createElement('div');
-      c.className = 'giorno-cell' + (t ? ' has-turno' : '') + (dataSelezionataIso === iso ? ' sel' : '');
-      c.innerHTML = `<span><b>${d}</b></span>${t ? `<span class="et">${esc(t.codiceTurno)}</span>` : ''}`;
+      c.className = 'giorno-cell' + (t ? ' has-turno' : '') + (cb ? ' cambiato' : '') + (dataSelezionataIso === iso ? ' sel' : '');
+      c.innerHTML = `<span><b>${d}</b>${cb ? ' <span class="cb" title="Turno cambiato">⇄</span>' : ''}</span>${t ? `<span class="et">${esc(t.codiceTurno)}</span>` : ''}`;
       c.onclick = () => {
         dataSelezionataIso = iso;
+        ruolo = 'richiedente';          // il giorno l'ho scelto io
         $('data-scelta-txt').textContent = iso + (t ? ` (${t.codiceTurno}: ${t.inizio} - ${t.fine})` : ' (nessun turno)');
         disegnaCalendarioInterattivo();
         aggiornaPulsante();
@@ -693,28 +842,30 @@ const CambioTurno = (() => {
   const b64 = s => btoa(unescape(encodeURIComponent(s)));
   const unb64 = s => decodeURIComponent(escape(atob(s)));
 
-  async function copiaMioCodice() {
-    if (!turniSalvati.length) {
-      toast('Carica prima il PDF dei tuoi turni');
-      return;
-    }
-    const c = codiceMio();
+  async function copiaTesto(testo, msgOk, msgPrompt, infoId) {
     try {
-      await navigator.clipboard.writeText(c);
-      $('info-collega').textContent = 'Codice copiato: incollalo in un messaggio al collega.';
-      toast('Codice copiato negli appunti');
+      await navigator.clipboard.writeText(testo);
+      if (infoId) $(infoId).textContent = msgOk;
+      toast('Copiato negli appunti');
     } catch (e) {
-      prompt('Copia questo codice e mandalo al collega:', c);
+      prompt(msgPrompt, testo);
     }
   }
+  async function copiaMioCodice() {
+    const c = generaMioCodice();
+    if (!c) return;
+    copiaTesto(c, 'Codice copiato: incollalo in un messaggio al collega.', 'Copia questo codice e mandalo al collega:', 'info-collega');
+  }
 
-  // Codice breve: nome, giorno richiesto e solo i turni nei 5 giorni attorno (bastano per il controllo del riposo).
+  // Codice breve: nome, CID, giorno richiesto e solo i turni nei 5 giorni attorno (bastano per il controllo del riposo).
   function codiceMio() {
-    const o = { n: nomeUtente || 'Collega', m: turniSalvati[0].dataIso.slice(0, 7) };
-    let lista = turniSalvati;
+    const { nome, cid } = leggiIdentita();
+    const miei = mieiPerCambio();
+    const o = { n: nome, c: cid, m: miei[0].dataIso.slice(0, 7) };
+    let lista = miei;
     if (dataSelezionataIso) {
       o.d = dataSelezionataIso;
-      lista = turniSalvati.filter(t => Math.abs((new Date(t.dataIso) - new Date(dataSelezionataIso)) / 864e5) <= 5);
+      lista = miei.filter(t => Math.abs((new Date(t.dataIso) - new Date(dataSelezionataIso)) / 864e5) <= 5);
     }
     o.t = lista.map(t => [Number(t.dataIso.slice(8, 10)), t.codiceTurno, t.inizio, t.fine]);
     return 'TH2:' + b64(JSON.stringify(o));
@@ -746,16 +897,25 @@ const CambioTurno = (() => {
         if (!/^TH[12]:/.test(v)) throw 0;
         const o = JSON.parse(unb64(v.slice(4)));
         const breve = v.startsWith('TH2:');
+        const pn = parseNomeCid(o.n);              // i vecchi codici avevano il CID dentro il nome, tra parentesi
+        const cid = soloCifre(o.c || pn.cid);
+        const mancaNome = !pn.nome || GENERICO.test(pn.nome);
         collega = {
-          nome: o.n,
+          nome: mancaNome ? '' : pn.nome,
+          cid,
           turni: o.t.map(a => breve ? { dataIso: o.m + '-' + pad(a[0]), codiceTurno: a[1], inizio: a[2], fine: a[3] }
                                     : { dataIso: a[0], codiceTurno: a[1], inizio: a[2], fine: a[3] })
         };
         $('cm-coll').value = collega.nome;
-        let testo = `Collega: ${collega.nome} (${collega.turni.length} turni)`;
+        $('cm-coll-cid').value = collega.cid;
+        let testo = mancaNome
+          ? `Nel codice del collega manca il nome (${collega.turni.length} turni): scrivi tu nome e CID nel modulo, al punto 4.`
+          : `Collega: ${nomeCid(collega.nome, collega.cid)} (${collega.turni.length} turni)`;
+        if (!mancaNome && !collega.cid) testo += '. Manca il CID: scrivilo nel modulo, al punto 4.';
         if (o.d && o.d !== dataSelezionataIso) {   // il collega mi sta chiedendo un cambio: seleziono il suo giorno
           selezionaGiorno(o.d);
-          testo = `${collega.nome} chiede il cambio per il giorno ${itData(o.d)}. ` + testo;
+          ruolo = 'collega';
+          testo = `${collega.nome || 'Il collega'} chiede il cambio per il giorno ${itData(o.d)}. ` + testo;
           $('info-collega').style.fontWeight = '700';
           toast('Richiesta di cambio per il giorno ' + itData(o.d));
         }
@@ -768,8 +928,14 @@ const CambioTurno = (() => {
   }
 
   function aggiornaPulsante() {
-    $('btn-verifica').disabled = !(collega && dataSelezionataIso);
-    ['cm-mail', 'cm-open', 'cm-dl'].forEach(i => $(i).disabled = !(collega && dataSelezionataIso));
+    const pronto = !!(collega && dataSelezionataIso);
+    const rich = ruolo === 'richiedente';
+    $('btn-verifica').disabled = !pronto;
+    ['cm-mail', 'cm-open', 'cm-dl', 'sint-wa', 'sint-copia'].forEach(i => $(i).disabled = !pronto);
+    // il modulo lo prepara e lo invia solo chi ha chiesto il cambio
+    $('pannello-modulo').style.display = rich ? '' : 'none';
+    $('pannello-collega').style.display = rich ? 'none' : '';
+    if (!rich) $('chi-modulo').textContent = collega && collega.nome ? nomeCid(collega.nome, collega.cid) : 'chi ti ha chiesto il cambio';
   }
 
   const ts = (iso, hm) => {
@@ -806,28 +972,27 @@ const CambioTurno = (() => {
     const diffOre = (dataSceltaMs - adesso) / 36e5;
 
     if (diffOre < 60) {
-      return { 
-        esito: 'ROSSO', 
-        messaggio: 'Il cambio non è possibile: non si possono effettuare cambi turno a meno di 60 ore di preavviso.' 
+      return {
+        esito: 'ROSSO',
+        messaggio: 'Il cambio non è possibile: non si possono effettuare cambi turno a meno di 60 ore di preavviso.'
       };
     }
 
     // 2. Controllo se uno dei due ha un codice di riposo o riserva (R, RIS, RIP) nel giorno scelto
-    // Cerchiamo il turno esatto del giorno scelto per l'utente e per il collega
-    const turnoUtenteGiorno = turniSalvati.find(t => t.dataIso === dataSelezionataIso);
+    const turnoUtenteGiorno = mieiPerCambio().find(t => t.dataIso === dataSelezionataIso);
     const turnoCollegaGiorno = collega.turni.find(t => t.dataIso === dataSelezionataIso);
 
     const codiceU = turnoUtenteGiorno ? turnoUtenteGiorno.codiceTurno : '';
     const codiceC = turnoCollegaGiorno ? turnoCollegaGiorno.codiceTurno : '';
 
     if (RIPOSI.includes(codiceU) || RIPOSI.includes(codiceC) || !codiceU || !codiceC) {
-      return { 
-        esito: 'ROSSO', 
-        messaggio: 'Il cambio non è possibile con RIS/ASSENTE/RIPOSO.' 
+      return {
+        esito: 'ROSSO',
+        messaggio: 'Il cambio non è possibile con RIS/ASSENTE/RIPOSO.'
       };
     }
 
-    // 3. Controllo standard delle ore di riposo (11 ore)
+    // 3. Controllo standard delle ore di riposo
     const H = 36e5, u = payload.utente, c = payload.collega, ok = [], ko = [];
     const ctrl = (chi, da, a) => {
       if (da == null || a == null) return;
@@ -859,8 +1024,8 @@ const CambioTurno = (() => {
   async function eseguiVerificaCambio() {
     mostraEsito('neutro-box', 'Calcolo in corso...');
     const payload = {
-      nomeCollega: collega.nome,
-      utente: contesto(turniSalvati, dataSelezionataIso),
+      nomeCollega: collega.nome || 'Il collega',
+      utente: contesto(mieiPerCambio(), dataSelezionataIso),
       collega: contesto(collega.turni, dataSelezionataIso)
     };
     const r = calcolaRiposo(payload);
@@ -871,13 +1036,12 @@ const CambioTurno = (() => {
 
   function inviaEsitoWhatsApp() {
     if (!esitoCorrente) return;
-    const t = 'Verifica cambio turno del ' + itData(dataSelezionataIso) + (collega ? ' con ' + collega.nome : '') + ':\n' + esitoCorrente.messaggio;
+    const t = 'Verifica cambio turno del ' + itData(dataSelezionataIso) + (collega && collega.nome ? ' con ' + collega.nome : '') + ':\n' + esitoCorrente.messaggio;
     window.location.href = 'whatsapp://send?text=' + encodeURIComponent(t);
   }
 
 
-  // ---- Modulo "Richiesta cambio turno": compilazione e invio per email (come per il modulo HAND) ----
-  const itData = iso => iso.split('-').reverse().join('/');
+  // ---- Modulo "Richiesta cambio turno": compilazione e invio per email (solo il richiedente) ----
   const MOD_FILES = ['RICHIESTA CAMBIO TURNO.pdf', 'RICHIESTA_CAMBIO_TURNO.pdf'];
   const MOD_URL_DIRETTO = 'https://raw.githubusercontent.com/turnihub/Assenze/main/RICHIESTA%20CAMBIO%20TURNO.pdf';
   const MOD_FIRMA_FONT = 'https://cdn.jsdelivr.net/npm/@fontsource/mr-dafoe@5.3.0/files/mr-dafoe-latin-400-normal.woff';
@@ -892,12 +1056,22 @@ const CambioTurno = (() => {
     motivo: [80.7, 481.5, 399.1], addi: [102.3, 542.2, 99.6], f1: [80.7, 603.0, 133.0], f2: [345.1, 603.0, 133.0]
   };
   const KEYDEST = 'cambio_dest';
-  let _tpl = null, _bytes = null, _url = null, _fname = 'Richiesta_cambio_turno.pdf', _dati = null;
+  let _tpl = null, _bytes = null, _url = null, _fname = 'Richiesta_cambio_turno.pdf', _dati = null, _cambio = null;
   const cmsg = (t, c) => { $('cm-msg').textContent = t; $('cm-msg').className = 'msg ' + (c || ''); };
   const lavora = t => t && !RIPOSI.includes(String(t.codiceTurno).toUpperCase());
 
   function initModulo() {
-    if (nomeUtente) $('cm-rich').value = nomeUtente;
+    // i miei dati: li preparo solo se il campo è vuoto, per non cancellare ciò che sto scrivendo
+    if (!$('cm-mio-nome').value && !$('cm-mio-cid').value) {
+      let { nome, cid } = parseNomeCid(nomeUtente);
+      if (!nome) { try { nome = localStorage.getItem('fe_nome') || ''; } catch (e) {} }
+      if (!cid) { try { cid = localStorage.getItem('fe_cid') || ''; } catch (e) {} }
+      $('cm-mio-nome').value = nome;
+      $('cm-mio-cid').value = soloCifre(cid);
+    }
+    if (!$('cm-rich').value) $('cm-rich').value = $('cm-mio-nome').value.trim();
+    if (!$('cm-rich-cid').value) $('cm-rich-cid').value = soloCifre($('cm-mio-cid').value);
+    $('cm-mio-nome').onchange = $('cm-mio-cid').onchange = salvaIdentita;
     try { $('cm-dest').value = localStorage.getItem(KEYDEST) || ''; } catch (e) {}
     $('cm-dest').onchange = () => { try { localStorage.setItem(KEYDEST, $('cm-dest').value.trim()); } catch (e) {} };
   }
@@ -913,11 +1087,30 @@ const CambioTurno = (() => {
     }
     throw new Error('modulo vuoto non trovato nel repository (controlla il nome del file)');
   }
-  async function costruisciModulo() {
-    const mio = turniSalvati.find(t => t.dataIso === dataSelezionataIso), suo = collega.turni.find(t => t.dataIso === dataSelezionataIso);
+
+  // Nomi e CID dei due richiedenti, controllati: nel modulo non deve mai finire "Collega" o un campo vuoto
+  function personeModulo() {
+    const nomeR = $('cm-rich').value.trim(), cidR = soloCifre($('cm-rich-cid').value);
+    const nomeC = $('cm-coll').value.trim(), cidC = soloCifre($('cm-coll-cid').value);
+    if (!nomeR || !cidR) throw new Error('scrivi nome e CID del richiedente');
+    if (!nomeC || GENERICO.test(nomeC)) throw new Error('scrivi il nome del collega: nel suo codice non c\'era');
+    if (!cidC) throw new Error('scrivi il CID del collega');
+    return { nomeR, cidR, nomeC, cidC };
+  }
+  // Il turno "mio" e quello "suo" nel giorno scelto, con la fotografia del cambio
+  function datiCambio(p) {
+    const mio = mieiPerCambio().find(t => t.dataIso === dataSelezionataIso);
+    const suo = collega.turni.find(t => t.dataIso === dataSelezionataIso);
     if (!lavora(mio) || !lavora(suo)) throw new Error('per il modulo servono i turni di lavoro di entrambi nel giorno scelto');
-    const nomeR = $('cm-rich').value.trim(), nomeC = $('cm-coll').value.trim();
-    if (!nomeR || !nomeC) throw new Error('scrivi il nome del richiedente e quello del collega');
+    return {
+      mio, suo,
+      cambio: { d: dataSelezionataIso, ceduto: { cod: mio.codiceTurno, ini: mio.inizio, fin: mio.fine }, preso: { cod: suo.codiceTurno, ini: suo.inizio, fin: suo.fine }, con: { n: p.nomeC, c: p.cidC } }
+    };
+  }
+
+  async function costruisciModulo() {
+    const p = personeModulo();
+    const { mio, suo, cambio } = datiCambio(p);
     const { PDFDocument, StandardFonts, rgb, degrees } = PDFLib;
     const doc = await PDFDocument.load(await caricaModulo());
     const font = await doc.embedFont(StandardFonts.Helvetica), page = doc.getPages()[0], mb = page.getMediaBox();
@@ -928,30 +1121,49 @@ const CambioTurno = (() => {
       while (sz > 6 && font.widthOfTextAtSize(txt, sz) > w - 4) sz -= 0.5;
       page.drawText(txt, { x: x + 3, y: Y(y - 2.6), size: sz, font, color: col });
     };
+    // Nome + CID sulla riga; se non ci stanno in un corpo leggibile, il CID va sotto la riga
+    const scriviPersona = (k, nome, cid) => {
+      const [x, y, w] = FORM[k], pieno = nomeCid(nome, cid);
+      let sz = 11;
+      while (sz > 8.5 && font.widthOfTextAtSize(pieno, sz) > w - 4) sz -= 0.5;
+      if (font.widthOfTextAtSize(pieno, sz) <= w - 4) {
+        page.drawText(pieno, { x: x + 3, y: Y(y - 2.6), size: sz, font, color: col });
+      } else {
+        scrivi(k, nome);
+        page.drawText('CID ' + cid, { x: x + 3, y: Y(y + 7.4), size: 8, font, color: col });
+      }
+    };
     const giorno = itData(dataSelezionataIso), ore = t => t.inizio + '-' + t.fine, d = new Date();
-    scrivi('sott', nomeR); scrivi('sede', SEDE);
+    scriviPersona('sott', p.nomeR, p.cidR); scrivi('sede', SEDE);
     scrivi('dep', DEPOSITI[String(mio.codiceTurno).slice(0, 2).toUpperCase()] || 'Sede');
     scrivi('turno', mio.codiceTurno); scrivi('giorno', giorno); scrivi('ore', ore(mio));
-    scrivi('chiede', suo.codiceTurno); scrivi('assegnato', giorno); scrivi('alsig', nomeC);
-    scrivi('cuiSig', nomeC); scrivi('cuiTurno', mio.codiceTurno); scrivi('g1', giorno); scrivi('o1', ore(mio));
-    scrivi('eSig', nomeR); scrivi('eTurno', suo.codiceTurno); scrivi('g2', giorno); scrivi('o2', ore(suo));
+    scrivi('chiede', suo.codiceTurno); scrivi('assegnato', giorno); scriviPersona('alsig', p.nomeC, p.cidC);
+    scriviPersona('cuiSig', p.nomeC, p.cidC); scrivi('cuiTurno', mio.codiceTurno); scrivi('g1', giorno); scrivi('o1', ore(mio));
+    scriviPersona('eSig', p.nomeR, p.cidR); scrivi('eTurno', suo.codiceTurno); scrivi('g2', giorno); scrivi('o2', ore(suo));
     scrivi('motivo', $('cm-motivo').value.trim());
     scrivi('addi', pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear());
+    // sotto le due firme: nome e CID in stampatello, leggibili anche se la firma non lo è
+    [['f1', p.nomeR, p.cidR], ['f2', p.nomeC, p.cidC]].forEach(([k, n, c]) => {
+      const [x, y, w] = FORM[k], t = nomeCid(n, c); let sz = 8;
+      while (sz > 5.5 && font.widthOfTextAtSize(t, sz) > w + 40) sz -= 0.5;
+      page.drawText(t, { x: x + 3, y: Y(y + 9.5), size: sz, font, color: col });
+    });
     let nota = '';
     if ($('cm-firma').checked) {
       try {
         if (typeof fontkit === 'undefined') throw new Error('fontkit');
         doc.registerFontkit(fontkit);
         const sf = await doc.embedFont(await (await fetch(MOD_FIRMA_FONT)).arrayBuffer(), { subset: true });
-        [['f1', nomeR], ['f2', nomeC]].forEach(([k, n]) => {
+        [['f1', p.nomeR], ['f2', p.nomeC]].forEach(([k, n]) => {
           const [x, y, w] = FORM[k]; let sz = 22;
           while (sz > 8 && sf.widthOfTextAtSize(n, sz) > w - 6) sz -= 0.5;
           page.drawText(n, { x: x + 3, y: Y(y - 3.5), size: sz, font: sf, color: col, rotate: degrees(2) });
         });
       } catch (e) { nota = ' Le firme non sono state inserite: il carattere non si è caricato.'; }
     }
-    _dati = { giorno, nomeR, nomeC };
-    _fname = 'Richiesta_cambio_turno_' + giorno.replace(/\//g, '-') + '_' + nomeR.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '') + '.pdf';
+    _dati = { giorno, nomeR: nomeCid(p.nomeR, p.cidR), nomeC: nomeCid(p.nomeC, p.cidC), soloNomeR: p.nomeR };
+    _cambio = cambio;
+    _fname = 'Richiesta_cambio_turno_' + giorno.replace(/\//g, '-') + '_' + p.nomeR.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '') + '.pdf';
     return { bytes: await doc.save(), nota };
   }
   async function preparaModulo() {
@@ -962,7 +1174,7 @@ const CambioTurno = (() => {
     _url = URL.createObjectURL(new Blob([_bytes], { type: 'application/pdf' }));
     return r.nota;
   }
-  const oggettoMail = () => 'Richiesta cambio turno del ' + _dati.giorno + ' - ' + _dati.nomeR;
+  const oggettoMail = () => 'Richiesta cambio turno del ' + _dati.giorno + ' - ' + _dati.soloNomeR;
   const corpoMail = () => 'Buongiorno,\n\nin allegato la richiesta di cambio turno del giorno ' + _dati.giorno + ' tra ' + _dati.nomeR + ' e ' + _dati.nomeC + '.\n\nCordiali saluti\n' + _dati.nomeR;
   function motivoNoShare(file) {
     if (location.protocol === 'file:') return 'la pagina è aperta come file del telefono, non da un indirizzo web';
@@ -972,6 +1184,17 @@ const CambioTurno = (() => {
     return '';
   }
   function scaricaFile() { const a = document.createElement('a'); a.href = _url; a.download = _fname; document.body.appendChild(a); a.click(); a.remove(); }
+
+  // Quando il modulo è stato inviato o scaricato, il cambio entra nel mio calendario
+  function confermaCambioDopoInvio() {
+    if (!_cambio) return '';
+    const r = registraCambio(_cambio);
+    disegnaCalendario(turniSalvati);
+    disegnaCalendarioInterattivo();
+    if (!r.ok) return ' Calendario non aggiornato: ' + r.motivo + '.';
+    return r.gia ? '' : ' Il tuo calendario è aggiornato: il giorno risulta CAMBIATO. Ora manda la sintesi al collega.';
+  }
+
   async function inviaModulo() {
     try {
       const dest = $('cm-dest').value.trim();
@@ -983,7 +1206,7 @@ const CambioTurno = (() => {
       if (!motivo) {
         try {
           await navigator.share({ files: [f], title: oggettoMail(), text: corpoMail() });
-          cmsg('Scegli la tua app di posta: il PDF è già allegato.' + nota, 'ok');
+          cmsg('Scegli la tua app di posta: il PDF è già allegato.' + nota + confermaCambioDopoInvio(), 'ok');
           return;
         } catch (e) {
           if (e && e.name === 'AbortError') return;
@@ -994,7 +1217,7 @@ const CambioTurno = (() => {
       const a = $('cm-mailto');
       a.href = 'mailto:' + encodeURIComponent(dest).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(oggettoMail()) + '&body=' + encodeURIComponent(corpoMail());
       a.hidden = false;
-      cmsg('Allegato automatico non possibile: ' + motivo + '. Il PDF è stato scaricato (' + _fname + '). Tocca "Apri la posta" e allegalo a mano dalla cartella Download.' + nota, 'ok');
+      cmsg('Allegato automatico non possibile: ' + motivo + '. Il PDF è stato scaricato (' + _fname + '). Tocca "Apri la posta" e allegalo a mano dalla cartella Download.' + nota + confermaCambioDopoInvio(), 'ok');
     } catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
   }
   async function apriModulo() {
@@ -1002,8 +1225,74 @@ const CambioTurno = (() => {
     catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
   }
   async function scaricaModulo() {
-    try { const nota = await preparaModulo(); scaricaFile(); cmsg('PDF scaricato.' + nota, 'ok'); }
+    try { const nota = await preparaModulo(); scaricaFile(); cmsg('PDF scaricato.' + nota + confermaCambioDopoInvio(), 'ok'); }
     catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+
+  // ---- Sintesi per il collega (e codice che aggiorna il suo calendario) ----
+  function costruisciSintesi() {
+    const p = personeModulo();
+    const { cambio } = datiCambio(p);
+    const o = { v: 1, d: cambio.d, r: { n: p.nomeR, c: p.cidR }, c: { n: p.nomeC, c: p.cidC }, rt: cambio.ceduto, ct: cambio.preso };
+    const testo = 'Cambio turno del ' + itData(cambio.d) + ' tra ' + nomeCid(p.nomeR, p.cidR) + ' e ' + nomeCid(p.nomeC, p.cidC) + '.\n' +
+      'Tu passi da ' + descrTurno(cambio.preso) + ' a ' + descrTurno(cambio.ceduto) + '.\n' +
+      'Io passo da ' + descrTurno(cambio.ceduto) + ' a ' + descrTurno(cambio.preso) + '.\n' +
+      'Il modulo lo invio io all\'ufficio.\n\n' +
+      'Per aggiornare il tuo calendario in TurniHub: Cambio turno, punto 5, incolla questo codice:\n' +
+      'TH3:' + b64(JSON.stringify(o));
+    return testo;
+  }
+  function inviaSintesiWhatsApp() {
+    try { window.location.href = 'whatsapp://send?text=' + encodeURIComponent(costruisciSintesi()); }
+    catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+  function copiaSintesi() {
+    try { copiaTesto(costruisciSintesi(), 'Sintesi copiata.', 'Copia la sintesi e mandala al collega:', 'cm-msg'); }
+    catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+
+  // ---- Sintesi ricevuta: aggiorna il mio calendario ----
+  const turnoOk = t => !!t && typeof t === 'object' && /^[A-Z]{1,4}\d{0,4}[A-Z]?$/.test(t.cod) && /^\d{2}:\d{2}$/.test(t.ini) && /^\d{2}:\d{2}$/.test(t.fin);
+  const turnoPulito = t => ({ cod: t.cod, ini: t.ini, fin: t.fin });
+  function leggiSintesi() {
+    const raw = $('codice-sintesi').value.trim(), inf = $('info-sintesi'), btn = $('btn-applica-sintesi');
+    sintesiRicevuta = null; btn.disabled = true; inf.style.fontWeight = '400';
+    if (!raw) { inf.textContent = ''; return; }
+    try {
+      const mt = raw.match(/TH3:[A-Za-z0-9+\/=_-]+/);
+      if (!mt) throw 0;
+      const o = JSON.parse(unb64(mt[0].slice(4)));
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(o.d) || !turnoOk(o.rt) || !turnoOk(o.ct) || !o.r || !o.c) throw 0;
+      const pers = x => ({ n: String(x.n || '').slice(0, 100), c: soloCifre(x.c) });
+      sintesiRicevuta = { d: o.d, r: pers(o.r), c: pers(o.c), rt: turnoPulito(o.rt), ct: turnoPulito(o.ct) };
+      inf.textContent = `${nomeCid(sintesiRicevuta.r.n, sintesiRicevuta.r.c)} ha cambiato il turno del ${itData(o.d)} con te: tu cedi ${descrTurno(sintesiRicevuta.ct)} e prendi ${descrTurno(sintesiRicevuta.rt)}.`;
+      inf.style.fontWeight = '700';
+      btn.disabled = false;
+    } catch (e) {
+      inf.textContent = 'Codice non valido: chiedi di mandare di nuovo la sintesi.';
+    }
+  }
+  function applicaSintesi() {
+    const s = sintesiRicevuta;
+    if (!s) return;
+    const mio = parseNomeCid(nomeUtente).cid || leggiIdentita().cid;
+    if (mio && s.c.c && mio !== s.c.c) {
+      $('info-sintesi').textContent = `Questa sintesi è per ${nomeCid(s.c.n, s.c.c)}, ma il tuo CID è ${mio}. Non aggiorno il calendario.`;
+      return;
+    }
+    const r = registraCambio({ d: s.d, ceduto: s.ct, preso: s.rt, con: s.r });
+    if (!r.ok) {
+      $('info-sintesi').textContent = 'Calendario non aggiornato: ' + r.motivo + '.';
+      return;
+    }
+    disegnaCalendario(turniSalvati);
+    disegnaCalendarioInterattivo();
+    $('codice-sintesi').value = '';
+    sintesiRicevuta = null;
+    $('btn-applica-sintesi').disabled = true;
+    $('info-sintesi').style.fontWeight = '400';
+    $('info-sintesi').textContent = r.gia ? 'Questo cambio era già nel tuo calendario.' : `Fatto: il ${itData(s.d)} ora risulta CAMBIATO. Lo vedi nella lista "I miei turni".`;
+    toast(r.gia ? 'Cambio già presente' : 'Calendario aggiornato');
   }
 
   return {
@@ -1021,10 +1310,12 @@ const CambioTurno = (() => {
       annoCorrente = anno;
       meseCorrente = mese;
       dataSelezionataIso = null;
+      ruolo = 'richiedente';
       $('data-scelta-txt').textContent = 'nessuno';
       disegnaCalendarioInterattivo();
       aggiornaPulsante();
     },
+    ridisegna() { disegnaCalendarioInterattivo(); aggiornaPulsante(); },
     cambiaMese,
     copiaMioCodice,
     inviaCodiceWhatsApp,
@@ -1034,7 +1325,11 @@ const CambioTurno = (() => {
     inviaEsitoWhatsApp,
     inviaModulo,
     apriModulo,
-    scaricaModulo
+    scaricaModulo,
+    inviaSintesiWhatsApp,
+    copiaSintesi,
+    leggiSintesi,
+    applicaSintesi
   };
 })();
 
@@ -1562,7 +1857,7 @@ function esportaBackup() {
   for (const [k, ls] of Object.entries(CHIAVI_ASSENZE)) {
     try { assenze[k] = localStorage.getItem(ls) || ''; } catch (e) {}
   }
-  const blob = new Blob([JSON.stringify({ turniSalvati, noteGiornaliere, assenze, nomeUtente, hand: JSON.parse(Hand.esporta()) }, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify({ turniSalvati, noteGiornaliere, assenze, nomeUtente, hand: JSON.parse(Hand.esporta()), cambi }, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `backup_turnihub_${new Date().toISOString().split('T')[0]}.json`;
@@ -1621,6 +1916,7 @@ function importaBackup(event) {
         }
         Assenze.ricarica();
       }
+      if (Array.isArray(b.cambi)) { cambi = b.cambi.slice(0, 500).map(normalizzaCambio).filter(Boolean); salvaCambi(); }
       if (b.hand) Hand.importa(b.hand);
       disegnaCalendario(turniSalvati);
       CambioTurno.avvia();
