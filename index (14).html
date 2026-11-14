@@ -1,0 +1,2432 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TurniHub</title>
+<link rel="icon" type="image/png" sizes="192x192" href="https://drive.google.com/thumbnail?id=1gpquj6b4zUNurHsTzAV9T-KLq-WvHDci&sz=w512">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+</script>
+<style>
+:root{--primary:#0056b3;--primary-dark:#003f85;--soft:#e3eefb;--ink:#1b2430;--muted:#5f6b7a;--line:#dde3ea;--bg:#eef2f6;--card:#fff;--success:#28a745;--danger:#dc3545;--amber:#f59e0b;--accent:var(--primary);--accent-soft:var(--soft);--pending:var(--amber)}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+button,textarea{font:inherit}:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.app{display:flex;height:100vh;height:100dvh;overflow:hidden}
+.sidebar{width:340px;flex:0 0 340px;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;position:relative;transition:margin-left .3s;z-index:100}
+.sidebar.nascosta{margin-left:-340px}
+.linguetta{position:absolute;right:-30px;top:50%;transform:translateY(-50%);width:30px;height:64px;border:0;background:var(--primary);color:#fff;border-radius:0 10px 10px 0;cursor:pointer}
+.sb-head{background:var(--primary-dark);color:#fff;padding:18px 20px}.sb-head h3{margin:0;font-size:19px}.sb-head small{display:block;margin-top:4px;opacity:.85}
+.sb-lista{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;position:relative}
+.vuoto{color:var(--muted);text-align:center;margin:20px 0}
+.turno-card{background:#f4f7fb;border-left:4px solid var(--primary);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.turno-info-top{display:flex;justify-content:space-between;gap:8px;font-size:15px}
+.nota-giorno-box{display:flex;gap:6px}
+.nota-giorno-box input{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+.nota-giorno-box button{width:42px;border:0;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer}
+.main{flex:1;min-width:0;overflow-y:auto;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:18px;padding:14px 24px;background:var(--primary);color:#fff}
+.logo{background:#fff;border-radius:12px;padding:6px 14px;display:flex;flex:0 0 auto;max-width:100%}
+.logo img{height:64px;width:auto;max-width:100%;object-fit:contain;display:block}
+.brand h1{margin:0;font-size:26px;line-height:1.1}.brand p{margin:4px 0 0;font-size:14px;opacity:.9}
+.btn-turni{display:none;background:#fff;color:var(--primary);border:0;border-radius:999px;padding:10px 18px;font-weight:600;cursor:pointer}
+.tabs{position:sticky;top:0;z-index:50;display:flex;gap:8px;overflow-x:auto;padding:12px 20px;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 2px 8px rgba(20,30,50,.08);scrollbar-width:none}
+.tab{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:13px 16px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;font-weight:600;font-size:16px;cursor:pointer}
+.tab i{font-size:17px}.lab-breve{display:none}
+.tab.attiva{background:var(--primary);border-color:var(--primary);color:#fff}
+.content{flex:1;width:100%;max-width:1040px;margin:0 auto;padding:22px 24px}
+.sezione{display:none}.sezione.attiva{display:block}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px}
+.panel h2{margin:0 0 8px;font-size:20px;color:var(--primary)}.panel p{color:var(--muted);margin:0 0 16px;max-width:62ch;font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border:0;border-radius:10px;background:var(--primary);color:#fff;font-weight:600;cursor:pointer}
+.btn.verde{background:var(--success)}.btn.chiaro{background:#fff;color:var(--primary);border:1px solid var(--primary)}.btn:disabled{background:#c5ccd4;cursor:not-allowed}
+.azioni{display:flex;gap:12px;flex-wrap:wrap}#stato-caricamento-pdf{margin-top:14px;font-weight:600}
+.assenze-grid{display:grid;gap:16px;grid-template-columns:1fr}
+footer{padding:16px;text-align:center;font-size:12px;color:var(--muted)}
+#modal-privacy{position:fixed;inset:0;background:rgba(10,20,35,.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.privacy-box{background:#fff;max-width:600px;width:100%;max-height:90vh;overflow:auto;padding:28px;border-radius:14px;display:flex;flex-direction:column;gap:14px}
+.privacy-box h2{margin:0;color:var(--primary);font-size:21px}.privacy-box ul{margin:0;padding-left:20px;font-size:14px;color:#3c4654}
+.privacy-box label{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:14px;cursor:pointer;background:#f4f7fb;padding:12px;border-radius:10px}
+.scrim{display:none}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:10000}.toast.on{opacity:1;transform:translate(-50%,0)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.card h2{margin:0 0 12px;font-size:17px;text-transform:none;letter-spacing:0;color:var(--ink)}
+:where(.card) label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+:where(.card) input[type=text],:where(.card) input[type=date]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:16px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cal-head button{background:none;border:1px solid var(--line);border-radius:8px;width:38px;height:38px;font-size:18px;cursor:pointer}
+.cal-title{font-weight:600;text-transform:capitalize}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{text-align:center;font-size:12px;color:var(--muted);padding:4px 0;font-weight:bold}
+.day{aspect-ratio:1;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:15px;cursor:pointer}
+.day.empty{border:none;background:none;cursor:default}
+.day.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+.day.pending{background:var(--pending);color:#fff;border-color:var(--pending)}
+.day.today{outline:2px solid var(--accent-soft)}
+.hint{font-size:13px;color:var(--muted);margin-top:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:6px 12px;font-size:14px;display:flex;gap:8px;align-items:center}
+.chip button{border:none;background:none;color:var(--accent);font-size:16px;cursor:pointer;padding:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+button.primary{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 18px;font-size:16px;cursor:pointer}
+button.primary:disabled{opacity:.4;cursor:not-allowed}
+button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);border-radius:10px;padding:12px 18px;font-size:16px;cursor:pointer}
+.msg{font-size:13px;margin-top:10px}.msg.err{color:#b91c1c}.msg.ok{color:#047857}
+#preview{width:100%;height:420px;border:1px solid var(--line);border-radius:8px;margin-top:12px;display:none}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--ink);margin:14px 0 4px;cursor:pointer}
+.chk input{width:20px;height:20px;margin-top:2px;flex:0 0 auto}
+.tipi-card{grid-column:1/-1}.tipi{display:flex;gap:8px;flex-wrap:wrap}
+.tipo{flex:1 1 140px;padding:12px 10px;font-size:16px;border:1px solid var(--accent);background:#fff;color:var(--accent);border-radius:10px;cursor:pointer}
+.tipo.on{background:var(--accent);color:#fff}
+
+/* Stili specifici per la sezione Cambio Turno */
+.g7{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.giorno-cell{min-height:62px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px;font-size:13px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between}
+.giorno-cell.empty{border:0;background:none;cursor:default}
+.giorno-cell.has-turno{background:#f0f7ff;border-color:#b9d6f2}
+.giorno-cell.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
+.et{font-weight:bold;font-size:11px;background:var(--primary);color:#fff;padding:2px 4px;border-radius:4px;text-align:center}
+.sel .et{background:#fff;color:var(--primary)}
+.cambio-textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;min-height:84px;margin-top:12px}
+.box{margin-top:14px;padding:14px;border-radius:8px;font-weight:600;white-space:pre-line}
+.verde-box{background:#d4edda;color:#155724}.rosso-box{background:#f8d7da;color:#721c24}.neutro-box{background:#e9eef4}
+
+@media(min-width:900px){.assenze-grid{grid-template-columns:1fr 1fr}#preview.on{display:block}}
+@media(max-width:860px){
+  .sidebar{position:fixed;top:0;bottom:0;left:0;width:min(340px,88vw);flex:none;transform:translateX(-100%);transition:transform .25s}
+  .sidebar.aperta{transform:none}.linguetta{display:none}
+  .scrim.on{display:block;position:fixed;inset:0;background:rgba(10,20,35,.5);z-index:90}
+  .brand{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 14px;padding:12px 14px}
+  .logo{padding:6px 10px;border-radius:10px}.logo img{height:50px}
+  .brand h1{font-size:24px}.brand p{font-size:13px;margin-top:3px;line-height:1.3}
+  .btn-turni{grid-column:1/-1;display:inline-flex;justify-content:center;align-items:center;gap:8px;min-height:44px}
+  .tabs{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;overflow:visible;padding:8px 10px}
+  .tab{flex-direction:column;justify-content:center;gap:4px;min-height:62px;padding:8px 2px;border-radius:14px;font-size:12px;line-height:1.15;text-align:center}
+  .tab i{font-size:22px}.lab-lungo{display:none}.lab-breve{display:inline}
+  .content{padding:16px 14px}.panel{padding:18px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Sezione Programmazione HAND */
+.h-seg{display:inline-flex;border:1px solid var(--primary);border-radius:10px;overflow:hidden;margin:14px 0 8px}
+.h-segopt{display:flex!important;align-items:center;margin:0!important;padding:10px 16px;cursor:pointer;font-size:15px!important;color:var(--primary)!important;background:#fff}
+.h-segopt input{position:absolute;opacity:0;pointer-events:none}
+.h-segopt:has(input:checked){background:var(--primary);color:#fff!important;font-weight:600}
+.h-segopt:has(input:focus-visible){outline:3px solid var(--amber);outline-offset:-3px}
+.h-grp{border-top:1px solid var(--line);padding:8px 0}
+.h-grp summary{cursor:pointer;font-weight:600;display:flex;justify-content:space-between;gap:12px;padding:4px 0}
+.h-cnt{color:var(--muted);font-weight:400;font-size:13px}
+.h-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 12px}
+.h-fields .h-wide{grid-column:1/-1}
+.h-mon{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px}
+.h-mon b{text-transform:capitalize}
+.h-due{font-size:13px;color:var(--muted);margin:2px 0 6px}
+.h-due.late,.h-warn{color:#b45309}
+.h-warn{font-size:13px;margin-top:6px}
+.h-sheets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin:12px 0 6px;align-items:start}
+.h-sheets figure{margin:0;min-width:0}
+.h-sheets figcaption{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.h-sheet{position:relative;width:100%;aspect-ratio:210/297;background:#fff;color:#111;container-type:inline-size;border:1px solid var(--line);box-shadow:0 2px 10px rgba(20,30,50,.12);overflow:hidden}
+.h-sheet .w{position:absolute;white-space:pre;line-height:1;font-family:"Times New Roman",Times,"Liberation Serif",serif;color:#111}
+.h-sheet .b{font-weight:700}
+.h-sheet .ln{position:absolute;background:#111}
+.fld{display:block;font-size:13px;color:var(--muted);margin-top:10px}
+.fld input{display:block;width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:16px;margin-top:4px;color:var(--ink)}
+.chk{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:15px;cursor:pointer}.chk input{width:20px;height:20px;flex:none}
+
+/* Cambio turno: dati, sintesi, giorni cambiati */
+.cm-2{display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:0 12px}
+.cm-h3{margin:26px 0 6px;font-size:17px;color:var(--primary);border-top:1px solid var(--line);padding-top:18px}
+.giorno-cell.cambiato{border-color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber)}
+.cb{font-weight:800;color:#b45309}.giorno-cell.sel .cb{color:#fff}
+.turno-card.cambiato{border-left-color:var(--amber)}
+.cambio-nota{font-size:13px;background:#fff7e6;border:1px solid #f3d089;border-radius:8px;padding:8px 10px;line-height:1.7}
+.cambio-tag{display:inline-block;background:var(--amber);color:#1b2430;font-weight:800;font-size:11px;letter-spacing:.04em;padding:2px 7px;border-radius:5px;margin-right:8px}
+.cambio-annulla{border:0;background:none;color:var(--primary);text-decoration:underline;cursor:pointer;padding:0 0 0 8px;font-size:13px}
+</style>
+</head>
+<body>
+
+<div id="modal-privacy"><div class="privacy-box">
+  <h2><i class="fas fa-shield-halved"></i> Informativa privacy e condizioni</h2>
+  <p style="margin:0;font-size:14px;color:#3c4654">Benvenuto su <b>TurniHub</b>. Prima di procedere, ecco come vengono gestite le tue informazioni:</p>
+  <ul>
+    <li><b>Nessun dato inviato a server:</b> i tuoi turni, le tue note e i dati delle richieste di assenza non vengono inviati ad alcun server o cloud di terze parti. Per funzionare, l'app scarica da servizi esterni (cdnjs, jsDelivr, GitHub, Google) alcune librerie, i caratteri e il modulo vuoto: questi servizi possono vedere il tuo indirizzo IP e il tipo di browser, ma non i tuoi dati.</li>
+    <li><b>Memoria locale (LocalStorage):</b> tutti i dati risiedono esclusivamente sul dispositivo (smartphone o computer) che stai utilizzando.</li>
+    <li><b>Responsabilità dei dati:</b> poiché i dati sono salvati solo sul tuo dispositivo, la loro conservazione e protezione è affidata al tuo terminale. Usa regolarmente la funzione di backup integrata per evitare perdite in caso di cambio dispositivo o pulizia del browser.</li>
+  </ul>
+  <label><input type="checkbox" id="check-privacy" onchange="togglePulsanteAccetta()" style="width:20px;height:20px;flex:none"> Ho letto, compreso e accetto l'informativa sulla privacy e la gestione locale dei dati.</label>
+  <button type="button" class="btn verde" id="btn-accetta-privacy" onclick="accettaPrivacy()" disabled>Accedi a TurniHub</button>
+</div></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <button class="linguetta" onclick="toggleCalendario()" aria-label="Mostra o nascondi i turni"><i id="icona-toggle" class="fas fa-chevron-left"></i></button>
+    <div class="sb-head">
+      <h3><i class="fas fa-calendar-days"></i> I miei turni</h3>
+      <small id="nome-utente-sidebar">Nessun turno caricato</small>
+    </div>
+    <div class="sb-lista" id="lista-turni-personali">
+      <div class="vuoto">Carica il PDF dei turni per iniziare.</div>
+    </div>
+  </aside>
+
+  <div class="scrim" id="scrim" onclick="toggleCalendario()"></div>
+
+  <div class="main" id="main">
+    <header class="brand">
+      <span class="logo"><img src="logo faisa cisal.png" alt="Logo Faisa Cisal"></span>
+      <div>
+        <h1>TurniHub</h1>
+        <p>Turni, cambio turno, assenze e note personali sul tuo dispositivo</p>
+      </div>
+      <button class="btn-turni" onclick="toggleCalendario()"><i class="fas fa-calendar-days"></i> I miei turni</button>
+    </header>
+
+    <nav class="tabs" id="nav" aria-label="Sezioni"></nav>
+
+    <div class="content">
+      <!-- SEZIONE 1: CARICA TURNI -->
+      <section id="sec-carica" class="sezione attiva">
+        <div class="panel">
+          <h2><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Carica il piano turni (PDF)</h2>
+          <p>Seleziona il PDF ufficiale dei turni. I dati vengono letti ed elaborati interamente sul tuo dispositivo.</p>
+          <input type="file" id="filePdfInput" accept="application/pdf" style="display:none" onchange="elaboraPDFLocale()">
+          <button type="button" class="btn verde" onclick="document.getElementById('filePdfInput').click()"><i class="fas fa-upload"></i> Scegli il PDF</button>
+          <div id="stato-caricamento-pdf"></div>
+        </div>
+      </section>
+
+      <!-- SEZIONE 2: CAMBIO TURNO -->
+      <section id="sec-cambio" class="sezione">
+        <div class="panel">
+          <h2>1. Tocca il giorno del cambio</h2>
+          <p>Seleziona sul calendario il giorno in cui vorresti effettuare lo scambio turno.</p>
+          <div class="cal-head">
+            <button type="button" onclick="CambioTurno.cambiaMese(-1)">‹</button>
+            <div class="cal-title" id="cambio-cal-title"></div>
+            <button type="button" onclick="CambioTurno.cambiaMese(1)">›</button>
+          </div>
+          <div class="g7" id="cambio-dows"></div>
+          <div class="g7" id="cambio-grid-giorni"></div>
+          <div class="hint"><b style="color:#b45309">⇄</b> = giorno in cui hai già cambiato turno (i dettagli sono nella lista "I miei turni").</div>
+        </div>
+
+        <div class="panel">
+          <h2>2. Tu e il collega</h2>
+          <p>Controlla i tuoi dati: vanno nel codice che mandi al collega e nel modulo. <b>Il richiedente</b> (chi sceglie il giorno) può prima avvisare il collega con un messaggio a parte, poi gli manda il codice: contiene già il giorno richiesto, e l'app del collega lo seleziona da sola. Il collega risponde mandando il proprio codice, che il richiedente incolla qui sotto.</p>
+          <div class="cm-2">
+            <label class="fld">Il tuo nome<input type="text" id="cm-mio-nome" autocomplete="off"></label>
+            <label class="fld">Il tuo CID<input type="text" id="cm-mio-cid" inputmode="numeric" autocomplete="off"></label>
+          </div>
+          <div class="azioni" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top:14px">
+            <button type="button" class="btn chiaro" onclick="CambioTurno.inviaAvvisoWhatsApp()"><i class="fab fa-whatsapp"></i> Avvisa il collega</button>
+            <button type="button" class="btn chiaro" onclick="CambioTurno.copiaMioCodice()"><i class="fas fa-copy"></i> Copia il mio codice</button>
+            <button type="button" class="btn verde" onclick="CambioTurno.inviaCodiceWhatsApp()"><i class="fab fa-whatsapp" style="margin-right:8px;"></i> Manda il codice su WhatsApp</button>
+          </div>
+          <textarea class="cambio-textarea" id="codice-collega" placeholder="Incolla qui il codice del collega (inizia con TH2:)" oninput="CambioTurno.leggiCodiceCollega()"></textarea>
+          <div id="info-collega" style="font-size:14px;color:var(--muted);margin-top:6px"></div>
+        </div>
+
+        <div class="panel">
+          <h2>3. Verifica il riposo</h2>
+          <p>Giorno scelto: <b id="data-scelta-txt">nessuno</b></p>
+          <button type="button" class="btn verde" id="btn-verifica" style="width:100%" onclick="CambioTurno.eseguiVerificaCambio()" disabled>Verifica il cambio</button>
+          <div class="box" id="risultato-box" style="display:none"></div>
+          <button type="button" class="btn" id="btn-wa-esito" style="display:none;width:100%;margin-top:10px;background:#25D366" onclick="CambioTurno.inviaEsitoWhatsApp()"><i class="fab fa-whatsapp"></i> Invia esito su WhatsApp</button>
+        </div>
+
+        <div class="panel" id="pannello-modulo">
+          <h2>4. Modulo di richiesta cambio turno</h2>
+          <p>Il modulo lo prepara e lo invia solo chi ha chiesto il cambio, così l'ufficio ne riceve uno solo. Quando lo invii o lo scarichi, il cambio entra nel tuo calendario.</p>
+          <div class="cm-2">
+            <label class="fld">Richiedente<input type="text" id="cm-rich" autocomplete="off"></label>
+            <label class="fld">CID<input type="text" id="cm-rich-cid" inputmode="numeric" autocomplete="off"></label>
+          </div>
+          <div class="cm-2">
+            <label class="fld">Collega<input type="text" id="cm-coll" autocomplete="off"></label>
+            <label class="fld">CID<input type="text" id="cm-coll-cid" inputmode="numeric" autocomplete="off"></label>
+          </div>
+          <label class="fld">Motivo<input type="text" id="cm-motivo" value="Motivi familiari"></label>
+          <label class="fld">Indirizzo a cui inviare (resta salvato)<input type="text" id="cm-dest" inputmode="email" autocomplete="email" placeholder="es. ufficio@azienda.it"></label>
+          <label class="chk"><input type="checkbox" id="cm-firma"><span>Aggiungi le firme (i due nomi scritti a mano)</span></label>
+          <div class="hint" style="margin-top:4px">Sono solo una grafica generata dai nomi: non sono firme autografe né digitali valide. Se l'ufficio le richiede vere, lascia la casella vuota e firma a penna.</div>
+          <div class="row">
+            <button type="button" class="primary" id="cm-mail" onclick="CambioTurno.inviaModulo()" disabled><i class="fas fa-envelope"></i> Invia per email</button>
+            <button type="button" class="ghost" id="cm-open" onclick="CambioTurno.apriModulo()" disabled>Apri PDF</button>
+            <button type="button" class="ghost" id="cm-dl" onclick="CambioTurno.scaricaModulo()" disabled>Scarica</button>
+          </div>
+          <div class="msg" id="cm-msg" aria-live="polite"></div>
+          <div class="row"><a class="btn verde" id="cm-mailto" href="#" hidden><i class="fas fa-envelope-open-text"></i> Apri la posta</a></div>
+          <div class="hint">Se il telefono lo permette, "Invia per email" apre l'elenco delle app e il PDF è già allegato. Altrimenti il PDF viene scaricato e compare "Apri la posta": si apre una email con destinatario, oggetto e testo pronti e devi solo allegare il file scaricato.</div>
+
+          <h3 class="cm-h3">Sintesi per il collega</h3>
+          <p>Il collega non deve mandare nessun modulo. Dopo aver inviato il tuo, mandagli la sintesi: contiene un codice che aggiorna il suo calendario.</p>
+          <div class="azioni">
+            <button type="button" class="btn verde" id="sint-wa" onclick="CambioTurno.inviaSintesiWhatsApp()" disabled><i class="fab fa-whatsapp"></i> Manda la sintesi su WhatsApp</button>
+            <button type="button" class="btn chiaro" id="sint-copia" onclick="CambioTurno.copiaSintesi()" disabled><i class="fas fa-copy"></i> Copia la sintesi</button>
+          </div>
+        </div>
+
+        <div class="panel" id="pannello-collega" style="display:none">
+          <h2>4. Il modulo lo invia il richiedente</h2>
+          <p>Il cambio l'ha chiesto <b id="chi-modulo">il collega</b>: sarà lui a inviare il modulo all'ufficio, tu non devi inviare nulla. Quando ti manda la sintesi, incollala nel punto 5 per aggiornare il tuo calendario.</p>
+        </div>
+
+        <div class="panel" id="pannello-sintesi">
+          <h2>5. Hai ricevuto la sintesi di un cambio?</h2>
+          <p>Incolla qui il messaggio che ti ha mandato il collega: il tuo calendario si aggiorna e il giorno risulta CAMBIATO.</p>
+          <textarea class="cambio-textarea" id="codice-sintesi" placeholder="Incolla qui la sintesi (contiene un codice che inizia con TH3:)" oninput="CambioTurno.leggiSintesi()"></textarea>
+          <div id="info-sintesi" style="font-size:14px;color:var(--muted);margin-top:6px"></div>
+          <button type="button" class="btn verde" id="btn-applica-sintesi" style="width:100%;margin-top:12px" onclick="CambioTurno.applicaSintesi()" disabled><i class="fas fa-calendar-check"></i> Aggiorna il mio calendario</button>
+        </div>
+      </section>
+
+      <!-- SEZIONE 3: ASSENZE -->
+      <section id="sec-assenze" class="sezione">
+        <div class="assenze-grid">
+          <section class="card tipi-card">
+            <h2>Tipo di richiesta</h2>
+            <div class="tipi" id="tipi"></div>
+          </section>
+          <section class="card">
+            <h2>1 · Scegli i giorni</h2>
+            <div class="cal-head">
+              <button id="prev" aria-label="Mese precedente">‹</button>
+              <div class="cal-title" id="title"></div>
+              <button id="next" aria-label="Mese successivo">›</button>
+            </div>
+            <div class="grid" id="dows"></div>
+            <div class="grid" id="days"></div>
+            <div class="hint">Tocca il primo giorno e poi l'ultimo per selezionare un periodo. Tocca lo stesso giorno due volte per un giorno singolo.</div>
+            <label>Periodi scelti</label>
+            <div class="chips" id="chips"></div>
+            <div class="msg" id="periodMsg"></div>
+            <div class="row"><button class="ghost" id="clear">Azzera selezione</button></div>
+          </section>
+          <section class="card">
+            <h2>2 · Dati del modulo</h2>
+            <div class="msg" id="tplMsg"></div>
+            <div class="row" style="margin-top:6px"><button class="ghost" id="retry" style="display:none">Riprova a caricare il modulo</button></div>
+            <label for="nome">Nome e cognome</label>
+            <input type="text" id="nome" autocomplete="name">
+            <label for="cid">Cid</label>
+            <input type="text" id="cid" inputmode="numeric">
+            <label for="dataPres">Data presentazione</label>
+            <input type="date" id="dataPres">
+            <label for="note">Note (facoltative)</label>
+            <input type="text" id="note">
+            <label class="chk" for="firma"><input type="checkbox" id="firma"> <span>Aggiungi la firma (nome scritto a mano in stile firma)</span></label>
+            <div class="hint" style="margin-top:0">È solo una grafica generata dal nome: non è una firma autografa né una firma digitale valida. Controlla che l'ufficio la accetti, altrimenti lascia la casella vuota e firma a penna dopo la stampa.</div>
+            <div class="row">
+              <button class="primary" id="gen" disabled>Compila il modulo</button>
+            </div>
+            <div class="msg" id="genMsg"></div>
+            <div class="row" id="outBtns" style="display:none">
+              <button class="ghost" id="open">Apri PDF</button>
+              <button class="ghost" id="dl">Scarica</button>
+              <button class="ghost" id="share" style="display:none">Condividi</button>
+            </div>
+            <div class="hint" id="shareHint" style="display:none">Su smartphone puoi anche usare "Condividi" per inviare il PDF con WhatsApp, posta o altre app.</div>
+            <iframe id="preview" title="Anteprima"></iframe>
+          </section>
+        </div>
+      </section>
+
+      <!-- SEZIONE: PROGRAMMAZIONE HAND -->
+      <section id="sec-hand" class="sezione">
+        <div class="assenze-grid">
+          <section class="card">
+            <h2>1 · Carica i tuoi dati</h2>
+            <div class="hint" style="margin-top:0">Scegli un PDF, un Word (.docx) o un .txt con i tuoi dati, per esempio il modulo compilato il mese scorso. I campi si riempiono da soli e restano modificabili.</div>
+            <input type="file" id="h-file" accept=".pdf,.docx,.txt,application/pdf" style="display:none">
+            <div class="row"><button type="button" class="btn verde" id="h-btn-file"><i class="fas fa-upload"></i> Scegli il file</button></div>
+            <div class="msg" id="h-up-msg"></div>
+            <div class="h-seg" role="radiogroup" aria-label="Chi assisti">
+              <label class="h-segopt"><input type="radio" name="h-modo" id="h-modo-fam" value="familiare"> Un familiare</label>
+              <label class="h-segopt"><input type="radio" name="h-modo" id="h-modo-se" value="se"> Me stesso</label>
+            </div>
+            <div id="h-groups"></div>
+            <div class="hint">I dati restano su questo dispositivo e sono inclusi nel backup di Privacy e backup.</div>
+            <div class="row"><button type="button" class="ghost" id="h-clear">Svuota i dati</button></div>
+          </section>
+
+          <section class="card">
+            <h2>2 · Scegli i giorni</h2>
+            <div class="cal-head">
+              <button type="button" id="h-prev" aria-label="Mese precedente">‹</button>
+              <div class="cal-title" id="h-title"></div>
+              <button type="button" id="h-next" aria-label="Mese successivo">›</button>
+            </div>
+            <div class="grid" id="h-dows"></div>
+            <div class="grid" id="h-days"></div>
+            <div class="hint">Tocca i giorni uno a uno, anche di mesi diversi. Tocca di nuovo per toglierli.</div>
+            <label>Giorni scelti</label>
+            <div id="h-sel"></div>
+            <label for="h-luogo">Luogo</label>
+            <input type="text" id="h-luogo" autocomplete="off">
+            <label for="h-data">Data</label>
+            <input type="date" id="h-data">
+            <div class="row"><button type="button" class="ghost" id="h-none">Azzera giorni</button></div>
+          </section>
+
+          <section class="card" style="grid-column:1/-1">
+            <h2>3 · Controlla e invia</h2>
+            <div class="msg" id="h-miss"></div>
+            <div class="h-sheets" id="h-sheets"></div>
+            <label for="h-dest">Indirizzo a cui inviare (facoltativo, resta salvato)</label>
+            <input type="text" id="h-dest" inputmode="email" autocomplete="email" placeholder="es. ufficio@azienda.it">
+            <div class="row">
+              <button type="button" class="primary" id="h-mail" disabled><i class="fas fa-envelope"></i> Invia per email</button>
+              <button type="button" class="ghost" id="h-open" disabled>Apri PDF</button>
+              <button type="button" class="ghost" id="h-dl" disabled>Scarica</button>
+            </div>
+            <div class="msg" id="h-msg" aria-live="polite"></div>
+            <div class="row"><a class="btn verde" id="h-mailto" href="#" hidden><i class="fas fa-envelope-open-text"></i> Apri la posta</a></div>
+            <div class="hint">Se il telefono lo permette, "Invia per email" apre l'elenco delle app: scegli Aruba Mail (o la tua app di posta) e il PDF è già allegato. Altrimenti il PDF viene scaricato e compare il pulsante "Apri la posta": si apre una nuova email con destinatario, oggetto e testo già pronti e devi solo allegare il file scaricato. Se usi la posta dal sito, <a href="https://webmail.aruba.it" target="_blank" rel="noopener">apri Aruba Webmail</a> e allega il PDF.</div>
+          </section>
+        </div>
+      </section>
+
+      <!-- SEZIONE 4: PRIVACY E BACKUP -->
+      <section id="sec-privacy" class="sezione">
+        <div class="panel">
+          <h2><i class="fas fa-shield-halved"></i> Privacy e gestione dati (backup)</h2>
+          <p><strong>Come sono protetti i tuoi dati:</strong> TurniHub non invia i tuoi dati a nessun server. I tuoi turni, le note giornaliere e i dati delle richieste di assenza sono salvati solo nella memoria del tuo browser (<i>LocalStorage</i>). Il file di backup è in chiaro: conservalo con attenzione.</p>
+          <p><strong>Come evitare di perderli se cambi telefono o browser:</strong> esporta un file di backup sul tuo dispositivo e ricaricalo quando vuoi.</p>
+          <div class="azioni">
+            <button class="btn" onclick="esportaBackup()"><i class="fas fa-download"></i> Esporta backup dati</button>
+            <label class="btn chiaro" style="cursor:pointer"><i class="fas fa-upload"></i> Importa backup <input type="file" id="fileBackupInput" accept=".json" style="display:none" onchange="importaBackup(event)"></label>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer>TurniHub App &bull; Sviluppato per uso privato su dispositivo locale</footer>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<script>
+const pad = n => String(n).padStart(2, '0');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let turniSalvati = JSON.parse(localStorage.getItem('turnihub_turni')) || [];
+let nomeUtente = localStorage.getItem('turnihub_utente') || '';
+let noteGiornaliere = JSON.parse(localStorage.getItem('turnihub_note_giornaliere')) || {};
+
+// --- CAMBI TURNO CONFERMATI (restano anche se ricarichi il PDF del mese) ---
+// Il calendario contiene sempre il turno effettivo; qui si ricorda cosa è stato ceduto, a chi e cosa è stato preso.
+function parseNomeCid(s) {
+  s = String(s || '').trim();
+  const m = s.match(/^(.*?)\s*\((?:CID\s*)?(\d+)\)\s*$/i);   // "NOME COGNOME (5402)" oppure "(CID 5402)"
+  return m ? { nome: m[1].trim(), cid: m[2] } : { nome: s, cid: '' };
+}
+const nomeCid = (nome, cid) => cid ? `${nome} (CID ${cid})` : nome;
+const stessoTurno = (t, x) => !!t && !!x && t.codiceTurno === x.cod && t.inizio === x.ini && t.fine === x.fin;
+
+function normalizzaCambio(c) {
+  try {
+    const turno = x => (x && /^[A-Z]{1,4}\d{0,4}[A-Z]?$/.test(x.cod) && /^\d{2}:\d{2}$/.test(x.ini) && /^\d{2}:\d{2}$/.test(x.fin))
+      ? { cod: x.cod, ini: x.ini, fin: x.fin } : null;
+    if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(c.d)) return null;
+    const ceduto = turno(c.ceduto), preso = turno(c.preso);
+    if (!ceduto || !preso || !c.con) return null;
+    return { d: c.d, ceduto, preso, con: { n: String(c.con.n || '').slice(0, 100), c: String(c.con.c || '').replace(/\D/g, '').slice(0, 12) }, ts: Number(c.ts) || 0 };
+  } catch (e) { return null; }
+}
+let cambi = [];
+try { cambi = (JSON.parse(localStorage.getItem('turnihub_cambi')) || []).map(normalizzaCambio).filter(Boolean); } catch (e) { cambi = []; }
+const salvaCambi = () => { try { localStorage.setItem('turnihub_cambi', JSON.stringify(cambi)); } catch (e) {} };
+const salvaTurni = () => { try { localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati)); } catch (e) {} };
+const cambioDelGiorno = iso => cambi.find(c => c.d === iso);
+const itDataG = iso => iso.split('-').reverse().join('/');
+
+// Mette il cambio nel calendario: il turno del giorno diventa quello preso. Restituisce { ok, gia, motivo }.
+function registraCambio(c) {
+  const t = turniSalvati.find(x => x.dataIso === c.d);
+  if (!t) return { ok: false, motivo: 'il giorno ' + itDataG(c.d) + ' non è nei turni caricati' };
+  const reg = cambioDelGiorno(c.d);
+  if (stessoTurno(t, c.preso)) {                       // già aggiornato (anche a mano): registro solo l'etichetta
+    if (!reg) { cambi.push({ ...c, ts: Date.now() }); salvaCambi(); }
+    return { ok: true, gia: true };
+  }
+  if (!stessoTurno(t, c.ceduto)) {
+    return { ok: false, motivo: `il tuo turno del ${itDataG(c.d)} risulta ${t.codiceTurno} (${t.inizio}-${t.fine}), mentre il cambio parte da ${c.ceduto.cod} (${c.ceduto.ini}-${c.ceduto.fin})` };
+  }
+  t.codiceTurno = c.preso.cod; t.inizio = c.preso.ini; t.fine = c.preso.fin;
+  cambi = cambi.filter(x => x.d !== c.d);
+  cambi.push({ d: c.d, ceduto: c.ceduto, preso: c.preso, con: c.con, ts: Date.now() });
+  salvaCambi(); salvaTurni();
+  return { ok: true };
+}
+
+// Dopo aver caricato un nuovo PDF: rimette i cambi già confermati. Restituisce quanti ne ha riapplicati.
+function riapplicaCambi() {
+  let n = 0;
+  cambi.forEach(c => {
+    const t = turniSalvati.find(x => x.dataIso === c.d);
+    if (t && stessoTurno(t, c.ceduto)) { t.codiceTurno = c.preso.cod; t.inizio = c.preso.ini; t.fine = c.preso.fin; n++; }
+  });
+  return n;
+}
+
+function annullaCambio(iso) {
+  const c = cambioDelGiorno(iso);
+  if (!c) return;
+  if (!confirm(`Annullare il cambio del ${itDataG(iso)}? Il turno torna ${c.ceduto.cod} (${c.ceduto.ini}-${c.ceduto.fin}).`)) return;
+  const t = turniSalvati.find(x => x.dataIso === iso);
+  if (t && stessoTurno(t, c.preso)) { t.codiceTurno = c.ceduto.cod; t.inizio = c.ceduto.ini; t.fine = c.ceduto.fin; }
+  cambi = cambi.filter(x => x.d !== iso);
+  salvaCambi(); salvaTurni();
+  disegnaCalendario(turniSalvati);
+  if (typeof CambioTurno !== 'undefined') CambioTurno.ridisegna();
+  toast('Cambio annullato');
+}
+
+function cambioHtml(iso) {
+  const c = cambioDelGiorno(iso);
+  if (!c) return '';
+  const o = t => `${esc(t.cod)} ${esc(t.ini)}-${esc(t.fin)}`;
+  const chi = c.con.n ? esc(c.con.n) + (c.con.c ? ` (CID ${esc(c.con.c)})` : '') : 'il collega';
+  return `<div class="cambio-nota"><span class="cambio-tag">CAMBIATO</span>Ceduto ${o(c.ceduto)} a ${chi} · preso ${o(c.preso)}<button type="button" class="cambio-annulla" onclick="annullaCambio('${c.d}')">Annulla</button></div>`;
+}
+
+// MENU PRINCIPALE
+const SEZIONI = [
+  { id: 'sec-carica',  etichetta: 'Carica turni',     breve: 'Turni',   icona: 'fa-file-pdf' },
+  { id: 'sec-cambio',  etichetta: 'Cambio turno',     breve: 'Cambio',  icona: 'fa-right-left',      apri: () => CambioTurno.avvia() },
+  { id: 'sec-assenze', etichetta: 'Assenze',          breve: 'Assenze', icona: 'fa-calendar-check',  apri: () => Assenze.avvia() },
+  { id: 'sec-hand',    etichetta: 'Programmazione HAND', breve: 'HAND', icona: 'fa-file-signature', apri: () => Hand.avvia() },
+  { id: 'sec-privacy', etichetta: 'Privacy e backup', breve: 'Backup',  icona: 'fa-shield-halved' }
+];
+
+function costruisciMenu() {
+  const nav = document.getElementById('nav');
+  nav.innerHTML = SEZIONI.map(s => '<button class="tab" data-id="' + s.id + '" aria-label="' + s.etichetta + '"><i class="fas ' + s.icona + '"></i><span class="lab-lungo">' + s.etichetta + '</span><span class="lab-breve">' + s.breve + '</span></button>').join('');
+  nav.onclick = e => { const b = e.target.closest('.tab'); if (b) cambiaSezione(b.dataset.id); };
+}
+
+function cambiaSezione(id) {
+  document.querySelectorAll('.sezione').forEach(s => s.classList.toggle('attiva', s.id === id));
+  document.querySelectorAll('.tab').forEach(b => {
+    const on = b.dataset.id === id;
+    b.classList.toggle('attiva', on);
+    if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' });
+  });
+  const s = SEZIONI.find(x => x.id === id);
+  if (s && s.apri) s.apri();
+  document.getElementById('main').scrollTo({ top: 0 });
+}
+
+const mobile = () => matchMedia('(max-width: 860px)').matches;
+function toggleCalendario() {
+  const sb = document.getElementById('sidebar');
+  if (mobile()) {
+    document.getElementById('scrim').classList.toggle('on', sb.classList.toggle('aperta'));
+    return;
+  }
+  sb.classList.toggle('nascosta');
+  document.getElementById('icona-toggle').className = sb.classList.contains('nascosta') ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
+}
+
+function toast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m;
+  t.classList.add('on');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => t.classList.remove('on'), 2200);
+}
+
+function mostraOggi() {
+  const l = document.getElementById('lista-turni-personali'), t = l.querySelector('[data-oggi]');
+  if (t) l.scrollTop = Math.max(0, t.offsetTop - 80);
+}
+
+function togglePulsanteAccetta() {
+  document.getElementById('btn-accetta-privacy').disabled = !document.getElementById('check-privacy').checked;
+}
+
+function accettaPrivacy() {
+  localStorage.setItem('turnihub_privacy_ok', 'true');
+  document.getElementById('modal-privacy').style.display = 'none';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('turnihub_privacy_ok') === 'true') {
+    document.getElementById('modal-privacy').style.display = 'none';
+  }
+  costruisciMenu();
+  cambiaSezione('sec-carica');
+  disegnaCalendario(turniSalvati);
+  if (turniSalvati.length > 0) {
+    document.getElementById('nome-utente-sidebar').textContent = nomeUtente || "Turni caricati correttamente";
+  }
+});
+
+// --- PARSING PDF LOCALE ---
+// Legge il piano turni dal testo del PDF. Gestisce anche i turni che finiscono dopo la mezzanotte:
+// nel PDF l'orario è spezzato ("16:32-" nel giorno di inizio, "-01:20" nel giorno dopo).
+function leggiTurniDaTesto(testo, anno, mese, nomeMese) {
+  const corpo = testo.search(/domenica/i) >= 0 ? testo.slice(testo.search(/domenica/i) + 8) : testo;   // salta intestazione e nomi dei giorni
+  const norm = corpo
+    .replace(/(\d{2}:\d{2})\s*-\s*(?=\d{2}:\d{2})/g, '$1-')      // "16:32 - 22:00" -> "16:32-22:00"
+    .replace(/(\d{2}:\d{2})\s+-(?=\s)/g, '$1-')                    // "16:32 - 24 ..." -> "16:32-" (finisce dopo la mezzanotte)
+    .replace(/(^|\s)-\s+(?=\d{2}:\d{2})/g, '$1-');                  // "- 01:20" -> "-01:20" (coda del turno del giorno prima)
+  const tok = norm.split(/\s+/).filter(Boolean);
+  const RE_CODICE = /^[A-Z]{1,4}\d{0,4}[A-Z]?$/;
+  const celle = {};
+  let giorno = 0, codice = null;
+  tok.forEach((t, i) => {
+    let m;
+    if (/^\d{1,2}$/.test(t)) {
+      const n = Number(t), succ = tok[i + 1] || '';
+      if (n >= 1 && n <= 31 && n > giorno && (RE_CODICE.test(succ) || /^\d{1,2}$/.test(succ))) { giorno = n; codice = null; celle[giorno] = celle[giorno] || []; }
+    } else if (!giorno) {
+      return;
+    } else if ((m = t.match(/^(\d{2}:\d{2})-(\d{2}:\d{2})$/))) {
+      celle[giorno].push({ codice, inizio: m[1], fine: m[2] });
+    } else if ((m = t.match(/^(\d{2}:\d{2})-$/))) {
+      celle[giorno].push({ codice, inizio: m[1], fine: null });                   // finisce dopo la mezzanotte
+    } else if ((m = t.match(/^-(\d{2}:\d{2})$/))) {
+      celle[giorno].push({ codice, inizio: null, fine: m[1] });                    // coda del turno del giorno prima
+    } else if (RE_CODICE.test(t)) {
+      codice = t;
+    }
+  });
+  const turni = [], avvisi = [];
+  Object.keys(celle).map(Number).sort((a, b) => a - b).forEach(g => {
+    const propri = celle[g].filter(e => e.inizio);                                  // le "code" non sono turni del giorno
+    const e = propri[0];
+    if (!e) return;
+    let fine = e.fine;
+    if (!fine) {
+      const coda = (celle[g + 1] || []).find(x => !x.inizio && x.codice === e.codice);
+      if (coda) fine = coda.fine;
+      else { fine = '24:00'; avvisi.push(`${g} ${nomeMese}: il turno ${e.codice} finisce dopo la mezzanotte e l'orario di fine non è nel PDF; ho messo 24:00, toccando il codice puoi correggerlo`); }
+    }
+    turni.push({
+      dataIso: `${anno}-${pad(mese)}-${pad(g)}`,
+      dataFormattata: `${g} ${nomeMese} ${anno}`,
+      codiceTurno: e.codice, inizio: e.inizio, fine
+    });
+  });
+  return { turni, avvisi };
+}
+
+function elaboraPDFLocale() {
+  const fileInput = document.getElementById('filePdfInput');
+  const statoDiv = document.getElementById('stato-caricamento-pdf');
+  if (!fileInput.files.length) return;
+  statoDiv.style.color = '#0056b3';
+  statoDiv.textContent = 'Lettura del PDF in corso...';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    pdfjsLib.getDocument(new Uint8Array(e.target.result)).promise.then(pdf => {
+      return Promise.all(Array.from({length: pdf.numPages}, (_, j) => pdf.getPage(j + 1).then(p => p.getTextContent())));
+    }).then(pages => {
+      const testo = pages.flatMap(p => p.items.map(it => it.str.trim())).filter(Boolean).join(' ');
+      const h = testo.match(/Cognome\s+(.+?)\s+Nome\s+(.+?)\s+Matricola\s+(\d+)\s+Deposito\s+(\S+)/);
+      const p = testo.match(/(\d{1,2})\s+([A-Za-zàù]+)\s+(\d{4})\s*-/);
+      const MESI = {gennaio:1, febbraio:2, marzo:3, aprile:4, maggio:5, giugno:6, luglio:7, agosto:8, settembre:9, ottobre:10, novembre:11, dicembre:12};
+
+      if (!h || !p || !MESI[p[2].toLowerCase()]) {
+        fileInput.value = '';
+        statoDiv.style.color = '#dc3545';
+        statoDiv.textContent = 'PDF non riconosciuto: controlla che sia un piano turni valido.';
+        return;
+      }
+
+      const [, cognome, nome, matricola] = h;
+      const mese = MESI[p[2].toLowerCase()], anno = Number(p[3]);
+      const { turni, avvisi } = leggiTurniDaTesto(testo, anno, mese, p[2]);
+
+      if (!turni.length) {
+        fileInput.value = '';
+        statoDiv.style.color = '#dc3545';
+        statoDiv.textContent = 'Nessun turno trovato nel PDF.';
+        return;
+      }
+
+      turniSalvati = turni.sort((a, b) => a.dataIso.localeCompare(b.dataIso));
+      const nCambi = riapplicaCambi();
+      nomeUtente = `${nome} ${cognome} (${matricola})`;
+      localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati));
+      localStorage.setItem('turnihub_utente', nomeUtente);
+
+      document.getElementById('nome-utente-sidebar').textContent = nomeUtente;
+      statoDiv.style.color = '#28a745';
+      statoDiv.textContent = `Caricati con successo ${turni.length} turni!` + (avvisi.length ? ' Attenzione: ' + avvisi.join('; ') + '.' : '') + (nCambi ? ` ${nCambi === 1 ? 'Un cambio turno è stato riapplicato' : nCambi + ' cambi turno sono stati riapplicati'} (giorni CAMBIATI).` : '');
+
+      disegnaCalendario(turniSalvati);
+      CambioTurno.aggiornaDaPdf(anno, mese);
+    }).catch(err => {
+      statoDiv.style.color = '#dc3545';
+      statoDiv.textContent = 'Errore lettura PDF: ' + err.message;
+    });
+  };
+  reader.readAsArrayBuffer(fileInput.files[0]);
+}
+
+// --- DISEGNA CALENDARIO SIDEBAR E NOTE GIORNALIERE ---
+function disegnaCalendario(calendario) {
+  const box = document.getElementById('lista-turni-personali');
+  box.innerHTML = "";
+  if (!calendario.length) {
+    box.innerHTML = "<div class='vuoto'>Nessun turno caricato.</div>";
+    return;
+  }
+  const _d = new Date();
+  const oggiIso = _d.getFullYear() + '-' + pad(_d.getMonth() + 1) + '-' + pad(_d.getDate());
+  const sett = ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"];
+
+  calendario.forEach((g, indice) => {
+    const div = document.createElement('div');
+    div.className = "turno-card";
+    const nomeGiorno = sett[new Date(g.dataIso + "T12:00:00").getDay()];
+    if (g.dataIso === oggiIso) {
+      div.dataset.oggi = "1";
+      div.style.borderLeftColor = "#dc3545";
+      div.style.backgroundColor = "#fff3f4";
+    } else if (["R", "RIS", "RIP"].includes(g.codiceTurno)) {
+      div.style.borderLeftColor = "#28a745";
+    }
+    if (cambioDelGiorno(g.dataIso)) { div.classList.add('cambiato'); div.style.borderLeftColor = 'var(--amber)'; }
+    const notaSalvata = noteGiornaliere[g.dataIso] || "";
+    div.innerHTML = `
+      <div class="turno-info-top">
+        <span><i>${nomeGiorno}</i> <b>${esc(g.dataFormattata || g.dataIso)}</b></span>
+        <span>
+          <b style="cursor:pointer; background:var(--primary-dark); color:#fff; padding:2px 6px; border-radius:4px;" onclick="modificaTurnoManuale(${indice})" title="Tocca per modificare turno">${esc(g.codiceTurno)}</b> 
+          <small>(${esc(g.inizio)}-${esc(g.fine)}${g.fine < g.inizio ? ' +1' : ''})</small>
+        </span>
+      </div>
+      ${cambioHtml(g.dataIso)}
+      <div class="nota-giorno-box">
+        <input type="text" id="nota-${g.dataIso}" value="${esc(notaSalvata)}" placeholder="Aggiungi nota per questo giorno...">
+        <button onclick="salvaNotaGiorno('${g.dataIso}')" title="Salva nota"><i class="fas fa-save"></i></button>
+      </div>
+    `;
+    box.appendChild(div);
+  });
+  mostraOggi();
+}
+
+ function modificaTurnoManuale(indice) {
+  const t = turniSalvati[indice];
+  if (!t) return;
+
+  // 1. Chiede la nuova sigla del turno
+  const nuovoCodice = prompt(`Modifica la sigla del turno per il ${t.dataFormattata || t.dataIso}:`, t.codiceTurno);
+  if (nuovoCodice === null) return; // Annullato
+
+  const codicePulito = nuovoCodice.trim().toUpperCase();
+  if (codicePulito === "") return;
+
+  t.codiceTurno = codicePulito;
+
+  // 2. Se è un riposo o un'assenza senza orari, impostiamo 00:00 - 00:00
+  if (["R", "RIS", "RIP"].includes(codicePulito)) {
+    t.inizio = "00:00";
+    t.fine = "00:00";
+  } else {
+    // 3. Altrimenti chiede anche l'orario di inizio e fine per mantenere i calcoli corretti
+    const nuovoInizio = prompt(`Inserisci l'orario di INIZIO (formato HH:MM):`, t.inizio);
+    if (nuovoInizio !== null && nuovoInizio.trim() !== "") {
+      t.inizio = nuovoInizio.trim();
+    }
+
+    const nuovaFine = prompt(`Inserisci l'orario di FINE (formato HH:MM):`, t.fine);
+    if (nuovaFine !== null && nuovaFine.trim() !== "") {
+      t.fine = nuovaFine.trim();
+    }
+  }
+
+  // Se cambio a mano un turno già cambiato, l'etichetta CAMBIATO non è più valida
+  if (cambioDelGiorno(t.dataIso)) { cambi = cambi.filter(c => c.d !== t.dataIso); salvaCambi(); }
+
+  // Salva i turni aggiornati nel LocalStorage
+  localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati));
+  
+  // Ridisegna la barra laterale e aggiorna il modulo cambio turno
+  disegnaCalendario(turniSalvati);
+  if (typeof CambioTurno !== 'undefined' && CambioTurno.aggiornaDaPdf) {
+    const [y, m] = t.dataIso.split('-').map(Number);
+    CambioTurno.aggiornaDaPdf(y, m);
+  }
+  toast('Turno e orari aggiornati con successo');
+}
+
+function salvaNotaGiorno(dataIso) {
+  const inputVal = document.getElementById(`nota-${dataIso}`).value;
+  noteGiornaliere[dataIso] = inputVal;
+  localStorage.setItem('turnihub_note_giornaliere', JSON.stringify(noteGiornaliere));
+  toast('Nota salvata');
+}
+
+// --- MODULO CAMBIO TURNO ---
+const CambioTurno = (() => {
+  const RIPOSO_ORE = 9;
+  const RIPOSI = ['R', 'RIS', 'RIP'];
+  const MESI_NOMI = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  const GENERICO = /^\s*collega\s*$/i;   // nome "di riserva" che le vecchie versioni mettevano nel codice
+
+  let collega = null;            // { nome, cid, turni } letto dal codice ricevuto
+  let esitoCorrente = null;
+  let dataSelezionataIso = null;
+  let ruolo = 'richiedente';     // 'richiedente' = ho scelto io il giorno; 'collega' = il giorno è arrivato dal codice ricevuto
+  let sintesiRicevuta = null;
+  let annoCorrente = new Date().getFullYear();
+  let meseCorrente = new Date().getMonth() + 1;
+
+  const $ = id => document.getElementById(id);
+  const itData = iso => iso.split('-').reverse().join('/');
+  const soloCifre = s => String(s || '').replace(/\D/g, '').slice(0, 12);
+  const oreTurno = t => t.ini + '-' + t.fin;
+  const descrTurno = t => t.cod + ' (' + oreTurno(t) + ')';
+
+  // ---- I miei dati (nome e CID) ----
+  function leggiIdentita() {
+    return { nome: $('cm-mio-nome').value.trim(), cid: soloCifre($('cm-mio-cid').value) };
+  }
+  function salvaIdentita() {
+    const { nome, cid } = leggiIdentita();
+    if (!nome) return;
+    nomeUtente = cid ? `${nome} (${cid})` : nome;
+    try { localStorage.setItem('turnihub_utente', nomeUtente); } catch (e) {}
+    if (turniSalvati.length) $('nome-utente-sidebar').textContent = nomeUtente;
+    $('cm-rich').value = nome;
+    $('cm-rich-cid').value = cid;
+    aggiornaPulsante();
+  }
+  function identitaOk() {
+    const { nome, cid } = leggiIdentita();
+    if (!nome || !cid) {
+      toast('Scrivi prima il tuo nome e il tuo CID (punto 2)');
+      (!nome ? $('cm-mio-nome') : $('cm-mio-cid')).focus();
+      return false;
+    }
+    salvaIdentita();
+    return true;
+  }
+
+  // Turni miei, ma con il turno originale al posto di quello preso col cambio (serve a controlli, codice e modulo dopo l'invio)
+  function mieiPerCambio() {
+    const c = dataSelezionataIso && cambioDelGiorno(dataSelezionataIso);
+    if (!c) return turniSalvati;
+    return turniSalvati.map(t => (t.dataIso === c.d && stessoTurno(t, c.preso))
+      ? { ...t, codiceTurno: c.ceduto.cod, inizio: c.ceduto.ini, fine: c.ceduto.fin } : t);
+  }
+
+  function generaMioCodice() {
+    if (!turniSalvati.length) {
+      toast('Carica prima il PDF dei tuoi turni');
+      return null;
+    }
+    if (!identitaOk()) return null;
+    return codiceMio();
+  }
+  function inviaCodiceWhatsApp() {
+    const c = generaMioCodice();
+    if (!c) return;
+    window.location.href = 'whatsapp://send?text=' + encodeURIComponent(c);
+  }
+
+  function disegnaCalendarioInterattivo() {
+    $('cambio-cal-title').textContent = `${MESI_NOMI[meseCorrente - 1]} ${annoCorrente}`;
+    $('cambio-dows').innerHTML = ["Lun","Mar","Mer","Gio","Ven","Sab","Dom"].map(d => `<div class="dow">${d}</div>`).join('');
+    const grid = $('cambio-grid-giorni');
+    grid.innerHTML = '';
+
+    const primo = (new Date(annoCorrente, meseCorrente - 1, 1).getDay() + 6) % 7;
+    const totali = new Date(annoCorrente, meseCorrente, 0).getDate();
+
+    for (let i = 0; i < primo; i++) {
+      const v = document.createElement('div');
+      v.className = 'giorno-cell empty';
+      grid.appendChild(v);
+    }
+
+    for (let d = 1; d <= totali; d++) {
+      const iso = `${annoCorrente}-${pad(meseCorrente)}-${pad(d)}`;
+      const t = turniSalvati.find(x => x.dataIso === iso);
+      const cb = cambioDelGiorno(iso);
+      const c = document.createElement('div');
+      c.className = 'giorno-cell' + (t ? ' has-turno' : '') + (cb ? ' cambiato' : '') + (dataSelezionataIso === iso ? ' sel' : '');
+      c.innerHTML = `<span><b>${d}</b>${cb ? ' <span class="cb" title="Turno cambiato">⇄</span>' : ''}</span>${t ? `<span class="et">${esc(t.codiceTurno)}</span>` : ''}`;
+      c.onclick = () => {
+        dataSelezionataIso = iso;
+        ruolo = 'richiedente';          // il giorno l'ho scelto io
+        $('data-scelta-txt').textContent = iso + (t ? ` (${t.codiceTurno}: ${t.inizio} - ${t.fine})` : ' (nessun turno)');
+        disegnaCalendarioInterattivo();
+        aggiornaPulsante();
+      };
+      grid.appendChild(c);
+    }
+  }
+
+  function cambiaMese(delta) {
+    meseCorrente += delta;
+    if (meseCorrente > 12) { meseCorrente = 1; annoCorrente++; }
+    if (meseCorrente < 1) { meseCorrente = 12; annoCorrente--; }
+    disegnaCalendarioInterattivo();
+  }
+
+  const b64 = s => btoa(unescape(encodeURIComponent(s)));
+  const unb64 = s => decodeURIComponent(escape(atob(s)));
+
+  async function copiaTesto(testo, msgOk, msgPrompt, infoId) {
+    try {
+      await navigator.clipboard.writeText(testo);
+      if (infoId) $(infoId).textContent = msgOk;
+      toast('Copiato negli appunti');
+    } catch (e) {
+      prompt(msgPrompt, testo);
+    }
+  }
+  async function copiaMioCodice() {
+    const c = generaMioCodice();
+    if (!c) return;
+    copiaTesto(c, 'Codice copiato: incollalo in un messaggio al collega.', 'Copia questo codice e mandalo al collega:', 'info-collega');
+  }
+
+  // Codice breve: nome, CID, giorno richiesto e solo i turni nei 5 giorni attorno (bastano per il controllo del riposo).
+  function codiceMio() {
+    const { nome, cid } = leggiIdentita();
+    const miei = mieiPerCambio();
+    const o = { n: nome, c: cid, m: miei[0].dataIso.slice(0, 7) };
+    let lista = miei;
+    if (dataSelezionataIso) {
+      o.d = dataSelezionataIso;
+      lista = miei.filter(t => Math.abs((new Date(t.dataIso) - new Date(dataSelezionataIso)) / 864e5) <= 5);
+    }
+    o.t = lista.map(t => [Number(t.dataIso.slice(8, 10)), t.codiceTurno, t.inizio, t.fine]);
+    return 'TH2:' + b64(JSON.stringify(o));
+  }
+  function selezionaGiorno(iso) {
+    dataSelezionataIso = iso;
+    const [y, m] = iso.split('-').map(Number);
+    annoCorrente = y; meseCorrente = m;
+    const t = turniSalvati.find(x => x.dataIso === iso);
+    $('data-scelta-txt').textContent = iso + (t ? ` (${t.codiceTurno}: ${t.inizio} - ${t.fine})` : ' (nessun turno)');
+    disegnaCalendarioInterattivo();
+  }
+  function inviaAvvisoWhatsApp() {
+    if (!dataSelezionataIso) { toast('Scegli prima il giorno del cambio'); return; }
+    const t = 'Ciao, ti chiedo il cambio turno per il giorno ' + itData(dataSelezionataIso) + '. Ti mando il codice nel messaggio successivo: copialo e incollalo in TurniHub.';
+    window.location.href = 'whatsapp://send?text=' + encodeURIComponent(t);
+  }
+
+  function leggiCodiceCollega() {
+    const raw = $('codice-collega').value.trim();
+    const mt = raw.match(/TH[12]:[A-Za-z0-9+\/=_-]+/);
+    const v = mt ? mt[0] : raw;
+    collega = null;
+    $('info-collega').style.fontWeight = '400';
+    if (!v) {
+      $('info-collega').textContent = '';
+    } else {
+      try {
+        if (!/^TH[12]:/.test(v)) throw 0;
+        const o = JSON.parse(unb64(v.slice(4)));
+        const breve = v.startsWith('TH2:');
+        const pn = parseNomeCid(o.n);              // i vecchi codici avevano il CID dentro il nome, tra parentesi
+        const cid = soloCifre(o.c || pn.cid);
+        const mancaNome = !pn.nome || GENERICO.test(pn.nome);
+        collega = {
+          nome: mancaNome ? '' : pn.nome,
+          cid,
+          turni: o.t.map(a => breve ? { dataIso: o.m + '-' + pad(a[0]), codiceTurno: a[1], inizio: a[2], fine: a[3] }
+                                    : { dataIso: a[0], codiceTurno: a[1], inizio: a[2], fine: a[3] })
+        };
+        $('cm-coll').value = collega.nome;
+        $('cm-coll-cid').value = collega.cid;
+        let testo = mancaNome
+          ? `Nel codice del collega manca il nome (${collega.turni.length} turni): scrivi tu nome e CID nel modulo, al punto 4.`
+          : `Collega: ${nomeCid(collega.nome, collega.cid)} (${collega.turni.length} turni)`;
+        if (!mancaNome && !collega.cid) testo += '. Manca il CID: scrivilo nel modulo, al punto 4.';
+        if (o.d && o.d !== dataSelezionataIso) {   // il collega mi sta chiedendo un cambio: seleziono il suo giorno
+          selezionaGiorno(o.d);
+          ruolo = 'collega';
+          testo = `${collega.nome || 'Il collega'} chiede il cambio per il giorno ${itData(o.d)}. ` + testo;
+          $('info-collega').style.fontWeight = '700';
+          toast('Richiesta di cambio per il giorno ' + itData(o.d));
+        }
+        $('info-collega').textContent = testo;
+      } catch (e) {
+        $('info-collega').textContent = 'Codice non valido: chiedi al collega di copiarlo di nuovo.';
+      }
+    }
+    aggiornaPulsante();
+  }
+
+  function aggiornaPulsante() {
+    const pronto = !!(collega && dataSelezionataIso);
+    const rich = ruolo === 'richiedente';
+    $('btn-verifica').disabled = !pronto;
+    ['cm-mail', 'cm-open', 'cm-dl', 'sint-wa', 'sint-copia'].forEach(i => $(i).disabled = !pronto);
+    // il modulo lo prepara e lo invia solo chi ha chiesto il cambio
+    $('pannello-modulo').style.display = rich ? '' : 'none';
+    $('pannello-collega').style.display = rich ? 'none' : '';
+    if (!rich) $('chi-modulo').textContent = collega && collega.nome ? nomeCid(collega.nome, collega.cid) : 'chi ti ha chiesto il cambio';
+  }
+
+  const ts = (iso, hm) => {
+    const [y, m, d] = iso.split('-').map(Number);
+    const [h, mi] = hm.split(':').map(Number);
+    return new Date(y, m - 1, d, h, mi).getTime();
+  };
+
+  function intervallo(t) {
+    const i = ts(t.dataIso, t.inizio);
+    let f = ts(t.dataIso, t.fine);
+    if (f <= i) f += 864e5;
+    return [i, f];
+  }
+
+  function contesto(turni, iso) {
+    const lav = (turni || []).filter(t => t && !RIPOSI.includes(t.codiceTurno)).sort((a, b) => a.dataIso.localeCompare(b.dataIso));
+    const oggi = lav.find(t => t.dataIso === iso);
+    const prima = lav.filter(t => t.dataIso < iso).pop();
+    const dopo = lav.find(t => t.dataIso > iso);
+    return {
+      inizio: (oggi && oggi.inizio && oggi.fine) ? intervallo(oggi)[0] : null,
+      fine: (oggi && oggi.inizio && oggi.fine) ? intervallo(oggi)[1] : null,
+      prima: (prima && prima.inizio && prima.fine) ? intervallo(prima)[1] : null,
+      dopo: (dopo && dopo.inizio && dopo.fine) ? intervallo(dopo)[0] : null
+    };
+  }
+
+  function calcolaRiposo(payload) {
+    // 1. Controllo limite delle 60 ore dalla data/ora attuale
+    const adesso = new Date().getTime();
+    const [y, m, d] = dataSelezionataIso.split('-').map(Number);
+    const dataSceltaMs = new Date(y, m - 1, d, 0, 0).getTime(); // Inizio della giornata scelta
+    const diffOre = (dataSceltaMs - adesso) / 36e5;
+
+    if (diffOre < 60) {
+      return {
+        esito: 'ROSSO',
+        messaggio: 'Il cambio non è possibile: non si possono effettuare cambi turno a meno di 60 ore di preavviso.'
+      };
+    }
+
+    // 2. Controllo se uno dei due ha un codice di riposo o riserva (R, RIS, RIP) nel giorno scelto
+    const turnoUtenteGiorno = mieiPerCambio().find(t => t.dataIso === dataSelezionataIso);
+    const turnoCollegaGiorno = collega.turni.find(t => t.dataIso === dataSelezionataIso);
+
+    const codiceU = turnoUtenteGiorno ? turnoUtenteGiorno.codiceTurno : '';
+    const codiceC = turnoCollegaGiorno ? turnoCollegaGiorno.codiceTurno : '';
+
+    if (RIPOSI.includes(codiceU) || RIPOSI.includes(codiceC) || !codiceU || !codiceC) {
+      return {
+        esito: 'ROSSO',
+        messaggio: 'Il cambio non è possibile con RIS/ASSENTE/RIPOSO.'
+      };
+    }
+
+    // 3. Controllo standard delle ore di riposo
+    const H = 36e5, u = payload.utente, c = payload.collega, ok = [], ko = [];
+    const ctrl = (chi, da, a) => {
+      if (da == null || a == null) return;
+      const ore = (a - da) / H;
+      (ore >= RIPOSO_ORE ? ok : ko).push(chi + ': ' + ore.toFixed(1) + ' h di riposo');
+    };
+
+    if (c.inizio != null) {
+      ctrl('Tu (prima del turno)', u.prima, c.inizio);
+      ctrl('Tu (dopo il turno)', c.fine, u.dopo);
+    }
+    if (u.inizio != null) {
+      ctrl(payload.nomeCollega + ' (prima del turno)', c.prima, u.inizio);
+      ctrl(payload.nomeCollega + ' (dopo il turno)', u.fine, c.dopo);
+    }
+
+    if (ko.length) return { esito: 'ROSSO', messaggio: 'Cambio NON possibile, riposo sotto le ' + RIPOSO_ORE + ' ore:\n' + ko.join('\n') };
+    if (!ok.length) return { esito: 'ROSSO', messaggio: 'Nessun controllo possibile: il giorno scelto non ha turni validi da scambiare.' };
+    return { esito: 'VERDE', messaggio: 'Cambio possibile: tutti i riposi sono di almeno ' + RIPOSO_ORE + ' ore.\n' + ok.join('\n') };
+  }
+
+  function mostraEsito(cls, testo) {
+    const b = $('risultato-box');
+    b.style.display = 'block';
+    b.className = 'box ' + cls;
+    b.textContent = testo;
+  }
+
+  async function eseguiVerificaCambio() {
+    mostraEsito('neutro-box', 'Calcolo in corso...');
+    const payload = {
+      nomeCollega: collega.nome || 'Il collega',
+      utente: contesto(mieiPerCambio(), dataSelezionataIso),
+      collega: contesto(collega.turni, dataSelezionataIso)
+    };
+    const r = calcolaRiposo(payload);
+    mostraEsito(r.esito === 'VERDE' ? 'verde-box' : 'rosso-box', r.messaggio);
+    esitoCorrente = r;
+    $('btn-wa-esito').style.display = 'block';
+  }
+
+  function inviaEsitoWhatsApp() {
+    if (!esitoCorrente) return;
+    const t = 'Verifica cambio turno del ' + itData(dataSelezionataIso) + (collega && collega.nome ? ' con ' + collega.nome : '') + ':\n' + esitoCorrente.messaggio;
+    window.location.href = 'whatsapp://send?text=' + encodeURIComponent(t);
+  }
+
+
+  // ---- Modulo "Richiesta cambio turno": compilazione e invio per email (solo il richiedente) ----
+  const MOD_FILES = ['RICHIESTA CAMBIO TURNO.pdf', 'RICHIESTA_CAMBIO_TURNO.pdf'];
+  const MOD_URL_DIRETTO = 'https://raw.githubusercontent.com/turnihub/Assenze/main/RICHIESTA%20CAMBIO%20TURNO.pdf';
+  const MOD_FIRMA_FONT = 'https://cdn.jsdelivr.net/npm/@fontsource/mr-dafoe@5.3.0/files/mr-dafoe-latin-400-normal.woff';
+  const SEDE = 'Oristano';
+  const DEPOSITI = { LC: 'Laconi', AL: 'Ales', BS: 'Bosa', AB: 'Abbasanta' };   // altrimenti "Sede"
+  // Posizione di ogni riga: [x iniziale, altezza della riga dal bordo alto, larghezza] in punti.
+  const FORM = {
+    sott: [151.5, 130.0, 226.6], sede: [206.2, 155.5, 271.0], dep: [129.6, 178.0, 177.4], turno: [190.8, 208.0, 113.4],
+    giorno: [135.4, 238.8, 167.5], ore: [328.8, 238.8, 147.8], chiede: [255.9, 268.8, 221.7], assegnato: [190.4, 299.5, 78.9], alsig: [302.5, 299.5, 177.3],
+    cuiSig: [147.6, 329.5, 133.0], cuiTurno: [377.2, 329.5, 103.4], g1: [116.9, 360.2, 113.3], o1: [253.2, 360.2, 54.2],
+    eSig: [118.7, 390.2, 162.6], eTurno: [375.0, 390.2, 103.5], g2: [116.9, 421.0, 113.3], o2: [253.2, 421.0, 54.2],
+    motivo: [80.7, 481.5, 399.1], addi: [102.3, 542.2, 99.6], f1: [80.7, 603.0, 133.0], f2: [345.1, 603.0, 133.0]
+  };
+  const KEYDEST = 'cambio_dest';
+  let _tpl = null, _bytes = null, _url = null, _fname = 'Richiesta_cambio_turno.pdf', _dati = null, _cambio = null;
+  const cmsg = (t, c) => { $('cm-msg').textContent = t; $('cm-msg').className = 'msg ' + (c || ''); };
+  const lavora = t => t && !RIPOSI.includes(String(t.codiceTurno).toUpperCase());
+
+  function initModulo() {
+    // i miei dati: li preparo solo se il campo è vuoto, per non cancellare ciò che sto scrivendo
+    if (!$('cm-mio-nome').value && !$('cm-mio-cid').value) {
+      let { nome, cid } = parseNomeCid(nomeUtente);
+      if (!nome) { try { nome = localStorage.getItem('fe_nome') || ''; } catch (e) {} }
+      if (!cid) { try { cid = localStorage.getItem('fe_cid') || ''; } catch (e) {} }
+      $('cm-mio-nome').value = nome;
+      $('cm-mio-cid').value = soloCifre(cid);
+    }
+    if (!$('cm-rich').value) $('cm-rich').value = $('cm-mio-nome').value.trim();
+    if (!$('cm-rich-cid').value) $('cm-rich-cid').value = soloCifre($('cm-mio-cid').value);
+    $('cm-mio-nome').onchange = $('cm-mio-cid').onchange = salvaIdentita;
+    try { $('cm-dest').value = localStorage.getItem(KEYDEST) || ''; } catch (e) {}
+    $('cm-dest').onchange = () => { try { localStorage.setItem(KEYDEST, $('cm-dest').value.trim()); } catch (e) {} };
+  }
+  async function caricaModulo() {
+    if (_tpl) return _tpl;
+    const url = MOD_FILES.map(n => new URL(encodeURIComponent(n), location.href).href).concat([MOD_URL_DIRETTO]);
+    for (const u of url) {
+      try {
+        const r = await fetch(u); if (!r.ok) continue;
+        const b = new Uint8Array(await r.arrayBuffer());
+        if (String.fromCharCode(b[0], b[1], b[2], b[3]) === '%PDF') return (_tpl = b);
+      } catch (e) {}
+    }
+    throw new Error('modulo vuoto non trovato nel repository (controlla il nome del file)');
+  }
+
+  // Nomi e CID dei due richiedenti, controllati: nel modulo non deve mai finire "Collega" o un campo vuoto
+  function personeModulo() {
+    const nomeR = $('cm-rich').value.trim(), cidR = soloCifre($('cm-rich-cid').value);
+    const nomeC = $('cm-coll').value.trim(), cidC = soloCifre($('cm-coll-cid').value);
+    if (!nomeR || !cidR) throw new Error('scrivi nome e CID del richiedente');
+    if (!nomeC || GENERICO.test(nomeC)) throw new Error('scrivi il nome del collega: nel suo codice non c\'era');
+    if (!cidC) throw new Error('scrivi il CID del collega');
+    return { nomeR, cidR, nomeC, cidC };
+  }
+  // Il turno "mio" e quello "suo" nel giorno scelto, con la fotografia del cambio
+  function datiCambio(p) {
+    const mio = mieiPerCambio().find(t => t.dataIso === dataSelezionataIso);
+    const suo = collega.turni.find(t => t.dataIso === dataSelezionataIso);
+    if (!lavora(mio) || !lavora(suo)) throw new Error('per il modulo servono i turni di lavoro di entrambi nel giorno scelto');
+    return {
+      mio, suo,
+      cambio: { d: dataSelezionataIso, ceduto: { cod: mio.codiceTurno, ini: mio.inizio, fin: mio.fine }, preso: { cod: suo.codiceTurno, ini: suo.inizio, fin: suo.fine }, con: { n: p.nomeC, c: p.cidC } }
+    };
+  }
+
+  async function costruisciModulo() {
+    const p = personeModulo();
+    const { mio, suo, cambio } = datiCambio(p);
+    const { PDFDocument, StandardFonts, rgb, degrees } = PDFLib;
+    const doc = await PDFDocument.load(await caricaModulo());
+    const font = await doc.embedFont(StandardFonts.Helvetica), page = doc.getPages()[0], mb = page.getMediaBox();
+    const col = rgb(0.05, 0.1, 0.45), Y = top => mb.y + mb.height - top;
+    const scrivi = (k, txt) => {
+      if (!txt) return;
+      const [x, y, w] = FORM[k]; let sz = 11;
+      while (sz > 6 && font.widthOfTextAtSize(txt, sz) > w - 4) sz -= 0.5;
+      page.drawText(txt, { x: x + 3, y: Y(y - 2.6), size: sz, font, color: col });
+    };
+    // Nome + CID sulla riga; se non ci stanno in un corpo leggibile, il CID va sotto la riga
+    const scriviPersona = (k, nome, cid) => {
+      const [x, y, w] = FORM[k], pieno = nomeCid(nome, cid);
+      let sz = 11;
+      while (sz > 8.5 && font.widthOfTextAtSize(pieno, sz) > w - 4) sz -= 0.5;
+      if (font.widthOfTextAtSize(pieno, sz) <= w - 4) {
+        page.drawText(pieno, { x: x + 3, y: Y(y - 2.6), size: sz, font, color: col });
+      } else {
+        scrivi(k, nome);
+        page.drawText('CID ' + cid, { x: x + 3, y: Y(y + 7.4), size: 8, font, color: col });
+      }
+    };
+    const giorno = itData(dataSelezionataIso), ore = t => t.inizio + '-' + t.fine, d = new Date();
+    scriviPersona('sott', p.nomeR, p.cidR); scrivi('sede', SEDE);
+    scrivi('dep', DEPOSITI[String(mio.codiceTurno).slice(0, 2).toUpperCase()] || 'Sede');
+    scrivi('turno', mio.codiceTurno); scrivi('giorno', giorno); scrivi('ore', ore(mio));
+    scrivi('chiede', suo.codiceTurno); scrivi('assegnato', giorno); scriviPersona('alsig', p.nomeC, p.cidC);
+    scriviPersona('cuiSig', p.nomeC, p.cidC); scrivi('cuiTurno', mio.codiceTurno); scrivi('g1', giorno); scrivi('o1', ore(mio));
+    scriviPersona('eSig', p.nomeR, p.cidR); scrivi('eTurno', suo.codiceTurno); scrivi('g2', giorno); scrivi('o2', ore(suo));
+    scrivi('motivo', $('cm-motivo').value.trim());
+    scrivi('addi', pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear());
+    // sotto le due firme: nome e CID in stampatello, leggibili anche se la firma non lo è
+    [['f1', p.nomeR, p.cidR], ['f2', p.nomeC, p.cidC]].forEach(([k, n, c]) => {
+      const [x, y, w] = FORM[k], t = nomeCid(n, c); let sz = 8;
+      while (sz > 5.5 && font.widthOfTextAtSize(t, sz) > w + 40) sz -= 0.5;
+      page.drawText(t, { x: x + 3, y: Y(y + 9.5), size: sz, font, color: col });
+    });
+    let nota = '';
+    if ($('cm-firma').checked) {
+      try {
+        if (typeof fontkit === 'undefined') throw new Error('fontkit');
+        doc.registerFontkit(fontkit);
+        const sf = await doc.embedFont(await (await fetch(MOD_FIRMA_FONT)).arrayBuffer(), { subset: true });
+        [['f1', p.nomeR], ['f2', p.nomeC]].forEach(([k, n]) => {
+          const [x, y, w] = FORM[k]; let sz = 22;
+          while (sz > 8 && sf.widthOfTextAtSize(n, sz) > w - 6) sz -= 0.5;
+          page.drawText(n, { x: x + 3, y: Y(y - 3.5), size: sz, font: sf, color: col, rotate: degrees(2) });
+        });
+      } catch (e) { nota = ' Le firme non sono state inserite: il carattere non si è caricato.'; }
+    }
+    _dati = { giorno, nomeR: nomeCid(p.nomeR, p.cidR), nomeC: nomeCid(p.nomeC, p.cidC), soloNomeR: p.nomeR };
+    _cambio = cambio;
+    _fname = 'Richiesta_cambio_turno_' + giorno.replace(/\//g, '-') + '_' + p.nomeR.replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '') + '.pdf';
+    return { bytes: await doc.save(), nota };
+  }
+  async function preparaModulo() {
+    cmsg('Compilo il modulo...', '');
+    const r = await costruisciModulo();
+    _bytes = r.bytes;
+    if (_url) URL.revokeObjectURL(_url);
+    _url = URL.createObjectURL(new Blob([_bytes], { type: 'application/pdf' }));
+    return r.nota;
+  }
+  const oggettoMail = () => 'Richiesta cambio turno del ' + _dati.giorno + ' - ' + _dati.soloNomeR;
+  const corpoMail = () => 'Buongiorno,\n\nin allegato la richiesta di cambio turno del giorno ' + _dati.giorno + ' tra ' + _dati.nomeR + ' e ' + _dati.nomeC + '.\n\nCordiali saluti\n' + _dati.nomeR;
+  function motivoNoShare(file) {
+    if (location.protocol === 'file:') return 'la pagina è aperta come file del telefono, non da un indirizzo web';
+    if (!window.isSecureContext) return 'la pagina non è su un indirizzo sicuro (https)';
+    if (!navigator.share) return 'questo browser o questa app non ha la condivisione';
+    if (!navigator.canShare || !navigator.canShare({ files: [file] })) return 'questo browser o questa app non permette di condividere file PDF';
+    return '';
+  }
+  function scaricaFile() { const a = document.createElement('a'); a.href = _url; a.download = _fname; document.body.appendChild(a); a.click(); a.remove(); }
+
+  // Quando il modulo è stato inviato o scaricato, il cambio entra nel mio calendario
+  function confermaCambioDopoInvio() {
+    if (!_cambio) return '';
+    const r = registraCambio(_cambio);
+    disegnaCalendario(turniSalvati);
+    disegnaCalendarioInterattivo();
+    if (!r.ok) return ' Calendario non aggiornato: ' + r.motivo + '.';
+    return r.gia ? '' : ' Il tuo calendario è aggiornato: il giorno risulta CAMBIATO. Ora manda la sintesi al collega.';
+  }
+
+  async function inviaModulo() {
+    try {
+      const dest = $('cm-dest').value.trim();
+      try { localStorage.setItem(KEYDEST, dest); } catch (e) {}
+      $('cm-mailto').hidden = true;
+      const nota = await preparaModulo();
+      const f = new File([_bytes], _fname, { type: 'application/pdf' });
+      let motivo = motivoNoShare(f);
+      if (!motivo) {
+        try {
+          await navigator.share({ files: [f], title: oggettoMail(), text: corpoMail() });
+          cmsg('Scegli la tua app di posta: il PDF è già allegato.' + nota + confermaCambioDopoInvio(), 'ok');
+          return;
+        } catch (e) {
+          if (e && e.name === 'AbortError') return;
+          motivo = 'il telefono ha rifiutato la condivisione (' + (e && e.name ? e.name : 'errore') + ')';
+        }
+      }
+      scaricaFile();
+      const a = $('cm-mailto');
+      a.href = 'mailto:' + encodeURIComponent(dest).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(oggettoMail()) + '&body=' + encodeURIComponent(corpoMail());
+      a.hidden = false;
+      cmsg('Allegato automatico non possibile: ' + motivo + '. Il PDF è stato scaricato (' + _fname + '). Tocca "Apri la posta" e allegalo a mano dalla cartella Download.' + nota + confermaCambioDopoInvio(), 'ok');
+    } catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+  async function apriModulo() {
+    try { const nota = await preparaModulo(); window.open(_url, '_blank') || cmsg('Il browser ha bloccato la nuova scheda. Usa "Scarica".', 'err'); if (nota) cmsg(nota.trim(), 'err'); else cmsg('', ''); }
+    catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+  async function scaricaModulo() {
+    try { const nota = await preparaModulo(); scaricaFile(); cmsg('PDF scaricato.' + nota + confermaCambioDopoInvio(), 'ok'); }
+    catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+
+  // ---- Sintesi per il collega (e codice che aggiorna il suo calendario) ----
+  function costruisciSintesi() {
+    const p = personeModulo();
+    const { cambio } = datiCambio(p);
+    const o = { v: 1, d: cambio.d, r: { n: p.nomeR, c: p.cidR }, c: { n: p.nomeC, c: p.cidC }, rt: cambio.ceduto, ct: cambio.preso };
+    const testo = 'Cambio turno del ' + itData(cambio.d) + ' tra ' + nomeCid(p.nomeR, p.cidR) + ' e ' + nomeCid(p.nomeC, p.cidC) + '.\n' +
+      'Tu passi da ' + descrTurno(cambio.preso) + ' a ' + descrTurno(cambio.ceduto) + '.\n' +
+      'Io passo da ' + descrTurno(cambio.ceduto) + ' a ' + descrTurno(cambio.preso) + '.\n' +
+      'Il modulo lo invio io all\'ufficio.\n\n' +
+      'Per aggiornare il tuo calendario in TurniHub: Cambio turno, punto 5, incolla questo codice:\n' +
+      'TH3:' + b64(JSON.stringify(o));
+    return testo;
+  }
+  function inviaSintesiWhatsApp() {
+    try { window.location.href = 'whatsapp://send?text=' + encodeURIComponent(costruisciSintesi()); }
+    catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+  function copiaSintesi() {
+    try { copiaTesto(costruisciSintesi(), 'Sintesi copiata.', 'Copia la sintesi e mandala al collega:', 'cm-msg'); }
+    catch (e) { cmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+
+  // ---- Sintesi ricevuta: aggiorna il mio calendario ----
+  const turnoOk = t => !!t && typeof t === 'object' && /^[A-Z]{1,4}\d{0,4}[A-Z]?$/.test(t.cod) && /^\d{2}:\d{2}$/.test(t.ini) && /^\d{2}:\d{2}$/.test(t.fin);
+  const turnoPulito = t => ({ cod: t.cod, ini: t.ini, fin: t.fin });
+  function leggiSintesi() {
+    const raw = $('codice-sintesi').value.trim(), inf = $('info-sintesi'), btn = $('btn-applica-sintesi');
+    sintesiRicevuta = null; btn.disabled = true; inf.style.fontWeight = '400';
+    if (!raw) { inf.textContent = ''; return; }
+    try {
+      const mt = raw.match(/TH3:[A-Za-z0-9+\/=_-]+/);
+      if (!mt) throw 0;
+      const o = JSON.parse(unb64(mt[0].slice(4)));
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(o.d) || !turnoOk(o.rt) || !turnoOk(o.ct) || !o.r || !o.c) throw 0;
+      const pers = x => ({ n: String(x.n || '').slice(0, 100), c: soloCifre(x.c) });
+      sintesiRicevuta = { d: o.d, r: pers(o.r), c: pers(o.c), rt: turnoPulito(o.rt), ct: turnoPulito(o.ct) };
+      inf.textContent = `${nomeCid(sintesiRicevuta.r.n, sintesiRicevuta.r.c)} ha cambiato il turno del ${itData(o.d)} con te: tu cedi ${descrTurno(sintesiRicevuta.ct)} e prendi ${descrTurno(sintesiRicevuta.rt)}.`;
+      inf.style.fontWeight = '700';
+      btn.disabled = false;
+    } catch (e) {
+      inf.textContent = 'Codice non valido: chiedi di mandare di nuovo la sintesi.';
+    }
+  }
+  function applicaSintesi() {
+    const s = sintesiRicevuta;
+    if (!s) return;
+    const mio = parseNomeCid(nomeUtente).cid || leggiIdentita().cid;
+    if (mio && s.c.c && mio !== s.c.c) {
+      $('info-sintesi').textContent = `Questa sintesi è per ${nomeCid(s.c.n, s.c.c)}, ma il tuo CID è ${mio}. Non aggiorno il calendario.`;
+      return;
+    }
+    const r = registraCambio({ d: s.d, ceduto: s.ct, preso: s.rt, con: s.r });
+    if (!r.ok) {
+      $('info-sintesi').textContent = 'Calendario non aggiornato: ' + r.motivo + '.';
+      return;
+    }
+    disegnaCalendario(turniSalvati);
+    disegnaCalendarioInterattivo();
+    $('codice-sintesi').value = '';
+    sintesiRicevuta = null;
+    $('btn-applica-sintesi').disabled = true;
+    $('info-sintesi').style.fontWeight = '400';
+    $('info-sintesi').textContent = r.gia ? 'Questo cambio era già nel tuo calendario.' : `Fatto: il ${itData(s.d)} ora risulta CAMBIATO. Lo vedi nella lista "I miei turni".`;
+    toast(r.gia ? 'Cambio già presente' : 'Calendario aggiornato');
+  }
+
+  return {
+    avvia() {
+      initModulo();
+      if (turniSalvati.length) {
+        const [y, m] = turniSalvati[0].dataIso.split('-').map(Number);
+        annoCorrente = y;
+        meseCorrente = m;
+      }
+      disegnaCalendarioInterattivo();
+      aggiornaPulsante();
+    },
+    aggiornaDaPdf(anno, mese) {
+      annoCorrente = anno;
+      meseCorrente = mese;
+      dataSelezionataIso = null;
+      ruolo = 'richiedente';
+      $('data-scelta-txt').textContent = 'nessuno';
+      disegnaCalendarioInterattivo();
+      aggiornaPulsante();
+    },
+    ridisegna() { disegnaCalendarioInterattivo(); aggiornaPulsante(); },
+    cambiaMese,
+    copiaMioCodice,
+    inviaCodiceWhatsApp,
+    inviaAvvisoWhatsApp,
+    leggiCodiceCollega,
+    eseguiVerificaCambio,
+    inviaEsitoWhatsApp,
+    inviaModulo,
+    apriModulo,
+    scaricaModulo,
+    inviaSintesiWhatsApp,
+    copiaSintesi,
+    leggiSintesi,
+    applicaSintesi
+  };
+})();
+
+
+// --- PROGRAMMAZIONE HAND ---
+const Hand = (() => {
+  const MESI = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  const WD = ['dom','lun','mar','mer','gio','ven','sab'];
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const isoD = (y, m, d) => y + '-' + pad(m + 1) + '-' + pad(d);
+  const fmtIT = s => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; };
+  const $ = id => document.getElementById(id);
+
+  const FIELDS = [
+    { k: 'nome', g: 'dip', lab: 'Nome e cognome', w: 1, al: ['cognome e nome', 'dipendente', 'agente', 'sottoscritto', 'nome'] },
+    { k: 'cid', g: 'dip', lab: 'CID', al: ['matricola'] },
+    { k: 'sede', g: 'dip', lab: 'Sede territoriale', al: ['sede'] },
+    { k: 'servizio', g: 'dip', lab: 'Servizio (se non in sede)', alab: 'Servizio', al: ['servizio'] },
+    { k: 'natoA', g: 'ana', lab: 'Nato a', al: ['luogo di nascita'] },
+    { k: 'natoIl', g: 'ana', lab: 'Nato il', type: 'date', al: ['data di nascita'] },
+    { k: 'resComune', g: 'ana', lab: 'Residente in', al: ['residenza', 'comune di residenza', 'comune residenza'] },
+    { k: 'resVia', g: 'ana', lab: 'Via/piazza residenza', al: ['indirizzo residenza', 'indirizzo', 'via residenza', 'via'] },
+    { k: 'resN', g: 'ana', lab: 'N. civico residenza', al: ['numero civico residenza', 'civico residenza', 'numero civico', 'civico'] },
+    { k: 'ass_nome', g: 'ass', lab: 'Assistito', w: 1, al: ['nome assistito', 'nome e cognome assistito', 'familiare assistito', 'familiare'] },
+    { k: 'ass_cf', g: 'ass', lab: 'Codice fiscale assistito', al: ['cf assistito', 'codice fiscale'] },
+    { k: 'ass_parentela', g: 'ass', lab: 'Grado di parentela', al: ['parentela'] },
+    { k: 'ass_via', g: 'ass', lab: 'Via/piazza assistito', al: ['indirizzo assistito', 'via assistito'] },
+    { k: 'ass_nr', g: 'ass', lab: 'N. civico assistito', al: ['numero civico assistito', 'civico assistito', 'nr assistito'] },
+    { k: 'ass_comune', g: 'ass', lab: 'Comune assistito', al: ['comune'] },
+    { k: 'ass_data', g: 'ass', lab: 'Data giudizio gravità', type: 'date', al: ['data gravita', 'data giudizio', 'data riconoscimento gravita'] },
+    { k: 'inps_sede', g: 'inps', lab: 'Sede INPS', al: ['inps'] },
+    { k: 'inps_data', g: 'inps', lab: 'Data domanda INPS', type: 'date', al: ['data domanda', 'data presentazione domanda inps'] }
+  ];
+  const GROUPS = [['dip', 'Dipendente'], ['ana', 'Dati anagrafici (autocertificazione)'], ['ass', 'Persona assistita'], ['inps', 'Domanda di sostegno al reddito']];
+
+  const KEY = 'hand_dati', KEYDEST = 'hand_dest';
+  const blank = () => { const d = { modo: 'familiare', luogo: '' }; FIELDS.forEach(f => d[f.k] = ''); return d; };
+  function load() {
+    const d = blank();
+    try { const r = JSON.parse(localStorage.getItem(KEY)); if (r && typeof r === 'object') for (const k of Object.keys(d)) if (typeof r[k] === 'string') d[k] = r[k].slice(0, 200); } catch (e) {}
+    if (!d.nome) { try { d.nome = localStorage.getItem('fe_nome') || nomeUtente || ''; } catch (e) {} }
+    if (!d.cid) { try { d.cid = localStorage.getItem('fe_cid') || ''; } catch (e) {} }
+    return d;
+  }
+  const now = new Date();
+  const todayIso = isoD(now.getFullYear(), now.getMonth(), now.getDate());
+  const nm = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const S = { data: blank(), sel: new Set(), view: { y: nm.getFullYear(), m: nm.getMonth() }, dataFirma: todayIso, bytes: null, url: null, fname: 'Programmazione_HAND.pdf', fonts: null };
+  const g = k => String(S.data[k] || '').trim();
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(S.data)); } catch (e) {} };
+
+  /* ---------- misura testo (metriche Times del PDF) ---------- */
+  function mw(t, b, sz) {
+    if (S.fonts) return (b ? S.fonts.b : S.fonts.n).widthOfTextAtSize(t, sz) * 25.4 / 72;
+    return t.length * sz * 0.2 * 25.4 / 72;
+  }
+  function safe(s) {
+    // il PDF usa la codifica WinAnsi: accenti, apostrofi e virgolette tipografiche, trattini lunghi
+    return String(s).replace(/[^\x20-\x7E\xA0-\xFF\u2018\u2019\u201C\u201D\u2013\u2014\u2022\u2026\u20AC]/g, c => {
+      const b = c.normalize('NFD').replace(/[\u0300-\u036F]/g, '');
+      return /^[\x20-\x7E]$/.test(b) ? b : '?';
+    });
+  }
+
+  /* ---------- impaginazione (mm, A4) ---------- */
+  const newPage = () => ({ items: [], lines: [], rects: [] });
+  const put = (pg, x, y, t, o) => { o = o || {}; pg.items.push({ x, y, t: safe(t), b: !!o.b, sz: o.sz || 12 }); };
+  const line = (pg, x1, y1, x2, y2, w) => pg.lines.push({ x1, y1, x2, y2, w: w || 0.25 });
+  function para(pg, segs, o) {
+    const sz = o.sz || 12, lead = o.lead || 6.2, W = o.w, X = o.x, toks = [];
+    segs.forEach(s => {
+      safe(s.t).split(' ').filter(Boolean).forEach((w, i) => {
+        const b = !!(s.b || o.b);
+        toks.push({ t: w, v: s.v, s: s.s, b, glue: i === 0 && !!s.glue, wd: mw(w, b, sz) });
+      });
+    });
+    const sp = mw(' ', !!o.b, sz), rows = [];
+    let cur = null;
+    toks.forEach(k => {
+      if (cur) { const gp = k.glue ? 0 : sp; if (cur.w + gp + k.wd <= W + 0.01) { k.dx = cur.w + gp; cur.w += gp + k.wd; cur.it.push(k); return; } }
+      cur = { it: [k], w: k.wd }; k.dx = 0; rows.push(cur);
+    });
+    let y = o.y;
+    rows.forEach(r => {
+      const off = o.align === 'center' ? (W - r.w) / 2 : 0;
+      r.it.forEach(k => put(pg, X + off + k.dx, y, k.t, { b: k.b, sz }));
+      ['v', 's'].forEach(f => {
+        let st = null;
+        r.it.forEach((k, i) => {
+          if (!k[f]) { st = null; return; }
+          if (st === null) st = k.dx;
+          const nx = r.it[i + 1];
+          if (!(nx && nx[f])) { const yy = f === 'v' ? y + 0.8 : y - sz * 0.3528 * 0.3; line(pg, X + off + st, yy, X + off + k.dx + k.wd, yy, 0.2); st = null; }
+        });
+      });
+      y += lead;
+    });
+    return { y, n: rows.length };
+  }
+  function wrapWords(text, w, sz) {
+    const words = safe(text).split(' ').filter(Boolean), rows = [];
+    let cur = '';
+    words.forEach(x => { const t = cur ? cur + ' ' + x : x; if (cur && mw(t, false, sz) > w) { rows.push(cur); cur = x; } else cur = t; });
+    if (cur) rows.push(cur);
+    return rows;
+  }
+  const V = (v, n) => v ? { t: v, v: true } : { t: '_'.repeat(n) };
+  const D = i => i ? { t: fmtIT(i), v: true } : { t: '____/____/________' };
+  const BL = (n, s) => ({ t: '_'.repeat(n), s });
+
+  function groupsSel() {
+    const by = {};
+    Array.from(S.sel).sort().forEach(id => {
+      const p = id.split('-').map(Number), k = p[0] + '-' + p[1];
+      (by[k] = by[k] || { y: p[0], m: p[1] - 1, days: [] }).days.push(p[2]);
+    });
+    return Object.keys(by).map(k => by[k]);
+  }
+  function footer(pg, y, txt) {
+    put(pg, 18.7, y, 'Luogo e data');
+    const x = 18.7 + mw('Luogo e data ', false, 12);
+    if (txt) { put(pg, x, y, txt); const w = Math.max(mw(safe(txt), false, 12), 38); line(pg, x, y + 0.8, x + w, y + 0.8, 0.2); }
+    else line(pg, x, y + 0.8, x + 38, y + 0.8, 0.2);
+    put(pg, 158, y, 'In fede');
+    line(pg, 138, y + 14, 190, y + 14, 0.2);
+  }
+  const G = 5.3;
+
+  function page1(grp) {
+    const pg = newPage(), X = 18.7, W = 175, fam = g('modo') !== 'se';
+    let y;
+    put(pg, 20, 29, '(Mod Programmazione HAND)');
+    put(pg, 133, 29, 'Al Responsabile');
+    put(pg, 133, 36.5, 'Servizi Aziendali e Sedi Territoriali');
+    para(pg, [{ t: 'Permessi ex articolo 33 della legge n. 104/1992 – Programma di assistenza mensile (da presentare almeno 10 giorni prima dell’inizio del mese di riferimento).' }], { x: X, w: W, y: 61, sz: 11, lead: 4.3, b: true });
+
+    const hasSede = !!g('sede'), hasServ = !!g('servizio'), stSede = !hasSede && hasServ, stServ = hasSede && !hasServ;
+    const s1 = [{ t: 'Il sottoscritto' }, V(g('nome'), 26), { t: 'cid' }, V(g('cid'), 7), { t: 'agente in servizio presso' }];
+    if (stSede) s1.push({ t: 'la Sede Territoriale di', s: true }, BL(26, true), { t: 'ovvero presso', s: true }, { t: 'il Servizio' }, V(g('servizio'), 24));
+    else { s1.push({ t: 'la Sede Territoriale di' }, V(g('sede'), 26), { t: 'ovvero presso il Servizio', s: stServ }); s1.push(stServ ? BL(24, true) : V(g('servizio'), 24)); }
+    y = para(pg, s1, { x: X, w: W, y: 79.5 }).y + G;
+
+    y = para(pg, [{ t: 'Chiede', b: true }], { x: X, w: W, y, align: 'center' }).y + G;
+    y = para(pg, [{ t: 'di usufruire dei benefici previsti dalla normativa in oggetto per assistere:' }], { x: X, w: W, y }).y + G;
+
+    const st1 = !fam, st2 = fam;
+    const b1 = [{ t: 'il/la sig./sig.ra', s: st1 }, st1 ? BL(29, true) : V(g('ass_nome'), 29), { t: 'Codice Fiscale', s: st1 }, st1 ? BL(22, true) : V(g('ass_cf'), 22),
+      { t: 'presso via/piazza', s: st1 }, st1 ? BL(30, true) : V(g('ass_via'), 30), { t: 'Nr.', s: st1 }, st1 ? BL(6, true) : V(g('ass_nr'), 6),
+      { t: 'nel Comune di', s: st1 }, st1 ? BL(23, true) : V(g('ass_comune'), 23), { t: '- Grado di parentela', s: st1 }, st1 ? BL(26, true) : V(g('ass_parentela'), 26),
+      { t: ', giudicata disabile con connotazione di gravità in data', s: st1, glue: true }, st1 ? { t: '____/____/________', s: true } : D(g('ass_data')), { t: ';', glue: true, s: st1 }];
+    put(pg, 13, y, '-');
+    y = para(pg, b1, { x: 23.7, w: X + W - 23.7, y }).y + G;
+    const b2 = [{ t: 'ovvero per sé stesso giudicato disabile con connotazione di gravità in data', s: st2 }, st2 ? { t: '____/____/________', s: true } : D(g('ass_data')), { t: '.', glue: true, s: st2 }];
+    put(pg, 13, y, '-');
+    y = para(pg, b2, { x: 23.7, w: X + W - 23.7, y }).y + G;
+
+    y = para(pg, [{ t: 'Il sottoscritto dichiara di avere presentato presso la sede INPS di' }, V(g('inps_sede'), 28), { t: 'in data' }, D(g('inps_data')), { t: 'la domanda di sostegno al reddito per il periodo in questione.' }], { x: X, w: W, y }).y + G;
+
+    let pr;
+    if (fam) pr = [{ t: 'Il Programma di assistenza a favore del/della sig. / sig.ra' }, V(g('ass_nome'), 30), { t: 'ovvero a favore di sé stesso', s: true }, { t: 'è articolato in base al seguente prospetto:' }];
+    else pr = [{ t: 'Il Programma di assistenza' }, { t: 'a favore del/della sig. / sig.ra', s: true }, BL(30, true), { t: 'ovvero', s: true }, { t: 'a favore di sé stesso è articolato in base al seguente prospetto:' }];
+    y = para(pg, pr, { x: X, w: W, y }).y;
+
+    const ty = y + 9.1, x0 = 18.5, cw = 173 / 7, rows = [];
+    rows.push({ h: 6.6, cells: ['Mese', 'Giorno', 'Giorno', 'Giorno', 'Giorno', 'Giorno', 'Giorno'], b: true });
+    if (!grp.length) rows.push({ h: 7.2, cells: ['', '', '', '', '', '', ''] });
+    grp.forEach(gr => {
+      for (let i = 0; i < gr.days.length; i += 6) {
+        const chunk = gr.days.slice(i, i + 6).map(String), lab = i === 0 ? cap(MESI[gr.m]) + ' ' + gr.y : '';
+        const ll = lab ? wrapWords(lab, cw - 3, 11) : [];
+        while (chunk.length < 6) chunk.push('');
+        rows.push({ h: Math.max(7.2, Math.max(ll.length, 1) * 4.7 + 2.6), cells: [lab].concat(chunk), lab: ll });
+      }
+    });
+    let yy = ty;
+    const total = rows.reduce((a, r) => a + r.h, 0);
+    line(pg, x0, ty, x0 + 173, ty);
+    rows.forEach(r => {
+      if (r.b) r.cells.forEach((c, ci) => { const w = mw(c, true, 12); put(pg, x0 + ci * cw + (cw - w) / 2, yy + 4.6, c, { b: true }); });
+      else r.cells.forEach((c, ci) => {
+        if (!c) return;
+        if (ci === 0) { const n = (r.lab || []).length || 1, top = yy + (r.h - n * 4.7) / 2 + 3.4; (r.lab || [c]).forEach((t, li) => { const w = mw(t, false, 11); put(pg, x0 + (cw - w) / 2, top + li * 4.7, t, { sz: 11 }); }); }
+        else { const w2 = mw(c, false, 12); put(pg, x0 + ci * cw + (cw - w2) / 2, yy + r.h / 2 + 1.6, c); }
+      });
+      yy += r.h; line(pg, x0, yy, x0 + 173, yy);
+    });
+    for (let c = 0; c <= 7; c++) line(pg, x0 + c * cw, ty, x0 + c * cw, ty + total);
+
+    const lt = [g('luogo'), fmtIT(S.dataFirma)].filter(Boolean).join(', ');
+    footer(pg, yy + 14.5, lt);
+    return pg;
+  }
+
+  function page2() {
+    const pg = newPage(), X = 18.7, W = 175;
+    let y = 32;
+    y = para(pg, [{ t: 'Autocertificazione', b: true }], { x: X, w: W, y, sz: 13, align: 'center' }).y + G;
+    y = para(pg, [{ t: 'Il sottoscritto' }, V(g('nome'), 28), { t: ',', glue: true }, { t: 'nato a' }, V(g('natoA'), 24), { t: 'il' }, D(g('natoIl')), { t: 'e residente in' }, V(g('resComune'), 22), { t: 'via /piazza' }, V(g('resVia'), 26), { t: 'n.' }, V(g('resN'), 6)], { x: X, w: W, y }).y + G;
+    y = para(pg, [{ t: 'Consapevole della responsabilità penale che si configura in caso di dichiarazioni false e mendaci e delle relative sanzioni penali di cui all’art. 76 del DPR n. 445 del 2000.' }], { x: X, w: W, y }).y + G;
+    y = para(pg, [{ t: 'DICHIARA', b: true }], { x: X, w: W, y, align: 'center' }).y + G;
+    y = para(pg, [{ t: 'La veridicità delle seguenti affermazioni:' }], { x: X, w: W, y }).y + G * 0.6;
+    const bullet = t => { pg.rects.push({ x: X + 3, y: y - 2.1, w: 1.7, h: 1.7 }); y = para(pg, [{ t }], { x: X + 9, w: W - 9, y }).y + G * 0.6; };
+    bullet('l’assistenza al proprio congiunto, riconosciuto “disabile grave” dai competenti organi sanitari, nelle giornate accordate sarà effettuata concretamente dal sottoscritto;');
+    y += G * 0.4;
+    y = para(pg, [{ t: 'Inoltre, con la presente dichiarazione, si assume l’impegno di:' }], { x: X, w: W, y }).y + G * 0.6;
+    bullet('notificare eventuali variazioni che possono incidere sul beneficio normativo in questione (p.es. decesso dell’assistito, revisione del giudizio di gravità, possibile assistenza prestata da altri familiari);');
+    bullet('autorizzare l’azienda a trattenere le prestazioni non dovute in caso di utilizzazione indebita dei permessi accordati.');
+    y += G * 0.4;
+    y = para(pg, [{ t: 'Dichiara, altresì, di essere a conoscenza di tutte le condizioni previste dalla legge per la regolarità dei permessi richiesti e delle possibili conseguenze in caso di utilizzo improprio degli stessi.' }], { x: X, w: W, y }).y + G * 1.6;
+    footer(pg, y, [g('luogo'), fmtIT(S.dataFirma)].filter(Boolean).join(', '));
+    return pg;
+  }
+
+  /* ---------- anteprima ---------- */
+  let LAY = [];
+  const pc = (v, t) => (v / t * 100).toFixed(3) + '%';
+  function sheetHTML(pg) {
+    let h = '';
+    pg.lines.forEach(l => {
+      const vert = l.x1 === l.x2, left = vert ? l.x1 - l.w / 2 : l.x1, top = vert ? l.y1 : l.y1 - l.w / 2, w = vert ? l.w : l.x2 - l.x1, hh = vert ? l.y2 - l.y1 : l.w;
+      h += '<i class="ln" style="left:' + pc(left, 210) + ';top:' + pc(top, 297) + ';width:' + pc(w, 210) + ';height:' + pc(hh, 297) + '"></i>';
+    });
+    pg.rects.forEach(r => { h += '<i class="ln" style="left:' + pc(r.x, 210) + ';top:' + pc(r.y, 297) + ';width:' + pc(r.w, 210) + ';height:' + pc(r.h, 297) + '"></i>'; });
+    pg.items.forEach(i => {
+      h += '<span class="w' + (i.b ? ' b' : '') + '" style="left:' + pc(i.x, 210) + ';top:' + pc(i.y - i.sz * 0.3528 * 0.84, 297) + ';font-size:' + (i.sz * 0.3528 / 210 * 100).toFixed(4) + 'cqw">' + esc(i.t) + '</span>';
+    });
+    return h;
+  }
+  function missingList() {
+    const fam = g('modo') !== 'se', out = [];
+    let need = ['nome', 'cid', 'natoA', 'natoIl', 'resComune', 'resVia', 'resN', 'ass_data', 'inps_sede', 'inps_data'];
+    if (fam) need = need.concat(['ass_nome', 'ass_cf', 'ass_parentela', 'ass_via', 'ass_nr', 'ass_comune']);
+    need.forEach(k => { if (!g(k)) out.push(FIELDS.find(x => x.k === k).lab); });
+    if (!g('sede') && !g('servizio')) out.push('Sede territoriale o Servizio');
+    return out;
+  }
+  const relayout = () => { LAY = [page1(groupsSel()), page2()]; };
+  let tPdf = 0;
+  function schedulePdf() {
+    clearTimeout(tPdf);
+    if (!S.sel.size || !S.fonts) return;
+    tPdf = setTimeout(() => { preparaPdf().catch(() => {}); }, 500);
+  }
+  function doRefresh() {
+    S.bytes = null;
+    $('h-mailto').hidden = true;
+    relayout();
+    $('h-sheets').innerHTML =
+      '<figure><figcaption>Foglio 1 · Richiesta</figcaption><div class="h-sheet" role="img" aria-label="Foglio 1: richiesta di permessi compilata">' + sheetHTML(LAY[0]) + '</div></figure>' +
+      '<figure><figcaption>Foglio 2 · Autocertificazione</figcaption><div class="h-sheet" role="img" aria-label="Foglio 2: autocertificazione compilata">' + sheetHTML(LAY[1]) + '</div></figure>';
+    const miss = missingList(), el = $('h-miss');
+    if (miss.length) { el.textContent = 'Mancano ' + miss.length + ' dati (' + miss.join(', ') + '). Nel PDF restano le righe vuote da completare a penna.'; el.className = 'msg err'; }
+    else { el.textContent = 'Tutti i dati necessari sono compilati.'; el.className = 'msg ok'; }
+    GROUPS.forEach(gp => {
+      const fs = FIELDS.filter(f => f.g === gp[0] && !$('h-w-' + f.k).hidden);
+      $('h-c-' + gp[0]).textContent = fs.filter(f => g(f.k)).length + '/' + fs.length;
+    });
+    const ok = S.sel.size > 0 && !!S.fonts;
+    ['h-mail', 'h-open', 'h-dl'].forEach(id => { $(id).disabled = !ok; });
+    schedulePdf();
+  }
+  let q = 0;
+  const refresh = () => { if (q) return; q = requestAnimationFrame(() => { q = 0; doRefresh(); }); };
+
+  /* ---------- campi ---------- */
+  function buildFields() {
+    $('h-groups').innerHTML = GROUPS.map(gp =>
+      '<details class="h-grp" id="h-g-' + gp[0] + '"' + (gp[0] === 'dip' ? ' open' : '') + '><summary><span id="h-t-' + gp[0] + '">' + gp[1] + '</span><span class="h-cnt" id="h-c-' + gp[0] + '"></span></summary><div class="h-fields">' +
+      FIELDS.filter(f => f.g === gp[0]).map(f =>
+        '<div class="' + (f.w ? 'h-wide' : '') + '" id="h-w-' + f.k + '"><label for="h-f-' + f.k + '">' + f.lab + '</label><input id="h-f-' + f.k + '" type="' + (f.type || 'text') + '" autocomplete="off"></div>'
+      ).join('') + '</div></details>').join('');
+    FIELDS.forEach(f => $('h-f-' + f.k).addEventListener('input', e => { S.data[f.k] = e.target.value; persist(); refresh(); }));
+  }
+  function applyMode() {
+    const se = g('modo') === 'se';
+    FIELDS.forEach(f => { if (f.g === 'ass' && f.k !== 'ass_data') $('h-w-' + f.k).hidden = se; });
+    $('h-t-ass').textContent = se ? 'Giudizio di gravità' : 'Persona assistita';
+  }
+  function syncInputs() {
+    FIELDS.forEach(f => { $('h-f-' + f.k).value = S.data[f.k] || ''; });
+    $('h-luogo').value = S.data.luogo || '';
+    $('h-data').value = S.dataFirma || '';
+    $('h-modo-fam').checked = S.data.modo !== 'se';
+    $('h-modo-se').checked = S.data.modo === 'se';
+    applyMode();
+  }
+
+  /* ---------- calendario ---------- */
+  function renderCal() {
+    const y = S.view.y, m = S.view.m, grid = $('h-days');
+    const act = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.d : null;
+    $('h-title').textContent = MESI[m] + ' ' + y;
+    const lead = (new Date(y, m, 1).getDay() + 6) % 7, n = new Date(y, m + 1, 0).getDate();
+    let h = '';
+    for (let i = 0; i < lead; i++) h += '<button type="button" class="day empty" tabindex="-1" aria-hidden="true"></button>';
+    for (let d = 1; d <= n; d++) {
+      const id = isoD(y, m, d), on = S.sel.has(id);
+      h += '<button type="button" class="day' + (on ? ' sel' : '') + (id === todayIso ? ' today' : '') + '" data-d="' + id + '" aria-pressed="' + on + '" aria-label="' + WD[new Date(y, m, d).getDay()] + ' ' + d + ' ' + MESI[m] + ' ' + y + '">' + d + '</button>';
+    }
+    grid.innerHTML = h;
+    if (act) { const b = grid.querySelector('[data-d="' + act + '"]'); if (b) b.focus(); }
+  }
+  function renderSel() {
+    const gs = groupsSel(), el = $('h-sel');
+    if (!gs.length) { el.innerHTML = '<div class="hint" style="margin-top:0">Nessun giorno scelto.</div>'; return; }
+    const oggi = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    el.innerHTML = gs.map(gr => {
+      const dl = new Date(gr.y, gr.m, 1 - 10), late = dl < oggi;
+      const dls = pad(dl.getDate()) + '/' + pad(dl.getMonth() + 1) + '/' + dl.getFullYear();
+      return '<div class="h-mon"><b>' + MESI[gr.m] + ' ' + gr.y + '</b> · ' + gr.days.length + (gr.days.length === 1 ? ' giorno' : ' giorni') +
+        '<div class="h-due' + (late ? ' late' : '') + '">' + (late ? 'Termine di consegna scaduto il ' + dls + ' (10 giorni prima del mese).' : 'Da consegnare entro il ' + dls + '.') + '</div>' +
+        '<div class="chips" style="margin-top:0">' + gr.days.map(d => '<span class="chip">' + WD[new Date(gr.y, gr.m, d).getDay()] + ' ' + d + '<button type="button" data-d="' + isoD(gr.y, gr.m, d) + '" aria-label="Togli il giorno ' + d + '">×</button></span>').join('') + '</div>' +
+        (gr.days.length > 3 ? '<div class="h-warn">Sono più di 3 giorni: la legge 104 ne prevede 3 al mese.</div>' : '') + '</div>';
+    }).join('');
+  }
+  const changed = () => { renderCal(); renderSel(); refresh(); };
+
+  /* ---------- lettura file ---------- */
+  const nl = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9\/ ]/g, ' ').replace(/\s+/g, ' ').trim();
+  function toIso(s) {
+    s = String(s || '').trim();
+    let m = /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/.exec(s);
+    if (m) { let y = +m[3]; if (y < 100) y += y > 50 ? 1900 : 2000; if (+m[2] < 1 || +m[2] > 12 || +m[1] < 1 || +m[1] > 31) return ''; return isoD(y, +m[2] - 1, +m[1]); }
+    m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    return m ? s : '';
+  }
+  function parseText(raw) {
+    const out = {};
+    function set(k, v, date) {
+      v = String(v || '').replace(/_{2,}/g, ' ').replace(/\s+/g, ' ').trim().replace(/^[,;:\-\s]+|[,;:\s]+$/g, '');
+      if (!v || /^[_\s\/.\-]*$/.test(v)) return;
+      if (date) { v = toIso(v); if (!v) return; }
+      if (out[k] === undefined) out[k] = v.slice(0, 200);
+    }
+    const map = {};
+    FIELDS.forEach(f => { map[nl(f.alab || f.lab)] = f; map[nl(f.lab)] = f; f.al.forEach(a => { if (!map[nl(a)]) map[nl(a)] = f; }); });
+    map[nl('Luogo')] = { k: 'luogo' };
+    String(raw).split(/\r?\n/).forEach(ln => {
+      const m = /^\s*([^:]{2,45}):\s*(.*)$/.exec(ln);
+      if (!m) return;
+      const key = nl(m[1]);
+      if (['assistenza', 'tipo assistenza', 'permesso per', 'modalita'].indexOf(key) >= 0) { const v = nl(m[2]); if (v) out.modo = /stess|^me$|^io$|^se$/.test(v) ? 'se' : 'familiare'; return; }
+      const f = map[key];
+      if (f) set(f.k, m[2], f.type === 'date');
+    });
+    const t = String(raw).replace(/\s+/g, ' ');
+    const D8 = '(\\d{1,2}[\\/.\\-]\\d{1,2}[\\/.\\-]\\d{2,4})';
+    let r;
+    if ((r = /Il sottoscritto\s+(.+?)\s+cid\s+(\S+)\s+agente/i.exec(t))) { set('nome', r[1]); set('cid', r[2]); }
+    if ((r = /Sede\s+Territoriale\s+di\s+(.+?)\s+ovvero\s+presso/i.exec(t))) set('sede', r[1]);
+    if ((r = /ovvero\s+presso\s+il\s+Servizio\s+(.+?)\s+Chiede/i.exec(t))) set('servizio', r[1]);
+    if ((r = /il\/la\s+sig\.\/sig\.ra\s+(.+?)\s+Codice\s+Fiscale\s+(\S+)/i.exec(t))) { set('ass_nome', r[1]); set('ass_cf', r[2]); }
+    if ((r = /presso\s+via\/piazza\s+(.+?)\s+Nr\.\s*(\S+)\s+nel\s+Comune\s+di\s+(.+?)\s*-\s*Grado\s+di\s+parentela\s+(.+?)\s*,\s*giudicata/i.exec(t))) { set('ass_via', r[1]); set('ass_nr', r[2]); set('ass_comune', r[3]); set('ass_parentela', r[4]); }
+    if ((r = new RegExp('giudicata\\s+disabile\\s+con\\s+connotazione\\s+di\\s*gravit\\S*\\s+in\\s+data\\s+' + D8, 'i').exec(t))) set('ass_data', r[1], true);
+    if (!out.ass_data && (r = new RegExp('per\\s+s\\S*\\s+stesso\\s+giudicato\\s+disabile\\s+con\\s+connotazione\\s+di\\s*gravit\\S*\\s+in\\s+data\\s+' + D8, 'i').exec(t))) { set('ass_data', r[1], true); if (!out.ass_nome && out.modo === undefined) out.modo = 'se'; }
+    if ((r = new RegExp('sede\\s+INPS\\s+di\\s+(.+?)\\s+in\\s+data\\s+' + D8, 'i').exec(t))) { set('inps_sede', r[1]); set('inps_data', r[2], true); }
+    if ((r = new RegExp('Il sottoscritto\\s+([^,]+?)\\s*,\\s*nato\\s+a\\s+(.+?)\\s+il\\s+' + D8 + '\\s+e\\s+residente\\s+in\\s+(.+?)\\s+via\\s*\\/?\\s*piazza\\s+(.+?)\\s+n\\.\\s*(\\S+)', 'i').exec(t))) { set('nome', r[1]); set('natoA', r[2]); set('natoIl', r[3], true); set('resComune', r[4]); set('resVia', r[5]); set('resN', r[6]); }
+    return out;
+  }
+  function caricaScript(src) {
+    return new Promise((ok, ko) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => ko(new Error('Non riesco a caricare il lettore dei file Word. Controlla la connessione.')); document.head.appendChild(s); });
+  }
+  async function readText(file) {
+    const name = file.name.toLowerCase();
+    if (name.endsWith('.pdf')) {
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+      let out = '';
+      for (let p = 1; p <= pdf.numPages; p++) { const tc = await (await pdf.getPage(p)).getTextContent(); out += tc.items.map(i => i.str + (i.hasEOL ? '\n' : ' ')).join('') + '\n'; }
+      return out;
+    }
+    if (name.endsWith('.docx')) {
+      if (!window.mammoth) await caricaScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+      return (await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value;
+    }
+    if (name.endsWith('.doc')) throw new Error('Il formato .doc non si può leggere. Salva il file come .docx o PDF.');
+    return await file.text();
+  }
+  function setUp(t, c) { $('h-up-msg').textContent = t; $('h-up-msg').className = 'msg ' + (c || ''); }
+  async function handleFile(file) {
+    if (!file) return;
+    setUp('Lettura di ' + file.name + '…', '');
+    try {
+      const found = parseText(await readText(file)), keys = Object.keys(found);
+      if (!keys.length) { setUp('Nessun dato riconosciuto in ' + file.name + '. Controlla che il file contenga testo e non sia una scansione.', 'err'); return; }
+      const modo = found.modo; delete found.modo;
+      Object.assign(S.data, found);
+      if (modo) S.data.modo = modo;
+      syncInputs(); persist(); refresh();
+      const n = keys.filter(k => k !== 'modo' && k !== 'luogo').length, mm = missingList();
+      setUp('Letti ' + n + ' campi da ' + file.name + (mm.length ? '. Da completare: ' + mm.join(', ') + '.' : '.'), 'ok');
+    } catch (e) { setUp(e && e.message ? e.message : 'Non riesco a leggere questo file.', 'err'); }
+  }
+
+  /* ---------- PDF ---------- */
+  async function costruisciPdf() {
+    relayout();
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const doc = await PDFDocument.create();
+    doc.setTitle('Programmazione HAND');
+    const fn = await doc.embedFont(StandardFonts.TimesRoman), fb = await doc.embedFont(StandardFonts.TimesRomanBold);
+    const k = 72 / 25.4, Y = y => (297 - y) * k, nero = rgb(0, 0, 0);
+    LAY.forEach(pg => {
+      const page = doc.addPage([595.28, 841.89]);
+      pg.lines.forEach(l => page.drawLine({ start: { x: l.x1 * k, y: Y(l.y1) }, end: { x: l.x2 * k, y: Y(l.y2) }, thickness: l.w * k, color: nero }));
+      pg.rects.forEach(r => page.drawRectangle({ x: r.x * k, y: Y(r.y + r.h), width: r.w * k, height: r.h * k, color: nero }));
+      pg.items.forEach(t => page.drawText(t.t, { x: t.x * k, y: Y(t.y), size: t.sz, font: t.b ? fb : fn, color: nero }));
+    });
+    return await doc.save();
+  }
+  function nomeFile() {
+    const gr = groupsSel()[0], n = g('nome').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    return 'Programmazione_HAND_' + (gr ? MESI[gr.m] + '_' + gr.y : 'compilato') + (n ? '_' + n : '') + '.pdf';
+  }
+  async function preparaPdf() {
+    S.bytes = await costruisciPdf();
+    S.fname = nomeFile();
+    if (S.url) URL.revokeObjectURL(S.url);
+    S.url = URL.createObjectURL(new Blob([S.bytes], { type: 'application/pdf' }));
+  }
+  const hmsg = (t, c) => { $('h-msg').textContent = t; $('h-msg').className = 'msg ' + (c || ''); };
+  function scarica() {
+    const a = document.createElement('a'); a.href = S.url; a.download = S.fname;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function oggettoMail() {
+    const mesi = groupsSel().map(x => cap(MESI[x.m]) + ' ' + x.y).join(', ');
+    return 'Programmazione HAND' + (mesi ? ' - ' + mesi : '') + (g('nome') ? ' - ' + g('nome') : '');
+  }
+  function corpoMail() {
+    const mesi = groupsSel().map(x => MESI[x.m] + ' ' + x.y).join(', ');
+    return 'Buongiorno,\n\nin allegato la programmazione HAND (permessi ex art. 33 L. 104/1992)' + (mesi ? ' per ' + mesi : '') + ', con la relativa autocertificazione.\n\nCordiali saluti\n' + g('nome');
+  }
+  function puoCondividere(file) {
+    try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { return false; }
+  }
+  function motivoNoShare(file) {
+    if (location.protocol === 'file:') return 'la pagina è aperta come file del telefono, non da un indirizzo web';
+    if (!window.isSecureContext) return 'la pagina non è su un indirizzo sicuro (https)';
+    if (!navigator.share) return 'questo browser o questa app non ha la condivisione';
+    if (!navigator.canShare || !navigator.canShare({ files: [file] })) return 'questo browser o questa app non permette di condividere file PDF';
+    return '';
+  }
+  async function invia() {
+    try {
+      const dest = $('h-dest').value.trim();
+      try { localStorage.setItem(KEYDEST, dest); } catch (e) {}
+      if (!S.bytes) await preparaPdf();
+      const f = new File([S.bytes], S.fname, { type: 'application/pdf' });
+      let motivo = motivoNoShare(f);
+      if (!motivo) {
+        try {
+          await navigator.share({ files: [f], title: oggettoMail(), text: corpoMail() });
+          hmsg('Scegli Aruba Mail o la tua app di posta: il PDF è già allegato.', 'ok');
+          return;
+        } catch (e) {
+          if (e && e.name === 'AbortError') return;
+          motivo = 'il telefono ha rifiutato la condivisione (' + (e && e.name ? e.name : 'errore') + ')';
+        }
+      }
+      scarica();
+      const a = $('h-mailto');
+      a.href = 'mailto:' + encodeURIComponent(dest).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(oggettoMail()) + '&body=' + encodeURIComponent(corpoMail());
+      a.hidden = false;
+      hmsg('Allegato automatico non possibile: ' + motivo + '. Il PDF è stato scaricato (' + S.fname + '). Tocca "Apri la posta" e allegalo a mano dalla cartella Download.', 'ok');
+    } catch (e) { hmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
+  }
+
+  /* ---------- avvio ---------- */
+  async function initFonts() {
+    const d = await PDFLib.PDFDocument.create();
+    S.fonts = { n: await d.embedFont(PDFLib.StandardFonts.TimesRoman), b: await d.embedFont(PDFLib.StandardFonts.TimesRomanBold) };
+  }
+  function clearAll() {
+    S.data = blank(); S.sel.clear(); persist(); syncInputs(); changed(); setUp('Dati svuotati.', '');
+  }
+  let avviato = false;
+  async function init() {
+    S.data = load();
+    buildFields();
+    $('h-dows').innerHTML = ['L', 'M', 'M', 'G', 'V', 'S', 'D'].map(x => '<div class="dow">' + x + '</div>').join('');
+    try { $('h-dest').value = localStorage.getItem(KEYDEST) || ''; } catch (e) {}
+    syncInputs(); renderCal(); renderSel();
+    $('h-btn-file').onclick = () => $('h-file').click();
+    $('h-file').onchange = e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); };
+    $('h-luogo').oninput = e => { S.data.luogo = e.target.value; persist(); refresh(); };
+    $('h-data').oninput = e => { S.dataFirma = e.target.value; refresh(); };
+    ['h-modo-fam', 'h-modo-se'].forEach(id => $(id).onchange = e => { S.data.modo = e.target.value; applyMode(); persist(); refresh(); });
+    $('h-clear').onclick = clearAll;
+    $('h-none').onclick = () => { S.sel.clear(); changed(); };
+    $('h-days').onclick = e => { const b = e.target.closest('[data-d]'); if (!b) return; const id = b.dataset.d; if (S.sel.has(id)) S.sel.delete(id); else S.sel.add(id); changed(); };
+    $('h-sel').onclick = e => { const b = e.target.closest('button[data-d]'); if (b) { S.sel.delete(b.dataset.d); changed(); } };
+    $('h-prev').onclick = () => { S.view.m--; if (S.view.m < 0) { S.view.m = 11; S.view.y--; } renderCal(); };
+    $('h-next').onclick = () => { S.view.m++; if (S.view.m > 11) { S.view.m = 0; S.view.y++; } renderCal(); };
+    $('h-mail').onclick = invia;
+    $('h-dest').onchange = () => { try { localStorage.setItem(KEYDEST, $('h-dest').value.trim()); } catch (e) {} };
+    $('h-open').onclick = async () => { try { await preparaPdf(); window.open(S.url, '_blank') || hmsg('Il browser ha bloccato la nuova scheda. Usa "Scarica".', 'err'); } catch (e) { hmsg('Errore: ' + e.message, 'err'); } };
+    $('h-dl').onclick = async () => { try { await preparaPdf(); scarica(); hmsg('PDF scaricato.', 'ok'); } catch (e) { hmsg('Errore: ' + e.message, 'err'); } };
+    doRefresh();
+    try { await initFonts(); } catch (e) { hmsg('Il generatore di PDF non si è caricato. Ricarica la pagina.', 'err'); }
+    doRefresh();
+  }
+  return {
+    avvia() { if (!avviato) { avviato = true; init(); } },
+    // backup
+    esporta() { return JSON.stringify({ dati: S.data, dest: (() => { try { return localStorage.getItem(KEYDEST) || ''; } catch (e) { return ''; } })() }); },
+    importa(o) {
+      if (!o || typeof o !== 'object') return;
+      try {
+        const d = o.dati || {}, ok = {};
+        Object.keys(blank()).forEach(k => { if (typeof d[k] === 'string') ok[k] = d[k].slice(0, 200); });
+        localStorage.setItem(KEY, JSON.stringify(ok));
+        if (typeof o.dest === 'string') localStorage.setItem(KEYDEST, o.dest.slice(0, 200));
+        if (avviato) { S.data = load(); $('h-dest').value = o.dest || ''; syncInputs(); refresh(); }
+      } catch (e) {}
+    },
+    _core: { parseText, page1, page2, S, mw, safe, groupsSel }
+  };
+})();
+
+// --- BACKUP & RIPRISTINO ---
+const CHIAVI_ASSENZE = { nome: 'fe_nome', cid: 'fe_cid', tipo: 'fe_tipo', firma: 'fe_firma' };
+
+function esportaBackup() {
+  const assenze = {};
+  for (const [k, ls] of Object.entries(CHIAVI_ASSENZE)) {
+    try { assenze[k] = localStorage.getItem(ls) || ''; } catch (e) {}
+  }
+  const blob = new Blob([JSON.stringify({ turniSalvati, noteGiornaliere, assenze, nomeUtente, hand: JSON.parse(Hand.esporta()), cambi }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `backup_turnihub_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+}
+
+const RE_DATA = /^\d{4}-\d{2}-\d{2}$/;
+const RE_ORA = /^\d{2}:\d{2}$/;
+const RE_COD = /^[A-Z]{1,4}\d{0,4}[A-Z]?$/;
+const RE_DATA_FORM = /^\d{1,2} [A-Za-zàèéìòù]+ \d{4}$/;
+
+function turnoValido(t) {
+  return t && typeof t === 'object'
+    && RE_DATA.test(t.dataIso) && RE_COD.test(t.codiceTurno)
+    && RE_ORA.test(t.inizio) && RE_ORA.test(t.fine)
+    && (!t.dataFormattata || RE_DATA_FORM.test(t.dataFormattata));
+}
+
+function importaBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const b = JSON.parse(e.target.result);
+      if (Array.isArray(b.turniSalvati)) {
+        turniSalvati = b.turniSalvati.filter(turnoValido).map(t => ({
+          dataIso: t.dataIso,
+          dataFormattata: t.dataFormattata || t.dataIso,
+          codiceTurno: t.codiceTurno,
+          inizio: t.inizio,
+          fine: t.fine
+        }));
+      }
+      if (typeof b.nomeUtente === 'string') {
+        nomeUtente = b.nomeUtente.slice(0, 100);
+        localStorage.setItem('turnihub_utente', nomeUtente);
+      }
+      if (b.noteGiornaliere && typeof b.noteGiornaliere === 'object') {
+        const puliteNote = {};
+        for (const [k, v] of Object.entries(b.noteGiornaliere)) {
+          if (RE_DATA.test(k) && typeof v === 'string') puliteNote[k] = v.slice(0, 500);
+        }
+        noteGiornaliere = puliteNote;
+      }
+      localStorage.setItem('turnihub_turni', JSON.stringify(turniSalvati));
+      localStorage.setItem('turnihub_note_giornaliere', JSON.stringify(noteGiornaliere));
+
+      if (b.assenze && typeof b.assenze === 'object') {
+        for (const [k, ls] of Object.entries(CHIAVI_ASSENZE)) {
+          let v = b.assenze[k];
+          if (typeof v !== 'string') continue;
+          if (k === 'tipo' && !['ferie', 'sangue', 'cariche'].includes(v)) continue;
+          if (k === 'firma' && !['0', '1'].includes(v)) continue;
+          localStorage.setItem(ls, v.slice(0, 200));
+        }
+        Assenze.ricarica();
+      }
+      if (Array.isArray(b.cambi)) { cambi = b.cambi.slice(0, 500).map(normalizzaCambio).filter(Boolean); salvaCambi(); }
+      if (b.hand) Hand.importa(b.hand);
+      disegnaCalendario(turniSalvati);
+      CambioTurno.avvia();
+      toast('Backup ripristinato');
+    } catch (err) {
+      toast('Errore durante il ripristino del backup');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// --- MODULO ASSENZE ---
+const Assenze = (() => {
+  const MONTHS = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+  const DOW = ['L','M','M','G','V','S','D'];
+
+  const LAYOUT = {
+    testata:  { x0: 259.4, x1: 528.8, baseTop: 93.5, coverTop: 90.5, coverBottom: 103 },
+    dataPres: { x: 224, top: 196.8, maxW: 160, riga: { y: 199.2, x0: 219.2, x1: 386.4 } },
+    nome:     { x: 194, top: 232.8, maxW: 195, riga: { y: 235.2, x0: 190.1, x1: 393.0 } },
+    cid:      { x: 465, top: 232.8, maxW: 54,  riga: { y: 235.2, x0: 461.4, x1: 521.1 } },
+    note:     { x: 449, top: 521.0, maxW: 318, riga: { y: 523.5, x0: 444.6, x1: 767.6 } },
+    titolo:   { cover: [179.2, 222.5, 128.6, 146.8], x: 180.59, baseTop: 143.46, size: 16.956 },
+    frase:    { cover: [72.0, 486.0, 294.2, 310.4], x: 73.85, baseTop: 306.28, size: 13.325 },
+    firma:    { x: 79, baseTop: 465.5, maxW: 158, maxSize: 19, rot: 2 },
+    periodi: [
+      { top: 341.0, riga: 343.5, dal: { g: [107.0,142.9], m: [147.8,285.1], a: [289.9,331.7] }, al: { g: [391.0,426.8], m: [431.7,569.0], a: [573.9,615.6] } },
+      { top: 377.0, riga: 379.5, dal: { g: [103.6,139.4], m: [144.3,281.6], a: [286.5,328.3] }, al: { g: [391.0,426.8], m: [431.7,569.0], a: [573.9,615.6] } }
+    ]
+  };
+
+  const MODULI = {
+    ferie:   { etichetta: 'Ferie',            titolo: null,               frase: null, file: 'Domanda_ferie.pdf' },
+    sangue:  { etichetta: 'Donazione sangue', titolo: 'donazione sangue', frase: 'Chiede di poter usufruire del permesso per donazione di sangue nei seguenti periodi:', file: 'Domanda_donazione_sangue.pdf' },
+    cariche: { etichetta: 'Cariche elettive', titolo: 'cariche elettive', frase: 'Chiede di poter usufruire dei permessi per cariche elettive nei seguenti periodi:', file: 'Domanda_cariche_elettive.pdf' }
+  };
+
+  const FONT_URL = w => `https://cdn.jsdelivr.net/npm/@fontsource/open-sans@5.3.0/files/open-sans-latin-${w}-normal.woff`;
+  let _fontPromise = null;
+  let fontFallback = false;
+
+  function caricaFontOpenSans() {
+    if (!_fontPromise) {
+      _fontPromise = Promise.all([fetch(FONT_URL(400)), fetch(FONT_URL(700))]).then(async r => {
+        if (!r[0].ok || !r[1].ok) throw new Error('font');
+        return { regular: await r[0].arrayBuffer(), bold: await r[1].arrayBuffer() };
+      }).catch(e => { _fontPromise = null; throw e; });
+    }
+    return _fontPromise;
+  }
+
+  const FIRMA_FONT_URL = 'https://cdn.jsdelivr.net/npm/@fontsource/mr-dafoe@5.3.0/files/mr-dafoe-latin-400-normal.woff';
+  let _firmaPromise = null;
+  let firmaNonCaricata = false;
+
+  function caricaFontFirma() {
+    if (!_firmaPromise) {
+      _firmaPromise = fetch(FIRMA_FONT_URL).then(async r => {
+        if (!r.ok) throw new Error('font');
+        return r.arrayBuffer();
+      }).catch(e => { _firmaPromise = null; throw e; });
+    }
+    return _firmaPromise;
+  }
+
+  const CANCELLA_RIGHE = false;
+  const OFFSET_X = 0;
+  const OFFSET_Y = 0;
+  const TXT_MAX = 14;
+  const HEAD_MAX = 46;
+
+  function raggruppaFogli(periodi) {
+    const mesi = new Map();
+    periodi.forEach(p => {
+      const k = p.y1 * 100 + p.m1;
+      if (!mesi.has(k)) mesi.set(k, []);
+      mesi.get(k).push(p);
+    });
+    const fogli = [];
+    [...mesi.keys()].sort((a, b) => a - b).forEach(k => {
+      const l = mesi.get(k);
+      for (let i = 0; i < l.length; i += 2) fogli.push(l.slice(i, i + 2));
+    });
+    return fogli;
+  }
+
+  async function fillSheet(tplBytes, data, periodi, outDoc) {
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const doc = await PDFDocument.load(tplBytes);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const page = doc.getPages()[0];
+    const mb = page.getMediaBox();
+    const Yraw = top => mb.y + mb.height - top;
+    const Y = top => Yraw(top + OFFSET_Y);
+    const color = rgb(0.05, 0.1, 0.45);
+
+    const erase = (x0, x1, y) => CANCELLA_RIGHE && page.drawRectangle({ x: x0 - 0.5, y: Yraw(y + 2.6), width: (x1 - x0) + 1, height: 4.2, color: rgb(1, 1, 1) });
+    const fit = (f, txt, maxW, maxSize) => {
+      let s = maxSize;
+      while (s > 6 && f.widthOfTextAtSize(txt, s) > maxW) s -= 0.5;
+      return s;
+    };
+    const put = (txt, x, top, maxW, riga) => {
+      if (!txt) return;
+      txt = String(txt);
+      if (riga) erase(riga.x0, riga.x1, riga.y);
+      const size = fit(font, txt, maxW, TXT_MAX);
+      page.drawText(txt, { x: x + OFFSET_X, y: Y(top), size, font, color });
+    };
+    const center = (txt, seg, top, rigay) => {
+      txt = String(txt);
+      erase(seg[0], seg[1], rigay);
+      const maxW = (seg[1] - seg[0]) - 3;
+      const size = fit(font, txt, maxW, TXT_MAX);
+      const w = font.widthOfTextAtSize(txt, size);
+      page.drawText(txt, { x: seg[0] + ((seg[1] - seg[0]) - w) / 2 + OFFSET_X, y: Y(top), size, font, color });
+    };
+
+    if (periodi.length) {
+      const T = LAYOUT.testata;
+      page.drawRectangle({ x: T.x0 - 10, y: Yraw(T.coverBottom), width: (T.x1 - T.x0) + 20, height: T.coverBottom - T.coverTop, color: rgb(1, 1, 1) });
+      const mese = MONTHS[periodi[0].m1 - 1].toUpperCase();
+      const maxW = (T.x1 - T.x0) - 6;
+      const size = fit(bold, mese, maxW, HEAD_MAX);
+      const w = bold.widthOfTextAtSize(mese, size);
+      page.drawText(mese, { x: T.x0 + ((T.x1 - T.x0) - w) / 2, y: Yraw(T.baseTop), size, font: bold, color });
+    }
+
+    const tipo = MODULI[data.tipo] || MODULI.ferie;
+    if (tipo.titolo) {
+      let osR = font, osB = bold;
+      try {
+        if (typeof fontkit === 'undefined') throw new Error('fontkit');
+        doc.registerFontkit(fontkit);
+        const fb = await caricaFontOpenSans();
+        osR = await doc.embedFont(fb.regular, { subset: true });
+        osB = await doc.embedFont(fb.bold, { subset: true });
+      } catch (e) { fontFallback = true; }
+      const nero = rgb(0, 0, 0), bianco = rgb(1, 1, 1);
+      const cover = c => page.drawRectangle({ x: c[0], y: Yraw(c[3]), width: c[1] - c[0], height: c[3] - c[2], color: bianco });
+      cover(LAYOUT.titolo.cover);
+      page.drawText(tipo.titolo, { x: LAYOUT.titolo.x, y: Yraw(LAYOUT.titolo.baseTop), size: LAYOUT.titolo.size, font: osB, color: nero });
+      cover(LAYOUT.frase.cover);
+      page.drawText(tipo.frase, { x: LAYOUT.frase.x, y: Yraw(LAYOUT.frase.baseTop), size: LAYOUT.frase.size, font: osR, color: nero });
+    }
+
+    if (data.firma && data.nome) {
+      try {
+        if (typeof fontkit === 'undefined') throw new Error('fontkit');
+        doc.registerFontkit(fontkit);
+        const bytes = await caricaFontFirma();
+        const fF = await doc.embedFont(bytes, { subset: true });
+        const F = LAYOUT.firma;
+        let sz = F.maxSize;
+        while (sz > 8 && fF.widthOfTextAtSize(data.nome, sz) > F.maxW) sz -= 0.5;
+        page.drawText(data.nome, { x: F.x, y: Yraw(F.baseTop), size: sz, font: fF, color, rotate: PDFLib.degrees(F.rot) });
+      } catch (e) { firmaNonCaricata = true; }
+    }
+
+    put(data.dataPres, LAYOUT.dataPres.x, LAYOUT.dataPres.top, LAYOUT.dataPres.maxW, LAYOUT.dataPres.riga);
+    put(data.nome,     LAYOUT.nome.x,     LAYOUT.nome.top,     LAYOUT.nome.maxW,     LAYOUT.nome.riga);
+    put(data.cid,      LAYOUT.cid.x,      LAYOUT.cid.top,      LAYOUT.cid.maxW,      LAYOUT.cid.riga);
+    put(data.note,     LAYOUT.note.x,     LAYOUT.note.top,     LAYOUT.note.maxW,     LAYOUT.note.riga);
+
+    periodi.slice(0, 2).forEach((p, i) => {
+      const L = LAYOUT.periodi[i];
+      center(String(p.d1).padStart(2, '0'), L.dal.g, L.top, L.riga);
+      center(MONTHS[p.m1 - 1].toUpperCase(), L.dal.m, L.top, L.riga);
+      center(p.y1,                           L.dal.a, L.top, L.riga);
+      center(String(p.d2).padStart(2, '0'), L.al.g,  L.top, L.riga);
+      center(MONTHS[p.m2 - 1].toUpperCase(), L.al.m,  L.top, L.riga);
+      center(p.y2,                           L.al.a,  L.top, L.riga);
+    });
+
+    const [copied] = await outDoc.copyPages(doc, [0]);
+    outDoc.addPage(copied);
+  }
+
+  async function buildPdf(tplBytes, data, periodi) {
+    const outDoc = await PDFLib.PDFDocument.create();
+    for (const foglio of raggruppaFogli(periodi)) await fillSheet(tplBytes, data, foglio, outDoc);
+    return await outDoc.save();
+  }
+
+  const st = { tipo: 'ferie', fileName: 'Domanda_ferie.pdf', shareTitle: 'Domanda di ferie', tpl: null, days: new Set(), anchor: null, vy: 0, vm: 0, url: null };
+  const key = (y, m, d) => y * 10000 + m * 100 + d;
+  const unkey = k => ({ y: Math.floor(k / 10000), m: Math.floor(k / 100) % 100, d: k % 100 });
+  const $ = id => document.getElementById(id);
+
+  const MODULO_FILES = ['MODULO RICHIESTA FERIE.pdf', 'MODULO_RICHIESTA_FERIE.pdf', 'Copia_di_MODULO_RICHIESTA_FERIE.pdf', 'modulo.pdf'];
+
+  function setTpl(buf, msg, cls) {
+    st.tpl = buf;
+    $('tplMsg').textContent = msg;
+    $('tplMsg').className = 'msg ' + cls;
+  }
+
+  function salvaTpl(buf) {
+    try {
+      let s = '';
+      for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]);
+      localStorage.setItem('fe_tpl', btoa(s));
+    } catch (e) {}
+  }
+
+  const MODULO_URL_DIRETTO = 'https://raw.githubusercontent.com/turnihub/Assenze/main/MODULO%20RICHIESTA%20FERIE.pdf';
+
+  async function caricaModuloDaGithub() {
+    const provati = [];
+    const candidati = MODULO_FILES.map(n => ({ nome: n, url: new URL(encodeURIComponent(n), location.href).href }))
+      .concat([{ nome: 'link diretto', url: MODULO_URL_DIRETTO }]);
+
+    for (const c of candidati) {
+      try {
+        const res = await fetch(c.url, { cache: 'no-cache' });
+        if (!res.ok) { provati.push(c.nome + ' (' + res.status + ')'); continue; }
+        const buf = new Uint8Array(await res.arrayBuffer());
+        if (String.fromCharCode(buf[0], buf[1], buf[2], buf[3]) !== '%PDF') {
+          provati.push(c.nome + ' (non è un PDF)');
+          continue;
+        }
+        return { buf, nome: c.nome };
+      } catch (e) {
+        provati.push(c.nome + ' (non raggiungibile)');
+      }
+    }
+    return { errore: provati.join(', ') };
+  }
+
+  function buildTipi() {
+    try {
+      const t = localStorage.getItem('fe_tipo');
+      if (t && MODULI[t]) st.tipo = t;
+    } catch (e) {}
+    $('tipi').innerHTML = Object.keys(MODULI).map(k =>
+      '<button class="tipo' + (k === st.tipo ? ' on' : '') + '" data-t="' + k + '">' + MODULI[k].etichetta + '</button>'
+    ).join('');
+  }
+
+  $('tipi').addEventListener('click', e => {
+    const t = e.target.dataset && e.target.dataset.t;
+    if (!t) return;
+    st.tipo = t;
+    try { localStorage.setItem('fe_tipo', t); } catch (err) {}
+    buildTipi();
+  });
+
+  async function avviaModulo() {
+    $('retry').style.display = 'none';
+    setTpl(null, 'Carico il modulo...', '');
+    renderPeriods();
+    const r = await caricaModuloDaGithub();
+    if (r.buf) {
+      setTpl(r.buf, '', 'ok');
+      salvaTpl(r.buf);
+    } else {
+      let cache = null;
+      try {
+        const b64 = localStorage.getItem('fe_tpl');
+        if (b64) cache = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      } catch (e) {}
+      if (cache) {
+        setTpl(cache, 'Uso la copia del modulo salvata su questo dispositivo (quello online non è raggiungibile).', 'ok');
+      } else {
+        setTpl(null, 'Modulo non trovato online (provati: ' + r.errore + '). Controlla il nome del file su GitHub.', 'err');
+        $('retry').style.display = '';
+      }
+    }
+    renderPeriods();
+  }
+  $('retry').onclick = avviaModulo;
+
+  function puoCondividere() {
+    try {
+      if (!navigator.share || !navigator.canShare) return false;
+      const prova = new File([new Uint8Array([37, 80, 68, 70])], 'prova.pdf', { type: 'application/pdf' });
+      return navigator.canShare({ files: [prova] });
+    } catch (e) { return false; }
+  }
+
+  async function init() {
+    const t = new Date();
+    st.vy = t.getFullYear();
+    st.vm = t.getMonth() + 1;
+    $('dows').innerHTML = DOW.map(d => '<div class="dow">' + d + '</div>').join('');
+    $('dataPres').value = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+    try {
+      $('nome').value = localStorage.getItem('fe_nome') || '';
+      $('cid').value = localStorage.getItem('fe_cid') || '';
+      $('firma').checked = localStorage.getItem('fe_firma') === '1';
+    } catch (e) {}
+    if (puoCondividere()) {
+      $('share').style.display = '';
+      $('shareHint').style.display = '';
+    }
+    render();
+    buildTipi();
+    avviaModulo();
+  }
+
+  function render() {
+    $('title').textContent = MONTHS[st.vm - 1] + ' ' + st.vy;
+    const first = new Date(st.vy, st.vm - 1, 1);
+    const offset = (first.getDay() + 6) % 7;
+    const n = new Date(st.vy, st.vm, 0).getDate();
+    const today = new Date();
+    let h = '';
+    for (let i = 0; i < offset; i++) h += '<button class="day empty" disabled></button>';
+    for (let d = 1; d <= n; d++) {
+      const k = key(st.vy, st.vm, d);
+      let cls = 'day';
+      if (st.days.has(k)) cls += ' sel';
+      if (st.anchor === k) cls += ' pending';
+      if (today.getFullYear() === st.vy && today.getMonth() + 1 === st.vm && today.getDate() === d) cls += ' today';
+      h += '<button class="' + cls + '" data-k="' + k + '">' + d + '</button>';
+    }
+    $('days').innerHTML = h;
+    renderPeriods();
+  }
+
+  function addRange(a, b) {
+    if (a > b) [a, b] = [b, a];
+    const A = unkey(a), B = unkey(b);
+    const d = new Date(A.y, A.m - 1, A.d), end = new Date(B.y, B.m - 1, B.d);
+    while (d <= end) {
+      st.days.add(key(d.getFullYear(), d.getMonth() + 1, d.getDate()));
+      d.setDate(d.getDate() + 1);
+    }
+  }
+
+  $('days').addEventListener('click', e => {
+    const k = e.target.dataset && +e.target.dataset.k;
+    if (!k) return;
+    if (st.anchor === null) { st.anchor = k; }
+    else if (st.anchor === k) { st.days.has(k) ? st.days.delete(k) : st.days.add(k); st.anchor = null; }
+    else { addRange(st.anchor, k); st.anchor = null; }
+    render();
+  });
+
+  $('prev').onclick = () => { st.vm--; if (st.vm < 1) { st.vm = 12; st.vy--; } render(); };
+  $('next').onclick = () => { st.vm++; if (st.vm > 12) { st.vm = 1; st.vy++; } render(); };
+  $('clear').onclick = () => { st.days.clear(); st.anchor = null; render(); };
+
+  function periodi() {
+    const ks = [...st.days].sort((a, b) => a - b);
+    const out = [];
+    let cur = null;
+    for (const k of ks) {
+      const x = unkey(k);
+      if (cur) {
+        const prev = new Date(cur.y2, cur.m2 - 1, cur.d2 + 1);
+        if (prev.getFullYear() === x.y && prev.getMonth() + 1 === x.m && prev.getDate() === x.d && cur.m2 === x.m) {
+          cur.d2 = x.d;
+          continue;
+        }
+      }
+      cur = { d1: x.d, m1: x.m, y1: x.y, d2: x.d, m2: x.m, y2: x.y };
+      out.push(cur);
+    }
+    return out;
+  }
+
+  function fmt(p) {
+    return p.d1 === p.d2 ? p.d1 + ' ' + MONTHS[p.m1 - 1] : p.d1 + '–' + p.d2 + ' ' + MONTHS[p.m1 - 1];
+  }
+
+  function renderPeriods() {
+    const ps = periodi();
+    $('chips').innerHTML = ps.map((p, i) =>
+      '<span class="chip">' + fmt(p) + ' ' + p.y1 + '<button data-i="' + i + '" aria-label="Rimuovi">×</button></span>'
+    ).join('');
+    const sheets = raggruppaFogli(ps).length;
+    $('periodMsg').className = 'msg';
+    $('periodMsg').textContent = ps.length
+      ? (sheets > 1
+          ? 'Verranno creati ' + sheets + ' fogli: ogni richiesta vale per un solo mese e il modulo ha 2 righe.'
+          : 'Un solo mese per ogni richiesta: i periodi a cavallo di due mesi sono divisi automaticamente.')
+      : '';
+    $('gen').disabled = !(ps.length && st.tpl);
+  }
+
+  $('chips').addEventListener('click', e => {
+    const i = e.target.dataset && e.target.dataset.i;
+    if (i === undefined) return;
+    const p = periodi()[+i];
+    for (let d = p.d1; d <= p.d2; d++) st.days.delete(key(p.y1, p.m1, d));
+    render();
+  });
+
+  function isoToIt(v) {
+    const [y, m, d] = v.split('-');
+    return d + '/' + m + '/' + y;
+  }
+
+  $('gen').onclick = async () => {
+    $('genMsg').textContent = 'Sto compilando…';
+    $('genMsg').className = 'msg';
+    try {
+      const data = {
+        nome: $('nome').value.trim(),
+        cid: $('cid').value.trim(),
+        dataPres: $('dataPres').value ? isoToIt($('dataPres').value) : '',
+        note: $('note').value.trim(),
+        tipo: st.tipo,
+        firma: $('firma').checked
+      };
+      try {
+        localStorage.setItem('fe_nome', data.nome);
+        localStorage.setItem('fe_cid', data.cid);
+      } catch (e) {}
+      fontFallback = false;
+      firmaNonCaricata = false;
+      try { localStorage.setItem('fe_firma', $('firma').checked ? '1' : '0'); } catch (e) {}
+
+      const bytes = await buildPdf(st.tpl, data, periodi());
+      st.fileName = MODULI[st.tipo].file;
+      st.shareTitle = 'Domanda di ' + (MODULI[st.tipo].titolo || 'ferie');
+      if (st.url) URL.revokeObjectURL(st.url);
+      st.bytes = bytes;
+      st.url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      $('preview').src = st.url;
+      $('preview').classList.add('on');
+      $('outBtns').style.display = 'flex';
+      $('genMsg').textContent = 'Fatto. Controlla il modulo prima di stamparlo.' +
+        (fontFallback ? ' Attenzione: il carattere originale non si è caricato, ho usato quello di riserva.' : '') +
+        (firmaNonCaricata ? ' Attenzione: il carattere della firma non si è caricato.' : '') +
+        (($('firma').checked && !data.nome) ? ' Per la firma scrivi prima nome e cognome.' : '');
+      $('genMsg').className = 'msg ' + ((fontFallback || firmaNonCaricata) ? 'err' : 'ok');
+    } catch (err) {
+      $('genMsg').textContent = 'Errore: ' + err.message;
+      $('genMsg').className = 'msg err';
+    }
+  };
+
+  $('open').onclick = () => window.open(st.url, '_blank');
+  $('dl').onclick = () => {
+    const a = document.createElement('a');
+    a.href = st.url;
+    a.download = st.fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+  $('share').onclick = async () => {
+    const f = new File([st.bytes], st.fileName, { type: 'application/pdf' });
+    try {
+      if (!navigator.canShare || !navigator.canShare({ files: [f] })) throw new Error('non supportato');
+      await navigator.share({ files: [f], title: st.shareTitle });
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+      $('genMsg').textContent = 'Questo dispositivo non permette di condividere il file da qui. Usa "Scarica" o "Apri PDF" e invialo da lì.';
+      $('genMsg').className = 'msg err';
+    }
+  };
+
+  let _avviato = false;
+  return {
+    avvia() { if (!_avviato) { _avviato = true; init(); } },
+    ricarica() {
+      try {
+        $('nome').value = localStorage.getItem('fe_nome') || '';
+        $('cid').value = localStorage.getItem('fe_cid') || '';
+        $('firma').checked = localStorage.getItem('fe_firma') === '1';
+        buildTipi();
+      } catch (e) {}
+    }
+  };
+})();
+</script>
+</body>
+</html>
