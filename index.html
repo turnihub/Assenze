@@ -51,6 +51,7 @@ footer{padding:16px;text-align:center;font-size:12px;color:var(--muted)}
 .privacy-box h2{margin:0;color:var(--primary);font-size:21px}.privacy-box ul{margin:0;padding-left:20px;font-size:14px;color:#3c4654}
 .privacy-box label{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:14px;cursor:pointer;background:#f4f7fb;padding:12px;border-radius:10px}
 .scrim{display:none}
+.agenda-lista{flex:none;max-height:60vh;padding:12px 0 0}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:10000}.toast.on{opacity:1;transform:translate(-50%,0)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
 .card h2{margin:0 0 12px;font-size:17px;text-transform:none;letter-spacing:0;color:var(--ink)}
@@ -195,19 +196,6 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
 </div></div>
 
 <div class="app">
-  <aside class="sidebar" id="sidebar">
-    <button class="linguetta" onclick="toggleCalendario()" aria-label="Mostra o nascondi i turni"><i id="icona-toggle" class="fas fa-chevron-left"></i></button>
-    <div class="sb-head">
-      <h3><i class="fas fa-calendar-days"></i> I miei turni</h3>
-      <small id="nome-utente-sidebar">Nessun turno caricato</small>
-    </div>
-    <div class="sb-lista" id="lista-turni-personali">
-      <div class="vuoto">Carica il PDF dei turni per iniziare.</div>
-    </div>
-  </aside>
-
-  <div class="scrim" id="scrim" onclick="toggleCalendario()"></div>
-
   <div class="main" id="main">
     <header class="brand">
       <span class="logo"><img src="logo faisa cisal.png" alt="Logo Faisa Cisal"></span>
@@ -215,7 +203,6 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
         <h1>TurniHub</h1>
         <p>Turni, cambio turno, assenze e note personali sul tuo dispositivo</p>
       </div>
-      <button class="btn-turni" onclick="toggleCalendario()"><i class="fas fa-calendar-days"></i> I miei turni</button>
     </header>
 
     <nav class="tabs" id="nav" aria-label="Sezioni"></nav>
@@ -229,6 +216,13 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
           <input type="file" id="filePdfInput" accept="application/pdf" style="display:none" onchange="elaboraPDFLocale()">
           <button type="button" class="btn verde" onclick="document.getElementById('filePdfInput').click()"><i class="fas fa-upload"></i> Scegli il PDF</button>
           <div id="stato-caricamento-pdf"></div>
+        </div>
+        <div class="panel">
+          <h2><i class="fas fa-calendar-days" style="color:var(--primary)"></i> I miei turni</h2>
+          <small id="nome-utente-sidebar" style="display:block;color:var(--muted)">Nessun turno caricato</small>
+          <div class="sb-lista agenda-lista" id="lista-turni-personali">
+            <div class="vuoto">Carica il PDF dei turni per iniziare.</div>
+          </div>
         </div>
       </section>
 
@@ -244,7 +238,7 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
           </div>
           <div class="g7" id="cambio-dows"></div>
           <div class="g7" id="cambio-grid-giorni"></div>
-          <div class="hint"><b style="color:#b45309">⇄</b> = giorno in cui hai già cambiato turno (i dettagli sono nella lista "I miei turni").</div>
+          <div class="hint"><b style="color:#b45309">⇄</b> = giorno in cui hai già cambiato turno (i dettagli sono in Agenda, nella lista "I miei turni").</div>
         </div>
 
         <div class="panel">
@@ -470,7 +464,7 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
       </section>
     </div>
 
-    <footer>TurniHub App &bull; Sviluppato per uso privato su dispositivo locale<br><em>Sviluppato da Mario Sanna &ndash; Oristano</em></footer>
+    <footer><b>TurniHub App</b><br>Sviluppato da Mario Sanna &ndash; Oristano<br><em style="display:block;margin-top:8px">Per uso privato su dispositivo locale</em></footer>
   </div>
 </div>
 
@@ -594,16 +588,6 @@ function cambiaSezione(id) {
 }
 
 const mobile = () => matchMedia('(max-width: 860px)').matches;
-function toggleCalendario() {
-  const sb = document.getElementById('sidebar');
-  if (mobile()) {
-    document.getElementById('scrim').classList.toggle('on', sb.classList.toggle('aperta'));
-    return;
-  }
-  sb.classList.toggle('nascosta');
-  document.getElementById('icona-toggle').className = sb.classList.contains('nascosta') ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
-}
-
 function toast(m) {
   const t = document.getElementById('toast');
   t.textContent = m;
@@ -1399,7 +1383,7 @@ const CambioTurno = (() => {
     sintesiRicevuta = null;
     $('btn-applica-sintesi').disabled = true;
     $('info-sintesi').style.fontWeight = '400';
-    $('info-sintesi').textContent = r.gia ? 'Questo cambio era già nel tuo calendario.' : `Fatto: il ${itData(s.d)} ora risulta CAMBIATO. Lo vedi nella lista "I miei turni".`;
+    $('info-sintesi').textContent = r.gia ? 'Questo cambio era già nel tuo calendario.' : `Fatto: il ${itData(s.d)} ora risulta CAMBIATO. Lo vedi in Agenda, nella lista "I miei turni".`;
     toast(r.gia ? 'Cambio già presente' : 'Calendario aggiornato');
   }
 
@@ -2118,7 +2102,7 @@ function ivuCerca(turni, q, max) {
 
 
   const DEPOSITI = [
-    { id: 'laconi', nome: 'Laconi' },
+    { id: 'laconi', nome: 'Laconi', file: 'IVU/laconi.pdf', json: 'IVU/laconi.json' },
     { id: 'ales', nome: 'Ales', file: 'IVU/ales.pdf', json: 'IVU/ales.json' },
     { id: 'bosa', nome: 'Bosa', file: 'IVU/bosa.pdf', json: 'IVU/bosa.json' },
     { id: 'oristano', nome: 'Oristano', file: 'IVU/oristano.pdf', json: 'IVU/oristano.json' },
@@ -2265,11 +2249,10 @@ function ivuCerca(turni, q, max) {
     const rec = dati[id], d = DEPOSITI.find(x => x.id === id);
     if (!rec) return;
     vista = { tipo: 'lista', dep: id, filtro: filtro || '' };
-    const freq = [...new Set(rec.turni.map(t => t.freq || '—'))].sort();
     $('ivu-lista-t').textContent = 'Turni ' + d.nome;
     $('ivu-lista-i').textContent = `${rec.meta.n} turni · stampa del ${rec.meta.stampa || 'data non letta'}`;
-    $('ivu-freq').innerHTML = ['Tutti', ...freq].map(f => `<button type="button" class="ivu-chip${(filtro || 'Tutti') === f ? ' on' : ''}" data-ivu="freq" data-f="${esc(f)}">${esc(f)}</button>`).join('');
-    const lista = rec.turni.filter(t => !filtro || filtro === 'Tutti' || (t.freq || '—') === filtro);
+    $('ivu-freq').innerHTML = '';
+    const lista = rec.turni;
     $('ivu-turni').innerHTML = lista.map(t => `<button type="button" class="ivu-turno" data-ivu="turno" data-d="${id}" data-p="${t.pag[0]}"><b>${esc(t.cod)}</b>${t.vr ? `<span>${esc(t.vr)}</span>` : ''}<span>${esc(t.freq || '')}</span><span>${orari(t)}</span></button>`).join('') || '<div class="vuoto">Nessun turno.</div>';
     mostra('lista');
   }
@@ -2456,7 +2439,7 @@ function ivuCerca(turni, q, max) {
     $('ivu-diag').addEventListener('click', diagnostica);
   }
 
-  // Apre la scheda di un turno partendo dal codice (es. dalla sidebar "I Miei Turni")
+  // Apre la scheda di un turno partendo dal codice (es. dall'Agenda, lista "I miei turni")
   async function apriPerCodice(cod) {
     const n = x => String(x || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
     const q = n(cod); if (!q) return;
@@ -2464,7 +2447,6 @@ function ivuCerca(turni, q, max) {
     for (const d of DEPOSITI) await assicura(d);
     let trovato = null;
     for (const d of DEPOSITI) { if (!dati[d.id]) continue; const t = dati[d.id].turni.find(x => n(x.cod) === q); if (t) { trovato = { d, t }; break; } }
-    if (mobile() && document.getElementById('sidebar').classList.contains('aperta')) toggleCalendario();
     if (!trovato) {
       const caricati = DEPOSITI.some(d => dati[d.id]);
       toast(caricati ? 'Turno ' + cod + ' non trovato in Turni' : 'Carica prima i turni dei depositi');
