@@ -427,7 +427,7 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
       <section id="sec-ivu" class="sezione">
         <div id="ivu-home">
           <div class="panel">
-            <h2><i class="fas fa-bus"></i> Catalogo turni</h2>
+            <h2><i class="fas fa-table-cells"></i> Turni guida</h2>
             <p>Schede dei turni, deposito per deposito. Cerca un turno, una linea o una fermata in tutti i depositi caricati.</p>
             <input type="search" id="ivu-cerca" placeholder="Cerca: turno (UO301), linea (4009), fermata…" autocomplete="off">
             <div id="ivu-risultati"></div>
@@ -470,7 +470,7 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
       </section>
     </div>
 
-    <footer>TurniHub App &bull; Sviluppato per uso privato su dispositivo locale</footer>
+    <footer>TurniHub App &bull; Sviluppato per uso privato su dispositivo locale<br><em>Sviluppato da Mario Sanna &ndash; Oristano</em></footer>
   </div>
 </div>
 
@@ -566,7 +566,7 @@ function cambioHtml(iso) {
 // MENU PRINCIPALE
 const SEZIONI = [
   { id: 'sec-carica',  etichetta: 'Carica turni',     breve: 'Turni',   icona: 'fa-file-pdf' },
-  { id: 'sec-ivu',     etichetta: 'Catalogo turni',    breve: 'Catalogo', icona: 'fa-bus',             apri: () => IVU.avvia() },
+  { id: 'sec-ivu',     etichetta: 'Turni guida',       breve: 'Guida',   icona: 'fa-table-cells',             apri: () => IVU.avvia() },
   { id: 'sec-cambio',  etichetta: 'Cambio turno',     breve: 'Cambio',  icona: 'fa-right-left',      apri: () => CambioTurno.avvia() },
   { id: 'sec-assenze', etichetta: 'Assenze',          breve: 'Assenze', icona: 'fa-calendar-check',  apri: () => Assenze.avvia() },
   { id: 'sec-hand',    etichetta: 'Programmazione HAND', breve: 'HAND', icona: 'fa-file-signature', apri: () => Hand.avvia() },
@@ -2201,7 +2201,7 @@ function ivuCerca(turni, q, max) {
       if (!silenzioso) msg('Caricati ' + rec.meta.n + ' turni.');
       disegnaDepositi(); cerca();
       return true;
-    } catch (e) { if (!silenzioso) msg('Catalogo non trovato nel repository.', true); return false; }
+    } catch (e) { if (!silenzioso) msg('Turni guida non trovati nel repository.', true); return false; }
   }
   async function assicura(d) {
     if (!d.json || (dati[d.id] && dati[d.id].json)) return;
@@ -2465,7 +2465,7 @@ function ivuCerca(turni, q, max) {
     if (mobile() && document.getElementById('sidebar').classList.contains('aperta')) toggleCalendario();
     if (!trovato) {
       const caricati = DEPOSITI.some(d => dati[d.id]);
-      toast(caricati ? 'Turno ' + cod + ' non trovato nel catalogo' : 'Carica prima il catalogo dei turni');
+      toast(caricati ? 'Turno ' + cod + ' non trovato nei turni guida' : 'Carica prima i turni guida');
       cambiaSezione('sec-ivu'); return;
     }
     cambiaSezione('sec-ivu');
