@@ -427,7 +427,7 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
       <section id="sec-ivu" class="sezione">
         <div id="ivu-home">
           <div class="panel">
-            <h2><i class="fas fa-table-cells"></i> Turni guida</h2>
+            <h2><i class="fas fa-table-cells"></i> Turni</h2>
             <p>Schede dei turni, deposito per deposito. Cerca un turno, una linea o una fermata in tutti i depositi caricati.</p>
             <input type="search" id="ivu-cerca" placeholder="Cerca: turno (UO301), linea (4009), fermata…" autocomplete="off">
             <div id="ivu-risultati"></div>
@@ -565,8 +565,8 @@ function cambioHtml(iso) {
 
 // MENU PRINCIPALE
 const SEZIONI = [
-  { id: 'sec-carica',  etichetta: 'Carica turni',     breve: 'Turni',   icona: 'fa-file-pdf' },
-  { id: 'sec-ivu',     etichetta: 'Turni guida',       breve: 'Guida',   icona: 'fa-table-cells',             apri: () => IVU.avvia() },
+  { id: 'sec-carica',  etichetta: 'Agenda',           breve: 'Agenda',  icona: 'fa-file-pdf' },
+  { id: 'sec-ivu',     etichetta: 'Turni',              breve: 'Turni',   icona: 'fa-table-cells',             apri: () => IVU.avvia() },
   { id: 'sec-cambio',  etichetta: 'Cambio turno',     breve: 'Cambio',  icona: 'fa-right-left',      apri: () => CambioTurno.avvia() },
   { id: 'sec-assenze', etichetta: 'Assenze',          breve: 'Assenze', icona: 'fa-calendar-check',  apri: () => Assenze.avvia() },
   { id: 'sec-hand',    etichetta: 'Programmazione HAND', breve: 'HAND', icona: 'fa-file-signature', apri: () => Hand.avvia() },
@@ -580,6 +580,7 @@ function costruisciMenu() {
 }
 
 function cambiaSezione(id) {
+  const giaAperta = document.getElementById(id).classList.contains('attiva');
   document.querySelectorAll('.sezione').forEach(s => s.classList.toggle('attiva', s.id === id));
   document.querySelectorAll('.tab').forEach(b => {
     const on = b.dataset.id === id;
@@ -587,6 +588,7 @@ function cambiaSezione(id) {
     if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' });
   });
   const s = SEZIONI.find(x => x.id === id);
+  if (id === 'sec-ivu' && giaAperta) IVU.home();
   if (s && s.apri) s.apri();
   document.getElementById('main').scrollTo({ top: 0 });
 }
@@ -770,7 +772,7 @@ function disegnaCalendario(calendario) {
       <div class="turno-info-top">
         <span><i>${nomeGiorno}</i> <b>${esc(g.dataFormattata || g.dataIso)}</b></span>
         <span>
-          <b style="cursor:pointer; background:var(--primary-dark); color:#fff; padding:2px 6px; border-radius:4px;" onclick="modificaTurnoManuale(${indice})" title="Tocca per modificare turno">${esc(g.codiceTurno)}</b>${["R","RIS","RIP"].includes(g.codiceTurno) ? '' : `<button type="button" class="ivu-go" onclick="IVU.apriPerCodice('${esc(g.codiceTurno)}')" aria-label="Dettaglio turno ${esc(g.codiceTurno)}"><i class="fas fa-bus"></i></button>`} 
+          <b style="cursor:pointer; background:var(--primary-dark); color:#fff; padding:2px 6px; border-radius:4px;" onclick="modificaTurnoManuale(${indice})" title="Tocca per modificare turno">${esc(g.codiceTurno)}</b>${["R","RIS","RIP"].includes(g.codiceTurno) ? '' : `<button type="button" class="ivu-go" onclick="IVU.apriPerCodice('${esc(g.codiceTurno)}')" aria-label="Dettaglio turno ${esc(g.codiceTurno)}"><i class="fas fa-table-cells"></i></button>`} 
           <small>(${esc(g.inizio)}-${esc(g.fine)}${g.fine < g.inizio ? ' +1' : ''})</small>
         </span>
       </div>
@@ -2201,7 +2203,7 @@ function ivuCerca(turni, q, max) {
       if (!silenzioso) msg('Caricati ' + rec.meta.n + ' turni.');
       disegnaDepositi(); cerca();
       return true;
-    } catch (e) { if (!silenzioso) msg('Turni guida non trovati nel repository.', true); return false; }
+    } catch (e) { if (!silenzioso) msg('Turni non trovati nel repository.', true); return false; }
   }
   async function assicura(d) {
     if (!d.json || (dati[d.id] && dati[d.id].json)) return;
@@ -2444,7 +2446,7 @@ function ivuCerca(turni, q, max) {
       else if (a === 'freq') apriLista(vista.dep, b.dataset.f);
       else if (a === 'turno') apriScheda(b.dataset.d, b.dataset.p, b.dataset.da);
       else if (['pprec', 'psucc', 'tprec', 'tsucc', 'zpiu', 'zmeno'].includes(a)) muovi(a);
-      else if (a === 'indietro') { if (vista.da === 'cerca') mostra('home'); else apriLista(vista.dep, ''); }
+      else if (a === 'indietro') { if (!vw || vw.da === 'cerca' || !dati[vw.dep]) mostra('home'); else apriLista(vw.dep, ''); }
       else if (a === 'home') mostra('home');
       else if (a === 'link') { const det = $('ivu-link-panel'); det.open = true; det.scrollIntoView({ behavior: 'smooth' }); const i = $('ivu-l-' + b.dataset.d); if (i) i.focus(); }
     });
@@ -2465,7 +2467,7 @@ function ivuCerca(turni, q, max) {
     if (mobile() && document.getElementById('sidebar').classList.contains('aperta')) toggleCalendario();
     if (!trovato) {
       const caricati = DEPOSITI.some(d => dati[d.id]);
-      toast(caricati ? 'Turno ' + cod + ' non trovato nei turni guida' : 'Carica prima i turni guida');
+      toast(caricati ? 'Turno ' + cod + ' non trovato in Turni' : 'Carica prima i turni dei depositi');
       cambiaSezione('sec-ivu'); return;
     }
     cambiaSezione('sec-ivu');
@@ -2482,6 +2484,7 @@ function ivuCerca(turni, q, max) {
 
   return {
     avvia, apriPerCodice,
+    home: () => mostra('home'),
     linkEsporta: () => ({ ...links }),
     linkImporta: o => { if (!o || typeof o !== 'object') return; links = {}; DEPOSITI.forEach(d => { if (typeof o[d.id] === 'string' && urlOk(o[d.id])) links[d.id] = o[d.id]; }); salvaLinks(); }
   };
