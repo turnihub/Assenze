@@ -51,6 +51,7 @@ footer{padding:16px;text-align:center;font-size:12px;color:var(--muted)}
 .privacy-box h2{margin:0;color:var(--primary);font-size:21px}.privacy-box ul{margin:0;padding-left:20px;font-size:14px;color:#3c4654}
 .privacy-box label{display:flex;gap:10px;align-items:flex-start;font-weight:600;font-size:14px;cursor:pointer;background:#f4f7fb;padding:12px;border-radius:10px}
 .scrim{display:none}
+.agenda-lista{flex:none;max-height:60vh;padding:12px 0 0}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:.25s;z-index:10000}.toast.on{opacity:1;transform:translate(-50%,0)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
 .card h2{margin:0 0 12px;font-size:17px;text-transform:none;letter-spacing:0;color:var(--ink)}
@@ -147,11 +148,17 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
 .cambio-tag{display:inline-block;background:var(--amber);color:#1b2430;font-weight:800;font-size:11px;letter-spacing:.04em;padding:2px 7px;border-radius:5px;margin-right:8px}
 .cambio-annulla{border:0;background:none;color:var(--primary);text-decoration:underline;cursor:pointer;padding:0 0 0 8px;font-size:13px}
 
-.dati-mail{white-space:pre-wrap;word-break:break-word;background:#f4f7fb;border:1px dashed var(--line);border-radius:10px;padding:10px 12px;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;color:var(--ink);margin:8px 0}
-/* ---- Turni IVU ---- */
+/* ---- Catalogo turni ---- */
 .ivu-vtools{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin:10px 0}.ivu-vtools .btn{padding:10px 14px;font-size:15px;text-decoration:none}.ivu-vtools span{min-width:92px;text-align:center;font-weight:600}
 .ivu-vwrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#e9edf2;max-height:75vh;-webkit-overflow-scrolling:touch}.ivu-vwrap canvas{display:block;background:#fff}
 #sec-ivu a.btn{text-decoration:none}
+.ivu-go{border:0;background:var(--soft,#e8f1f8);color:var(--primary-dark,#14507a);border-radius:6px;padding:3px 8px;margin-left:4px;cursor:pointer;font-size:13px}
+.ivu-go:focus-visible{outline:3px solid var(--primary,#0b6b8a);outline-offset:2px}
+.ivu-gr{margin:12px 0}.ivu-gbar{position:relative;height:30px;border-radius:8px;background:#e9edf2;overflow:hidden}
+.ivu-gbar i{position:absolute;top:0;bottom:0}.ivu-gc{background:var(--primary,#0b6b8a)}.ivu-gf{background:#d9a441}.ivu-ga{background:#8a96a0}
+.ivu-gsc{display:flex;justify-content:space-between;font-size:12px;color:var(--muted,#5d6f7c);font-variant-numeric:tabular-nums;margin-top:3px}
+.ivu-gleg{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted,#5d6f7c);margin:8px 0}.ivu-gleg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.ivu-gl{display:flex;gap:10px;padding:7px 0;border-top:1px solid #eef2f6;font-size:15px}.ivu-gl b{font-variant-numeric:tabular-nums;min-width:96px}.ivu-gl span{color:var(--muted,#5d6f7c);font-size:13px;display:block}
 .ivu-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
 .ivu-dep{border:1px solid var(--line);border-radius:12px;padding:14px;background:#f8fafc;display:flex;flex-direction:column;gap:8px}
 .ivu-dep.spento{opacity:.7}.ivu-dep-n{font-weight:700;font-size:18px;color:var(--primary)}.ivu-dep-s{font-size:14px;color:var(--muted)}
@@ -189,19 +196,6 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
 </div></div>
 
 <div class="app">
-  <aside class="sidebar" id="sidebar">
-    <button class="linguetta" onclick="toggleCalendario()" aria-label="Mostra o nascondi i turni"><i id="icona-toggle" class="fas fa-chevron-left"></i></button>
-    <div class="sb-head">
-      <h3><i class="fas fa-calendar-days"></i> I miei turni</h3>
-      <small id="nome-utente-sidebar">Nessun turno caricato</small>
-    </div>
-    <div class="sb-lista" id="lista-turni-personali">
-      <div class="vuoto">Carica il PDF dei turni per iniziare.</div>
-    </div>
-  </aside>
-
-  <div class="scrim" id="scrim" onclick="toggleCalendario()"></div>
-
   <div class="main" id="main">
     <header class="brand">
       <span class="logo"><img src="logo faisa cisal.png" alt="Logo Faisa Cisal"></span>
@@ -209,7 +203,6 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
         <h1>TurniHub</h1>
         <p>Turni, cambio turno, assenze e note personali sul tuo dispositivo</p>
       </div>
-      <button class="btn-turni" onclick="toggleCalendario()"><i class="fas fa-calendar-days"></i> I miei turni</button>
     </header>
 
     <nav class="tabs" id="nav" aria-label="Sezioni"></nav>
@@ -219,10 +212,17 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
       <section id="sec-carica" class="sezione attiva">
         <div class="panel">
           <h2><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Carica il piano turni (PDF)</h2>
-          <p>Seleziona il PDF ufficiale dei turni. I dati vengono letti ed elaborati interamente sul tuo dispositivo.</p>
+          <p>Seleziona il PDF dei turni. I dati vengono letti ed elaborati interamente sul tuo dispositivo.</p>
           <input type="file" id="filePdfInput" accept="application/pdf" style="display:none" onchange="elaboraPDFLocale()">
           <button type="button" class="btn verde" onclick="document.getElementById('filePdfInput').click()"><i class="fas fa-upload"></i> Scegli il PDF</button>
           <div id="stato-caricamento-pdf"></div>
+        </div>
+        <div class="panel">
+          <h2><i class="fas fa-calendar-days" style="color:var(--primary)"></i> I miei turni</h2>
+          <small id="nome-utente-sidebar" style="display:block;color:var(--muted)">Nessun turno caricato</small>
+          <div class="sb-lista agenda-lista" id="lista-turni-personali">
+            <div class="vuoto">Carica il PDF dei turni per iniziare.</div>
+          </div>
         </div>
       </section>
 
@@ -238,7 +238,7 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
           </div>
           <div class="g7" id="cambio-dows"></div>
           <div class="g7" id="cambio-grid-giorni"></div>
-          <div class="hint"><b style="color:#b45309">⇄</b> = giorno in cui hai già cambiato turno (i dettagli sono nella lista "I miei turni").</div>
+          <div class="hint"><b style="color:#b45309">⇄</b> = giorno in cui hai già cambiato turno (i dettagli sono in Agenda, nella lista "I miei turni").</div>
         </div>
 
         <div class="panel">
@@ -357,15 +357,6 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
               <button class="ghost" id="share" style="display:none">Condividi</button>
             </div>
             <div class="hint" id="shareHint" style="display:none">Su smartphone puoi anche usare "Condividi" per inviare il PDF con WhatsApp, posta o altre app.</div>
-            <div id="mailBox" style="display:none">
-              <label for="fe-dest">Indirizzo a cui inviare (resta salvato)</label>
-              <input type="text" id="fe-dest" inputmode="email" autocomplete="email" placeholder="es. ufficio@azienda.it">
-              <div class="hint" id="fe-avviso"></div>
-              <pre class="dati-mail" id="fe-dati"></pre>
-              <div class="row"><button type="button" class="primary" id="fe-mail"><i class="fas fa-envelope"></i> Invia per email</button></div>
-              <div class="msg" id="fe-msg" aria-live="polite"></div>
-              <div class="row"><a class="btn verde" id="fe-mailto" href="#" hidden><i class="fas fa-envelope-open-text"></i> Apri la posta</a></div>
-            </div>
             <iframe id="preview" title="Anteprima"></iframe>
           </section>
         </div>
@@ -419,8 +410,6 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
               <button type="button" class="ghost" id="h-open" disabled>Apri PDF</button>
               <button type="button" class="ghost" id="h-dl" disabled>Scarica</button>
             </div>
-            <div class="hint" id="h-avviso-dati"></div>
-            <pre class="dati-mail" id="h-dati"></pre>
             <div class="msg" id="h-msg" aria-live="polite"></div>
             <div class="row"><a class="btn verde" id="h-mailto" href="#" hidden><i class="fas fa-envelope-open-text"></i> Apri la posta</a></div>
             <div class="hint">Se il telefono lo permette, "Invia per email" apre l'elenco delle app: scegli Aruba Mail (o la tua app di posta) e il PDF è già allegato. Altrimenti il PDF viene scaricato e compare il pulsante "Apri la posta": si apre una nuova email con destinatario, oggetto e testo già pronti e devi solo allegare il file scaricato. Se usi la posta dal sito, <a href="https://webmail.aruba.it" target="_blank" rel="noopener">apri Aruba Webmail</a> e allega il PDF.</div>
@@ -428,12 +417,12 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
         </div>
       </section>
 
-      <!-- SEZIONE: TURNI IVU -->
+      <!-- SEZIONE: CATALOGO TURNI -->
       <section id="sec-ivu" class="sezione">
         <div id="ivu-home">
           <div class="panel">
-            <h2><i class="fas fa-bus"></i> Turni IVU</h2>
-            <p>Strutture ufficiali dei turni, deposito per deposito. Cerca un turno, una linea o una fermata in tutti i depositi caricati.</p>
+            <h2><i class="fas fa-table-cells"></i> Turni</h2>
+            <p>Schede dei turni, deposito per deposito. Cerca un turno, una linea o una fermata in tutti i depositi caricati.</p>
             <input type="search" id="ivu-cerca" placeholder="Cerca: turno (UO301), linea (4009), fermata…" autocomplete="off">
             <div id="ivu-risultati"></div>
           </div>
@@ -441,7 +430,7 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
             <h2>Depositi</h2>
             <div class="ivu-grid" id="ivu-depositi"></div>
             <div id="ivu-msg" class="msg" aria-live="polite"></div>
-            <div class="hint">I turni si consultano nel documento originale, pagina per pagina. Il PDF di Urbano si carica da solo se è nel repository come <b>IVU/urbano.pdf</b>; altrimenti usa "Carica PDF". Resta salvato sul dispositivo e si legge anche senza connessione.</div>
+            <div class="hint">I turni di Urbano si caricano da soli dal catalogo nel repository e restano salvati sul dispositivo, quindi si leggono anche senza connessione.</div>
             <div class="row"><button type="button" class="ghost" id="ivu-diag">Copia diagnostica lettura</button></div>
           </div>
           <details class="panel" id="ivu-link-panel">
@@ -475,7 +464,7 @@ button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);
       </section>
     </div>
 
-    <footer>TurniHub App &bull; Sviluppato per uso privato su dispositivo locale</footer>
+    <footer><b>TurniHub App</b><br>Sviluppato da Mario Sanna &ndash; Oristano<br><em style="display:block;margin-top:8px">Per uso privato su dispositivo locale</em></footer>
   </div>
 </div>
 
@@ -570,8 +559,8 @@ function cambioHtml(iso) {
 
 // MENU PRINCIPALE
 const SEZIONI = [
-  { id: 'sec-carica',  etichetta: 'Carica turni',     breve: 'Turni',   icona: 'fa-file-pdf' },
-  { id: 'sec-ivu',     etichetta: 'Turni IVU',        breve: 'IVU',     icona: 'fa-bus',             apri: () => IVU.avvia() },
+  { id: 'sec-carica',  etichetta: 'Agenda',           breve: 'Agenda',  icona: 'fa-file-pdf' },
+  { id: 'sec-ivu',     etichetta: 'Turni',              breve: 'Turni',   icona: 'fa-table-cells',             apri: () => IVU.avvia() },
   { id: 'sec-cambio',  etichetta: 'Cambio turno',     breve: 'Cambio',  icona: 'fa-right-left',      apri: () => CambioTurno.avvia() },
   { id: 'sec-assenze', etichetta: 'Assenze',          breve: 'Assenze', icona: 'fa-calendar-check',  apri: () => Assenze.avvia() },
   { id: 'sec-hand',    etichetta: 'Programmazione HAND', breve: 'HAND', icona: 'fa-file-signature', apri: () => Hand.avvia() },
@@ -585,6 +574,7 @@ function costruisciMenu() {
 }
 
 function cambiaSezione(id) {
+  const giaAperta = document.getElementById(id).classList.contains('attiva');
   document.querySelectorAll('.sezione').forEach(s => s.classList.toggle('attiva', s.id === id));
   document.querySelectorAll('.tab').forEach(b => {
     const on = b.dataset.id === id;
@@ -592,21 +582,12 @@ function cambiaSezione(id) {
     if (on) b.scrollIntoView({ inline: 'center', block: 'nearest' });
   });
   const s = SEZIONI.find(x => x.id === id);
+  if (id === 'sec-ivu' && giaAperta) IVU.home();
   if (s && s.apri) s.apri();
   document.getElementById('main').scrollTo({ top: 0 });
 }
 
 const mobile = () => matchMedia('(max-width: 860px)').matches;
-function toggleCalendario() {
-  const sb = document.getElementById('sidebar');
-  if (mobile()) {
-    document.getElementById('scrim').classList.toggle('on', sb.classList.toggle('aperta'));
-    return;
-  }
-  sb.classList.toggle('nascosta');
-  document.getElementById('icona-toggle').className = sb.classList.contains('nascosta') ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
-}
-
 function toast(m) {
   const t = document.getElementById('toast');
   t.textContent = m;
@@ -775,7 +756,7 @@ function disegnaCalendario(calendario) {
       <div class="turno-info-top">
         <span><i>${nomeGiorno}</i> <b>${esc(g.dataFormattata || g.dataIso)}</b></span>
         <span>
-          <b style="cursor:pointer; background:var(--primary-dark); color:#fff; padding:2px 6px; border-radius:4px;" onclick="modificaTurnoManuale(${indice})" title="Tocca per modificare turno">${esc(g.codiceTurno)}</b> 
+          <b style="cursor:pointer; background:var(--primary-dark); color:#fff; padding:2px 6px; border-radius:4px;" onclick="modificaTurnoManuale(${indice})" title="Tocca per modificare turno">${esc(g.codiceTurno)}</b>${["R","RIS","RIP"].includes(g.codiceTurno) ? '' : `<button type="button" class="ivu-go" onclick="IVU.apriPerCodice('${esc(g.codiceTurno)}')" aria-label="Dettaglio turno ${esc(g.codiceTurno)}"><i class="fas fa-table-cells"></i></button>`} 
           <small>(${esc(g.inizio)}-${esc(g.fine)}${g.fine < g.inizio ? ' +1' : ''})</small>
         </span>
       </div>
@@ -1402,7 +1383,7 @@ const CambioTurno = (() => {
     sintesiRicevuta = null;
     $('btn-applica-sintesi').disabled = true;
     $('info-sintesi').style.fontWeight = '400';
-    $('info-sintesi').textContent = r.gia ? 'Questo cambio era già nel tuo calendario.' : `Fatto: il ${itData(s.d)} ora risulta CAMBIATO. Lo vedi nella lista "I miei turni".`;
+    $('info-sintesi').textContent = r.gia ? 'Questo cambio era già nel tuo calendario.' : `Fatto: il ${itData(s.d)} ora risulta CAMBIATO. Lo vedi in Agenda, nella lista "I miei turni".`;
     toast(r.gia ? 'Cambio già presente' : 'Calendario aggiornato');
   }
 
@@ -1698,8 +1679,6 @@ const Hand = (() => {
       const fs = FIELDS.filter(f => f.g === gp[0] && !$('h-w-' + f.k).hidden);
       $('h-c-' + gp[0]).textContent = fs.filter(f => g(f.k)).length + '/' + fs.length;
     });
-    const dt = datiHand();
-    $('h-dati').textContent = dt || 'Compila il CID e scegli i giorni per vedere la riga dati.';
     const ok = S.sel.size > 0 && !!S.fonts;
     ['h-mail', 'h-open', 'h-dl'].forEach(id => { $(id).disabled = !ok; });
     schedulePdf();
@@ -1873,15 +1852,7 @@ const Hand = (() => {
   }
   function corpoMail() {
     const mesi = groupsSel().map(x => MESI[x.m] + ' ' + x.y).join(', ');
-    const dati = datiHand();
-    return 'Buongiorno,\n\nin allegato la programmazione HAND (permessi ex art. 33 L. 104/1992)' + (mesi ? ' per ' + mesi : '') + ', con la relativa autocertificazione.\n\n' + (dati ? dati + '\n\n' : '') + 'Cordiali saluti\n' + g('nome');
-  }
-  // Solo CID e giorni: nessun altro dato del modulo viaggia nella riga per la programmazione.
-  function datiHand() {
-    const cid = g('cid').replace(/\D/g, '');
-    const giorni = groupsSel().flatMap(gp => gp.days.map(d => ({ y: gp.y, m: gp.m + 1, d })));
-    if (!cid || !giorni.length) return '';
-    return bloccoDati({ tipo: 'HAND', cid, assenza: 'HAND', periodi: periodiConsecutivi(giorni) });
+    return 'Buongiorno,\n\nin allegato la programmazione HAND (permessi ex art. 33 L. 104/1992)' + (mesi ? ' per ' + mesi : '') + ', con la relativa autocertificazione.\n\nCordiali saluti\n' + g('nome');
   }
   function puoCondividere(file) {
     try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { return false; }
@@ -1946,7 +1917,6 @@ const Hand = (() => {
     $('h-next').onclick = () => { S.view.m++; if (S.view.m > 11) { S.view.m = 0; S.view.y++; } renderCal(); };
     $('h-mail').onclick = invia;
     $('h-dest').onchange = () => { try { localStorage.setItem(KEYDEST, $('h-dest').value.trim()); } catch (e) {} };
-    $('h-avviso-dati').textContent = AVVISO_DATI;
     $('h-open').onclick = async () => { try { await preparaPdf(); window.open(S.url, '_blank') || hmsg('Il browser ha bloccato la nuova scheda. Usa "Scarica".', 'err'); } catch (e) { hmsg('Errore: ' + e.message, 'err'); } };
     $('h-dl').onclick = async () => { try { await preparaPdf(); scarica(); hmsg('PDF scaricato.', 'ok'); } catch (e) { hmsg('Errore: ' + e.message, 'err'); } };
     doRefresh();
@@ -1971,26 +1941,7 @@ const Hand = (() => {
   };
 })();
 
-// --- RIGA DATI PER LA PROGRAMMAZIONE (testo leggibile nel corpo della email) ---
-function periodiConsecutivi(giorni) {      // giorni: [{ y, m (1-12), d }] -> periodi di giorni consecutivi, anche a cavallo di due mesi
-  const t = [...new Set(giorni.map(x => Date.UTC(x.y, x.m - 1, x.d)))].sort((a, b) => a - b);
-  const out = [];
-  t.forEach(v => { const l = out[out.length - 1]; if (l && v - l.a === 86400000) l.a = v; else out.push({ da: v, a: v }); });
-  const f = v => { const d = new Date(v); return pad(d.getUTCDate()) + '/' + pad(d.getUTCMonth() + 1) + '/' + d.getUTCFullYear(); };
-  return out.map(p => ({ da: f(p.da), a: f(p.a) }));
-}
-function bloccoDati(o) {
-  const r = ['--- DATI PER LA PROGRAMMAZIONE (controllali prima di inviare) ---', 'TURNIHUB: ' + o.tipo + ' v1', 'CID: ' + o.cid];
-  if (o.nome) r.push('NOME: ' + o.nome);
-  r.push('ASSENZA: ' + o.assenza);
-  o.periodi.forEach(p => r.push('PERIODO: ' + p.da + '-' + p.a));
-  if (o.note) r.push('NOTE: ' + String(o.note).replace(/\s+/g, ' ').trim().slice(0, 200));
-  r.push('--- FINE DATI ---');
-  return r.join('\n');
-}
-const AVVISO_DATI = 'Con la email parte anche una riga di dati (CID, tipo di assenza e periodi), qui sotto: serve alla programmazione per aggiornare il foglio ferie. Puoi leggerla e, se vuoi, cancellarla dal testo della email prima di inviare.';
-
-// --- TURNI IVU ---
+// --- CATALOGO TURNI ---
 const IVU = (() => {
   // ===== IVU: lettura dei PDF "Stampa Turni Guida" (funzioni pure, senza DOM) =====
 // pagina = elenco di elementi di testo { x, y, w, s } come li restituisce pdf.js (y cresce verso l'alto).
@@ -2151,8 +2102,12 @@ function ivuCerca(turni, q, max) {
 
 
   const DEPOSITI = [
-    { id: 'laconi', nome: 'Laconi' }, { id: 'ales', nome: 'Ales' }, { id: 'bosa', nome: 'Bosa' },
-    { id: 'oristano', nome: 'Oristano' }, { id: 'urbano', nome: 'Urbano', file: 'IVU/urbano.pdf' }, { id: 'parttime', nome: 'Part time' }
+    { id: 'laconi', nome: 'Laconi', file: 'IVU/laconi.pdf', json: 'IVU/laconi.json' },
+    { id: 'ales', nome: 'Ales', file: 'IVU/ales.pdf', json: 'IVU/ales.json' },
+    { id: 'bosa', nome: 'Bosa', file: 'IVU/bosa.pdf', json: 'IVU/bosa.json' },
+    { id: 'oristano', nome: 'Oristano', file: 'IVU/oristano.pdf', json: 'IVU/oristano.json' },
+    { id: 'abbasanta', nome: 'Abbasanta', file: 'IVU/abbasanta.pdf', json: 'IVU/abbasanta.json' },
+    { id: 'urbano', nome: 'Urbano', file: 'IVU/urbano.pdf', json: 'IVU/urbano.json' }, { id: 'parttime', nome: 'Part time', file: 'IVU/parttime.pdf', json: 'IVU/parttime.json' }
   ];
   const $ = id => document.getElementById(id);
   const KL = 'turnihub_ivu_links';
@@ -2204,7 +2159,43 @@ function ivuCerca(turni, q, max) {
     disegnaDepositi(); cerca();
   }
 
+  // --- catalogo turni da file JSON (IVU/urbano.json): niente PDF, niente loghi ---
+  function daCatalogo(arr) {
+    const turni = arr.map((t, i) => {
+      const righe = [];
+      if (t.inizio) righe.push(['e', 'Inizio turno guida: ' + t.inizio]);
+      (t.eventi || []).forEach(e => {
+        if (e.tipo === 'corsa') righe.push(['b', e.linea, e.corsa, e.categoria || '']);
+        else if (e.tipo === 'fuori_linea') righe.push(['f']);
+        else righe.push(['n', 'Tempi accessori']);
+        (e.fermate || []).forEach(p => righe.push(['s', p[0], p[1]]));
+      });
+      if (t.fine) righe.push(['e', 'Fine turno guida: ' + t.fine]);
+      const freq = t.giorno_tipo || t.frequenza || '';
+      return { id: t.codice + (arr.findIndex(x => x.codice === t.codice) < i ? '#' + (i + 1) : ''), cod: t.codice, vr: t.variante || '', freq, periodo: '', inizio: t.inizio, fine: t.fine, durata: t.nastro, ore: t.ore_retribuite, km: t.km_totale, restr: t.restrizioni || '', pag: [i + 1, i + 1], righe };
+    });
+    const pt = turni.map(t => [t.cod, t.freq, ...t.righe.map(r => r[0] === 's' ? r[2] + ' ' + r[1] : r[0] === 'b' ? 'LINEA ' + r[1] + ' CORSA ' + r[2] : '')].join('\n'));
+    return { json: true, turni, pt, meta: { n: turni.length, pagine: turni.length, stampa: '', ts: Date.now(), fonte: 'catalogo' } };
+  }
+  async function daJson(dep, silenzioso) {
+    try {
+      const r = await fetch(dep.json, { cache: 'no-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const rec = daCatalogo(await r.json());
+      dati[dep.id] = rec;
+      try { await dbPut(dep.id, rec); } catch (e) {}
+      if (!silenzioso) msg('Caricati ' + rec.meta.n + ' turni.');
+      disegnaDepositi(); cerca();
+      return true;
+    } catch (e) { if (!silenzioso) msg('Turni non trovati nel repository.', true); return false; }
+  }
+  async function assicura(d) {
+    if (!d.json || (dati[d.id] && dati[d.id].json)) return;
+    await daJson(d, true);
+  }
+
   async function daRepository(dep) {
+    if (dep.json && await daJson(dep)) return true;
     msg('Cerco il PDF nel repository…');
     try {
       const r = await fetch(dep.file, { cache: 'no-cache' });
@@ -2212,7 +2203,7 @@ function ivuCerca(turni, q, max) {
       await indicizza(dep, await r.arrayBuffer(), 'repository');
       return true;
     } catch (e) {
-      msg('PDF non trovato nel repository (' + dep.file + '). Caricalo dal dispositivo con "Carica PDF".', true);
+      msg('Turni non trovati nel repository.', true);
       return false;
     }
   }
@@ -2234,7 +2225,7 @@ function ivuCerca(turni, q, max) {
           ? `<button class="btn" data-ivu="apri" data-d="${d.id}"><i class="fas fa-list"></i> Apri turni</button>
              <button class="btn chiaro" data-ivu="agg" data-d="${d.id}"><i class="fas fa-rotate"></i> Aggiorna</button>`
           : `<button class="btn" data-ivu="agg" data-d="${d.id}"><i class="fas fa-download"></i> Carica turni</button>`;
-        azioni += `<label class="btn chiaro" style="cursor:pointer"><i class="fas fa-file-arrow-up"></i> Carica PDF<input type="file" accept="application/pdf" hidden data-ivu="file" data-d="${d.id}"></label>`;
+        if (!d.json) azioni += `<label class="btn chiaro" style="cursor:pointer"><i class="fas fa-file-arrow-up"></i> Carica PDF<input type="file" accept="application/pdf" hidden data-ivu="file" data-d="${d.id}"></label>`;
       } else stato = 'Elenco turni in arrivo';
       azioni += l && urlOk(l)
         ? `<a class="btn chiaro" href="${esc(l)}" target="_blank" rel="noopener"><i class="fab fa-google-drive"></i> Apri su Drive</a>`
@@ -2258,12 +2249,11 @@ function ivuCerca(turni, q, max) {
     const rec = dati[id], d = DEPOSITI.find(x => x.id === id);
     if (!rec) return;
     vista = { tipo: 'lista', dep: id, filtro: filtro || '' };
-    const freq = [...new Set(rec.turni.map(t => t.freq || '—'))].sort();
     $('ivu-lista-t').textContent = 'Turni ' + d.nome;
     $('ivu-lista-i').textContent = `${rec.meta.n} turni · stampa del ${rec.meta.stampa || 'data non letta'}`;
-    $('ivu-freq').innerHTML = ['Tutti', ...freq].map(f => `<button type="button" class="ivu-chip${(filtro || 'Tutti') === f ? ' on' : ''}" data-ivu="freq" data-f="${esc(f)}">${esc(f)}</button>`).join('');
-    const lista = rec.turni.filter(t => !filtro || filtro === 'Tutti' || (t.freq || '—') === filtro);
-    $('ivu-turni').innerHTML = lista.map(t => `<button type="button" class="ivu-turno" data-ivu="turno" data-d="${id}" data-p="${t.pag[0]}"><b>${esc(t.cod)}</b><span>${esc(t.freq || '')}</span><span>${orari(t)}</span></button>`).join('') || '<div class="vuoto">Nessun turno.</div>';
+    $('ivu-freq').innerHTML = '';
+    const lista = rec.turni;
+    $('ivu-turni').innerHTML = lista.map(t => `<button type="button" class="ivu-turno" data-ivu="turno" data-d="${id}" data-p="${t.pag[0]}"><b>${esc(t.cod)}</b>${t.vr ? `<span>${esc(t.vr)}</span>` : ''}<span>${esc(t.freq || '')}</span><span>${orari(t)}</span></button>`).join('') || '<div class="vuoto">Nessun turno.</div>';
     mostra('lista');
   }
 
@@ -2282,9 +2272,16 @@ function ivuCerca(turni, q, max) {
   async function disegnaPagina() {
     const tok = ++vwTok, st = $('ivu-vstato'), wrap = $('ivu-vwrap'), cv = $('ivu-canvas');
     const rec = dati[vw.dep];
+    if (rec.json) {
+      const tj = turnoDiPagina(vw.dep, vw.pagina);
+      $('ivu-vpag').textContent = `Turno ${vw.pagina} di ${rec.meta.pagine}`;
+      $('ivu-vtit').innerHTML = tj ? `${esc(tj.cod)} <small class="ivu-freq">${esc(tj.freq || '')} · ${esc(orari(tj))}</small>` : '';
+      graficoTurno(tj); return;
+    }
     $('ivu-vpag').textContent = `Pagina ${vw.pagina} di ${rec.meta.pagine}`;
     $('ivu-vzoom').textContent = Math.round(vw.zoom * 100) + '%';
     const t = turnoDiPagina(vw.dep, vw.pagina);
+    graficoTurno(t);
     $('ivu-vtit').innerHTML = t ? `${esc(t.cod)} <small class="ivu-freq">${esc(t.freq || '')} · ${esc(orari(t))}</small>` : 'Documento originale';
     st.textContent = 'Carico la pagina…';
     try {
@@ -2299,6 +2296,41 @@ function ivuCerca(turni, q, max) {
       if (tok === vwTok) st.textContent = '';
     } catch (e) { if (tok === vwTok) st.textContent = 'Non riesco a mostrare la pagina: ' + (e && e.message || e); }
   }
+  // --- riepilogo grafico del turno (ricavato dalle righe lette dal PDF) ---
+  const mmG = h => { const m = /^(\d{1,2}):(\d{2})$/.exec(h || ''); return m ? +m[1] * 60 + +m[2] : null; };
+  const pulisci = n => String(n || '').replace(/\s*\bARST\b/gi, '').trim();
+  function segmenti(t) {
+    const seg = []; let cur = null;
+    const nuovo = (k, lab) => { cur = { k, lab, ore: [], da: '', a: '', f: [] }; seg.push(cur); return cur; };
+    const tempo = (h, luogo) => { if (!cur) nuovo('f', ''); const m = mmG(h); if (m === null) return; cur.ore.push(m); cur.f.push([h, pulisci(luogo)]); if (!cur.da) cur.da = pulisci(luogo); cur.a = pulisci(luogo); };
+    (t.righe || []).forEach(r => {
+      if (r[0] === 'b') nuovo('c', 'Linea ' + r[1] + ' · corsa ' + r[2]);
+      else if (r[0] === 'f') nuovo('f', 'Fuori linea');
+      else if (r[0] === 'n' && /Tempi accessori|post-arrivo/i.test(r[1])) nuovo('a', 'Tempi accessori');
+      else if (r[0] === 'e') { const m = /^(?:Uscita|Ingresso) Deposito di (.+?) (?:Da|A) (\d{2}:\d{2})$/.exec(r[1]); if (m) { if (!cur || cur.k === 'c') nuovo('f', 'Fuori linea'); tempo(m[2], 'Deposito ' + m[1]); } }
+      else if (r[0] === 's') tempo(r[1], r[2]);
+    });
+    let prev = 0;
+    return seg.filter(x => x.ore.length).map(x => {
+      let a = Math.min(...x.ore), b = Math.max(...x.ore);
+      if (a < prev - 600) { a += 1440; b += 1440; } else if (b < a) b += 1440;
+      prev = a; return { ...x, a0: a, a1: b };
+    });
+  }
+  const hm = m => { m = ((m % 1440) + 1440) % 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+  function graficoTurno(t) {
+    const box = $('ivu-grafico'); if (!box) return;
+    const sg = t ? segmenti(t) : [];
+    if (!sg.length) { box.innerHTML = ''; return; }
+    const lo = Math.floor(Math.min(...sg.map(x => x.a0)) / 60) * 60, hi = Math.ceil(Math.max(...sg.map(x => x.a1)) / 60) * 60, W = Math.max(60, hi - lo);
+    const bar = sg.map(x => `<i class="ivu-g${x.k}" style="left:${((x.a0 - lo) / W * 100).toFixed(2)}%;width:${Math.max(0.5, (x.a1 - x.a0) / W * 100).toFixed(2)}%"></i>`).join('');
+    const lista = sg.filter(x => x.k !== 'a').map(x => `<details class="ivu-blocco${x.k === 'f' ? ' fuori' : ''}"><summary><b>${hm(x.a0)}–${hm(x.a1)}</b><span>${esc(x.lab)}</span><small>${esc(x.da)}${x.a && x.a !== x.da ? ' → ' + esc(x.a) : ''}</small></summary>${x.f.map(p => `<div class="ivu-r"><span class="ivu-o">${esc(p[0])}</span><span>${esc(p[1])}</span></div>`).join('')}</details>`).join('');
+    const km = t.km ? String(t.km).replace('.', ',') + ' km' : '';
+    const sint = `<div class="ivu-sint"><div><small>Inizio</small><b>${esc(t.inizio || '—')}</b></div><div><small>Fine</small><b>${esc(t.fine || '—')}</b></div><div><small>Nastro</small><b>${esc(t.durata || '—')}</b></div><div><small>Retribuite</small><b>${esc(t.ore || '—')}</b></div></div>${km ? `<div class="hint">${esc(km)}${t.restr ? ' · ' + esc(t.restr) : ''}</div>` : ''}`;
+    box.innerHTML = `${sint}<div class="ivu-gr"><div class="ivu-gbar" role="img" aria-label="Sequenza di corse e tempi del turno ${esc(t.cod)}">${bar}</div>
+      <div class="ivu-gsc"><span>${hm(lo)}</span><span>${hm(lo + W / 2)}</span><span>${hm(hi)}</span></div>
+      <div class="ivu-gleg"><span><i class="ivu-gc"></i>Corsa</span><span><i class="ivu-gf"></i>Fuori linea</span><span><i class="ivu-ga"></i>Accessori</span></div>${lista}</div>`;
+  }
   const turnoDiPagina = (id, n) => (dati[id].turni.find(t => n >= t.pag[0] && n <= t.pag[1]));
 
   function apriScheda(id, pagina, da) {
@@ -2309,6 +2341,7 @@ function ivuCerca(turni, q, max) {
       <div class="panel">
         <button type="button" class="btn chiaro" data-ivu="indietro"><i class="fas fa-arrow-left"></i> Indietro</button>
         <h2 id="ivu-vtit" style="margin-top:14px"></h2>
+        <div id="ivu-grafico"></div>
         <div class="ivu-vtools">
           <button type="button" class="btn chiaro" data-ivu="tprec" aria-label="Turno precedente">« Turno</button>
           <button type="button" class="btn chiaro" data-ivu="pprec" aria-label="Pagina precedente"><i class="fas fa-chevron-left"></i></button>
@@ -2316,15 +2349,15 @@ function ivuCerca(turni, q, max) {
           <button type="button" class="btn chiaro" data-ivu="psucc" aria-label="Pagina successiva"><i class="fas fa-chevron-right"></i></button>
           <button type="button" class="btn chiaro" data-ivu="tsucc" aria-label="Turno successivo">Turno »</button>
         </div>
-        <div class="ivu-vtools">
+        <div class="ivu-vtools"${rec.json ? ' style="display:none"' : ''}>
           <button type="button" class="btn chiaro" data-ivu="zmeno" aria-label="Riduci">−</button>
           <span id="ivu-vzoom">100%</span>
           <button type="button" class="btn chiaro" data-ivu="zpiu" aria-label="Ingrandisci">+</button>
           <a class="btn chiaro" href="${esc(d.file)}" target="_blank" rel="noopener"><i class="fas fa-up-right-from-square"></i> Apri il PDF</a>
         </div>
         <div class="msg" id="ivu-vstato" aria-live="polite"></div>
-        <div class="ivu-vwrap" id="ivu-vwrap"><canvas id="ivu-canvas"></canvas></div>
-        <div class="hint">Documento ufficiale così com'è. Ingrandisci con + e trascina la pagina per spostarti.</div>
+        ${rec.json ? '' : '<div class="ivu-vwrap" id="ivu-vwrap"><canvas id="ivu-canvas"></canvas></div>'}
+        ${rec.json ? '' : '<div class="hint">Documento originale così com\'è. Ingrandisci con + e trascina la pagina per spostarti.</div>'}
       </div>`;
     mostra('scheda');
     disegnaPagina();
@@ -2396,7 +2429,7 @@ function ivuCerca(turni, q, max) {
       else if (a === 'freq') apriLista(vista.dep, b.dataset.f);
       else if (a === 'turno') apriScheda(b.dataset.d, b.dataset.p, b.dataset.da);
       else if (['pprec', 'psucc', 'tprec', 'tsucc', 'zpiu', 'zmeno'].includes(a)) muovi(a);
-      else if (a === 'indietro') { if (vista.da === 'cerca') mostra('home'); else apriLista(vista.dep, ''); }
+      else if (a === 'indietro') { if (!vw || vw.da === 'cerca' || !dati[vw.dep]) mostra('home'); else apriLista(vw.dep, ''); }
       else if (a === 'home') mostra('home');
       else if (a === 'link') { const det = $('ivu-link-panel'); det.open = true; det.scrollIntoView({ behavior: 'smooth' }); const i = $('ivu-l-' + b.dataset.d); if (i) i.focus(); }
     });
@@ -2406,15 +2439,34 @@ function ivuCerca(turni, q, max) {
     $('ivu-diag').addEventListener('click', diagnostica);
   }
 
+  // Apre la scheda di un turno partendo dal codice (es. dall'Agenda, lista "I miei turni")
+  async function apriPerCodice(cod) {
+    const n = x => String(x || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const q = n(cod); if (!q) return;
+    for (const d of DEPOSITI) if (d.file && !dati[d.id]) { try { const r = await dbGet(d.id); if (r && Array.isArray(r.turni) && Array.isArray(r.pt)) dati[d.id] = r; } catch (e) {} }
+    for (const d of DEPOSITI) await assicura(d);
+    let trovato = null;
+    for (const d of DEPOSITI) { if (!dati[d.id]) continue; const t = dati[d.id].turni.find(x => n(x.cod) === q); if (t) { trovato = { d, t }; break; } }
+    if (!trovato) {
+      const caricati = DEPOSITI.some(d => dati[d.id]);
+      toast(caricati ? 'Turno ' + cod + ' non trovato in Turni' : 'Carica prima i turni dei depositi');
+      cambiaSezione('sec-ivu'); return;
+    }
+    cambiaSezione('sec-ivu');
+    apriScheda(trovato.d.id, trovato.t.pag[0], 'cerca');
+  }
+
   async function avvia() {
     init(); disegnaLink();
     if (vista.tipo === 'home' || !vista.tipo) mostra('home');
     for (const d of DEPOSITI) if (d.file && !dati[d.id]) { try { const r = await dbGet(d.id); if (r && Array.isArray(r.turni) && Array.isArray(r.pt)) dati[d.id] = r; } catch (e) {} }
     disegnaDepositi(); cerca();
+    for (const d of DEPOSITI) await assicura(d);
   }
 
   return {
-    avvia,
+    avvia, apriPerCodice,
+    home: () => mostra('home'),
     linkEsporta: () => ({ ...links }),
     linkImporta: o => { if (!o || typeof o !== 'object') return; links = {}; DEPOSITI.forEach(d => { if (typeof o[d.id] === 'string' && urlOk(o[d.id])) links[d.id] = o[d.id]; }); salvaLinks(); }
   };
@@ -2734,7 +2786,7 @@ const Assenze = (() => {
   $('tipi').addEventListener('click', e => {
     const t = e.target.dataset && e.target.dataset.t;
     if (!t) return;
-    st.tipo = t; chiudiMail();
+    st.tipo = t;
     try { localStorage.setItem('fe_tipo', t); } catch (err) {}
     buildTipi();
   });
@@ -2859,7 +2911,6 @@ const Assenze = (() => {
   }
 
   function renderPeriods() {
-    chiudiMail();
     const ps = periodi();
     $('chips').innerHTML = ps.map((p, i) =>
       '<span class="chip">' + fmt(p) + ' ' + p.y1 + '<button data-i="' + i + '" aria-label="Rimuovi">×</button></span>'
@@ -2916,13 +2967,6 @@ const Assenze = (() => {
       $('preview').src = st.url;
       $('preview').classList.add('on');
       $('outBtns').style.display = 'flex';
-      st.datiGen = data;
-      st.blocco = datiAssenza(data);
-      $('fe-avviso').textContent = AVVISO_DATI;
-      $('fe-dati').textContent = st.blocco || 'Per inviare la riga dati servono CID e almeno un giorno: il modulo resta valido, ma la riga non verrà aggiunta.';
-      try { $('fe-dest').value = localStorage.getItem(DEST_KEY) || localStorage.getItem('hand_dest') || localStorage.getItem('cambio_dest') || ''; } catch (e) {}
-      $('fe-mailto').hidden = true; fmsg('', '');
-      $('mailBox').style.display = 'block';
       $('genMsg').textContent = 'Fatto. Controlla il modulo prima di stamparlo.' +
         (fontFallback ? ' Attenzione: il carattere originale non si è caricato, ho usato quello di riserva.' : '') +
         (firmaNonCaricata ? ' Attenzione: il carattere della firma non si è caricato.' : '') +
@@ -2933,56 +2977,6 @@ const Assenze = (() => {
       $('genMsg').className = 'msg err';
     }
   };
-
-  // --- invio per email: PDF in allegato + riga dati nel testo ---
-  const DEST_KEY = 'fe_dest';
-  function giorniScelti() { return [...st.days].map(unkey); }
-  function datiAssenza(data) {
-    const cid = String(data.cid || '').replace(/\D/g, '');
-    const giorni = giorniScelti();
-    if (!cid || !giorni.length) return '';
-    return bloccoDati({ tipo: 'ASSENZA', cid, nome: data.nome, assenza: MODULI[data.tipo].etichetta, periodi: periodiConsecutivi(giorni), note: data.note });
-  }
-  function oggettoMail() { return 'Domanda di ' + (MODULI[st.tipo].titolo || 'ferie') + (st.datiGen && st.datiGen.nome ? ' - ' + st.datiGen.nome : ''); }
-  function corpoMail() {
-    const n = st.datiGen ? st.datiGen.nome : '';
-    return 'Buongiorno,\n\nin allegato la ' + st.shareTitle.toLowerCase() + '.\n\n' + (st.blocco ? st.blocco + '\n\n' : '') + 'Cordiali saluti\n' + n;
-  }
-  const fmsg = (t, c) => { $('fe-msg').textContent = t; $('fe-msg').className = 'msg ' + (c || ''); };
-  function motivoNoShare(file) {
-    if (location.protocol === 'file:') return 'la pagina è aperta come file del telefono, non da un indirizzo web';
-    if (!window.isSecureContext) return 'la pagina non è su un indirizzo sicuro (https)';
-    if (!navigator.share) return 'questo browser o questa app non ha la condivisione';
-    if (!navigator.canShare || !navigator.canShare({ files: [file] })) return 'questo browser o questa app non permette di condividere file PDF';
-    return '';
-  }
-  $('fe-dest').onchange = () => { try { localStorage.setItem(DEST_KEY, $('fe-dest').value.trim()); } catch (e) {} };
-  $('fe-mail').onclick = async () => {
-    try {
-      const dest = $('fe-dest').value.trim();
-      try { localStorage.setItem(DEST_KEY, dest); } catch (e) {}
-      const f = new File([st.bytes], st.fileName, { type: 'application/pdf' });
-      let motivo = motivoNoShare(f);
-      $('fe-mailto').hidden = true;
-      if (!motivo) {
-        try {
-          await navigator.share({ files: [f], title: oggettoMail(), text: corpoMail() });
-          fmsg('Scegli la tua app di posta: il PDF è già allegato e nel testo trovi la riga dati.', 'ok');
-          return;
-        } catch (e) {
-          if (e && e.name === 'AbortError') return;
-          motivo = 'il telefono ha rifiutato la condivisione (' + (e && e.name ? e.name : 'errore') + ')';
-        }
-      }
-      const a = document.createElement('a'); a.href = st.url; a.download = st.fileName;
-      document.body.appendChild(a); a.click(); a.remove();
-      const m = $('fe-mailto');
-      m.href = 'mailto:' + encodeURIComponent(dest).replace(/%40/g, '@') + '?subject=' + encodeURIComponent(oggettoMail()) + '&body=' + encodeURIComponent(corpoMail());
-      m.hidden = false;
-      fmsg('Allegato automatico non possibile: ' + motivo + '. Il PDF è stato scaricato (' + st.fileName + '). Tocca "Apri la posta" e allegalo a mano dalla cartella Download.', 'ok');
-    } catch (e) { fmsg('Errore: ' + (e && e.message ? e.message : e), 'err'); }
-  };
-  function chiudiMail() { $('mailBox').style.display = 'none'; st.blocco = ''; st.datiGen = null; }
 
   $('open').onclick = () => window.open(st.url, '_blank');
   $('dl').onclick = () => {
